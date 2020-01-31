@@ -11,7 +11,7 @@ if "%1"=="-w" (SET defs=-DMODE_DEVELOPER -DMODE_GDBDEBUG) else (SET defs=-DMODE_
 
 x86_64-w64-mingw32-gcc -m64 -Wall -g %defs% -Wno-unused-label -Wno-unused-variable mo_edit.c ../bin/data.o -o ../bin/moedit.exe ../misc/icon.res -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -lgdiplus -lole32 -lshlwapi
 
-REM DEL /Q "../bin/data.o"
+DEL /Q "../bin/data.o"
 
 FOR %%A IN ("../bin/moedit.exe") DO set size=%%~zA
 echo size = %size%

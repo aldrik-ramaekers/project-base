@@ -10,6 +10,7 @@
 #include "languages.h"
 
 // TODO(Aldrik): option to disable menu item
+// TODO(Aldrik): move the delete button for term to edit panel on the topright and put a exclamation mark at the old spot to indicate a missing translation
 
 typedef struct t_translation
 {
@@ -159,8 +160,39 @@ void add_country_to_project()
 
 void set_term_name(s32 index, char *name)
 {
-	term *t = array_at(&current_project->terms, index);
-	string_copyn(t->name, name, MAX_TERM_NAME_LENGTH);
+	if (strlen(name) > 0)
+	{
+		term *t = array_at(&current_project->terms, index);
+		string_copyn(t->name, name, MAX_TERM_NAME_LENGTH);
+	}
+	else
+	{
+		// TODO(Aldrik): translate
+		platform_show_message(main_window, "Term name cannot be empty", "Invalid input");
+	}
+}
+
+void remove_country_from_project(s32 index)
+{
+	for (s32 i = 0; i < current_project->languages.length; i++)
+	{
+		s32 ind = *(s32*)array_at(&current_project->languages, i);
+		
+		if (ind == index)
+			array_remove_at(&current_project->languages, i);
+	}
+	
+	for (s32 x = 0; x < current_project->terms.length; x++)
+	{
+		term *tr = array_at(&current_project->terms, x);
+		
+		tr->translations[index].valid = false;
+		if (tr->translations[index].value)
+		{
+			mem_free(tr->translations[index].value);
+			tr->translations[index].value = 0;
+		}
+	}
 }
 
 void select_term(s32 index)
@@ -186,6 +218,9 @@ void select_term(s32 index)
 
 s32 add_term_to_project()
 {
+	tb_filter.state = 0;
+	ui_set_textbox_text(&tb_filter, "");
+	
 	term t;
 	t.name = mem_alloc(MAX_TERM_NAME_LENGTH);
 	
@@ -215,6 +250,28 @@ s32 add_term_to_project()
 	}
 	
 	return array_push(&current_project->terms, &t);
+}
+
+void save_term_changes()
+{
+	set_term_name(current_project->selected_term_index, tb_new_term.buffer);
+	
+	term *t = array_at(&current_project->terms, current_project->selected_term_index);
+	
+	for (s32 x = 0; x < COUNTRY_CODE_COUNT; x++)
+	{
+		textbox_state *tb = &tb_translation_list[x];
+		
+		if (t->translations[x].valid && strlen(tb->buffer))
+		{
+			if (!t->translations[x].value)
+			{
+				t->translations[x].value = mem_alloc(MAX_INPUT_LENGTH);
+			}
+			
+			string_copyn(t->translations[x].value, tb->buffer, MAX_INPUT_LENGTH);
+		}
+	}
 }
 
 void start_new_project()
@@ -418,24 +475,27 @@ int main(int argc, char **argv)
 					{
 						term *t = array_at(&current_project->terms, i);
 						
-						ui_push_button_image(&btn_summary, "", delete_img);
-						//ui_push_image(exclaim_img, 14, 14, 1, rgb(255,255,255));
-						
-						if (i == current_project->selected_term_index)
+						if (!strlen(tb_filter.buffer) || string_contains(t->name, tb_filter.buffer))
 						{
-							ui_push_rect(10, global_ui_context.style.textbox_active_border);
+							ui_push_button_image(&btn_summary, "", delete_img);
+							//ui_push_image(exclaim_img, 14, 14, 1, rgb(255,255,255));
+							
+							if (i == current_project->selected_term_index)
+							{
+								ui_push_rect(10, global_ui_context.style.textbox_active_border);
+							}
+							else
+							{
+								ui_push_rect(10, global_ui_context.style.background);
+							}
+							
+							if (ui_push_text_width(t->name, global_ui_context.layout.width-100, true))
+							{
+								select_term(i);
+							}
+							
+							ui_block_end();
 						}
-						else
-						{
-							ui_push_rect(10, global_ui_context.style.background);
-						}
-						
-						if (ui_push_text_width(t->name, global_ui_context.layout.width-100, true))
-						{
-							select_term(i);
-						}
-						
-						ui_block_end();
 					}
 				}
 				ui_scroll_end();
@@ -456,20 +516,29 @@ int main(int argc, char **argv)
 			
 			if (current_project && current_project->selected_term_index >= 0)
 			{
-				bool set_name = keyboard_is_key_pressed(&keyboard, KEY_ENTER) && 
-					tb_new_term.state;
+				if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_S))
+				{
+					save_term_changes();
+				}
+				
+				term *t = array_at(&current_project->terms, 
+								   current_project->selected_term_index);
 				
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
 					// editor
-					ui_push_textbox(&tb_new_term, "Term name");
 					
-					if (set_name)
-						set_term_name(current_project->selected_term_index, tb_new_term.buffer);
+					if (string_equals(tb_new_term.buffer, t->name))
+						ui_push_rect(10, global_ui_context.style.background);
+					else
+						ui_push_rect(10, UNSAVED_CHANGES_COLOR);
+					
+					// TODO(Aldrik): localize
+					ui_push_textbox(&tb_new_term, "Term name");
 					
 					if (ui_push_button_image(&btn_set_term_name, "", set_img))
 					{
-						set_term_name(current_project->selected_term_index, tb_new_term.buffer);
+						save_term_changes();
 					}
 				}
 				ui_block_end();
@@ -477,29 +546,46 @@ int main(int argc, char **argv)
 				global_ui_context.layout.offset_x = 310;
 				ui_push_separator();
 				
-				term *t = array_at(&current_project->terms, 
-								   current_project->selected_term_index);
-				
 				trans_scroll.height = main_window->height-global_ui_context.layout.offset_y;
 				
 				ui_scroll_begin(&trans_scroll);
 				{
-					for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
+					if (!current_project->languages.length)
 					{
-						translation *tr = &t->translations[i];
-						
-						if (tr->valid)
+						ui_push_text("No languages added to project yet.");
+					}
+					else
+					{
+						for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
 						{
-							TEXTBOX_WIDTH = global_ui_context.layout.width - 100;
+							translation *tr = &t->translations[i];
 							
-							ui_push_textbox(&tb_translation_list[i], "");
-							ui_push_image(list_img, TEXTBOX_HEIGHT,TEXTBOX_HEIGHT,1,rgb(255,255,255));
-							ui_push_text_width(global_langues[i].code, 25, false);
-							
-							global_ui_context.layout.offset_y += TEXTBOX_HEIGHT + WIDGET_PADDING;
-							global_ui_context.layout.offset_x = 310;
+							if (tr->valid)
+							{
+								TEXTBOX_WIDTH = global_ui_context.layout.width - 130;
+								
+								if (!tr->value && !strlen(tb_translation_list[i].buffer))
+								{
+									ui_push_rect(10, MISSING_TRANSLATION_COLOR);
+								}
+								else if (tr->value && string_equals(tb_translation_list[i].buffer, 
+																	tr->value))
+								{
+									ui_push_rect(10, global_ui_context.style.background);
+								}
+								else
+								{
+									ui_push_rect(10, UNSAVED_CHANGES_COLOR);
+								}
+								
+								ui_push_textbox(&tb_translation_list[i], "");
+								ui_push_image(list_img, TEXTBOX_HEIGHT,TEXTBOX_HEIGHT,1,rgb(255,255,255));
+								ui_push_text_width(global_langues[i].code, 25, false);
+								
+								global_ui_context.layout.offset_y += TEXTBOX_HEIGHT + WIDGET_PADDING;
+								global_ui_context.layout.offset_x = 310;
+							}
 						}
-						
 					}
 				}
 				ui_scroll_end();
@@ -586,7 +672,7 @@ int main(int argc, char **argv)
 						
 						if (pressed)
 						{
-							array_remove_at(&current_project->languages, i);
+							remove_country_from_project(index);
 							i--;
 						}
 						
@@ -616,7 +702,7 @@ int main(int argc, char **argv)
 			double time_to_wait = (TARGET_FRAMERATE) - diff_ms;
 			thread_sleep(time_to_wait*1000);
 		}
-    }
+	}
 	
 	settings_page_hide_without_save();
 	

@@ -180,7 +180,7 @@ static void ui_pop_scissor()
 		s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 		
 		render_set_scissor(global_ui_context.layout.active_window,
-						   x,y,w,h);
+						   0,y,global_ui_context.layout.active_window->width,h);
 	}
 	else
 	{
