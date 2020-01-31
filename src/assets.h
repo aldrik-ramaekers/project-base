@@ -59,6 +59,11 @@ extern u8 _binary____data_imgs_delete_png_end[];
 extern u8 _binary____data_imgs_exclaim_png_start[];
 extern u8 _binary____data_imgs_exclaim_png_end[];
 
+extern u8 _binary____data_imgs_add_png_start[];
+extern u8 _binary____data_imgs_add_png_end[];
+
+extern u8 _binary____data_imgs_set_png_start[];
+extern u8 _binary____data_imgs_set_png_end[];
 
 typedef struct t_image {
 	u8 *start_addr;

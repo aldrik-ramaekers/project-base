@@ -86,6 +86,11 @@ inline scroll_state ui_create_scroll(s32 scroll)
 	return state;
 }
 
+void ui_set_textbox_text(textbox_state *textbox, char *text)
+{
+	string_copyn(textbox->buffer, text, textbox->max_len);
+}
+
 inline dropdown_state ui_create_dropdown()
 {
 	dropdown_state state;
@@ -169,11 +174,13 @@ static void ui_pop_scissor()
 {
 	if (global_ui_context.layout.scroll->in_scroll)
 	{
+		s32 w = global_ui_context.layout.width;
+		s32 h = global_ui_context.layout.height;
+		s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
+		s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
+		
 		render_set_scissor(global_ui_context.layout.active_window,
-						   global_ui_context.layout.offset_x,
-						   global_ui_context.layout.scroll->scroll_start_offset_y - WIDGET_PADDING + 1, 
-						   global_ui_context.layout.width, 
-						   global_ui_context.layout.scroll->height + WIDGET_PADDING - 3);
+						   x,y,w,h);
 	}
 	else
 	{
@@ -1049,25 +1056,76 @@ void ui_push_text(char *text)
 		global_ui_context.layout.offset_y += CHECKBOX_SIZE + WIDGET_PADDING;
 }
 
-void ui_push_text_width(char *text, s32 maxw)
+void ui_push_rect(s32 w, color c)
 {
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
-	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
-	s32 text_x = x + WIDGET_PADDING;
-	s32 text_y = y + (BLOCK_HEIGHT/2) - (global_ui_context.font_small->px_h/2) + spacing_y;
-	s32 total_w = maxw +
+	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
+	s32 total_w = w +
 		WIDGET_PADDING + WIDGET_PADDING;
+	s32 h = BUTTON_HEIGHT;
 	
-	if (global_ui_context.layout.block_height < global_ui_context.font_small->px_h)
-		global_ui_context.layout.block_height = global_ui_context.font_small->px_h+5;
+	if (global_ui_context.layout.block_height < h)
+		global_ui_context.layout.block_height = h;
 	
-	render_text_ellipsed(global_ui_context.font_small, text_x, text_y, maxw, text, global_ui_context.style.foreground);
+	{
+		render_rectangle(x+WIDGET_PADDING,y,w,h,c);
+	}
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
 	else
-		global_ui_context.layout.offset_y += CHECKBOX_SIZE + WIDGET_PADDING;
+		global_ui_context.layout.offset_y += BUTTON_HEIGHT + WIDGET_PADDING;
+}
+
+bool ui_push_text_width(char *text, s32 maxw, bool active)
+{
+	bool result = false;
+	
+	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
+	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
+	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
+	s32 text_x = x + WIDGET_PADDING;
+	s32 h = BUTTON_HEIGHT;
+	s32 text_y = y + (BLOCK_HEIGHT/2) - (global_ui_context.font_small->px_h/2) + spacing_y;
+	s32 total_w = maxw +
+		WIDGET_PADDING + WIDGET_PADDING;
+	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
+	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
+	s32 virt_top = y;
+	s32 virt_bottom = y + h;
+	
+	if (global_ui_context.layout.block_height < global_ui_context.font_small->px_h)
+		global_ui_context.layout.block_height = global_ui_context.font_small->px_h+5;
+	
+	if (active)
+	{
+		bool hovered = false;
+		if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
+		{
+			hovered = true;
+			platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+			if (is_left_clicked(global_ui_context.mouse))
+			{
+				result = true;
+			}
+		}
+		
+		if (hovered)
+		{
+			render_rectangle_outline(x-1,y+spacing_y,total_w, h, 1, global_ui_context.style.textbox_active_border);
+		}
+	}
+	
+	render_text_ellipsed(global_ui_context.font_small, text_x, text_y, maxw, text, global_ui_context.style.foreground);
+	
+	
+	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
+		global_ui_context.layout.offset_x += total_w;
+	else
+		global_ui_context.layout.offset_y += BUTTON_HEIGHT + WIDGET_PADDING;
+	
+	return result;
 }
 
 bool ui_push_checkbox(checkbox_state *state, char *title)

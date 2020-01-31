@@ -140,7 +140,7 @@ void platform_create_config_directory()
 {
 	char *env = getenv("HOME");
 	char tmp[PATH_MAX];
-	snprintf(tmp, PATH_MAX, "%s%s", env, "/.config/text-search");
+	snprintf(tmp, PATH_MAX, "%s%s", env, "/.config/moedit");
 	
 	if (!platform_directory_exists(tmp))
 	{
@@ -151,7 +151,7 @@ void platform_create_config_directory()
 char* get_config_save_location(char *buffer)
 {
 	char *env = getenv("HOME");
-	snprintf(buffer, PATH_MAX, "%s%s", env, "/.config/text-search/config.txt");
+	snprintf(buffer, PATH_MAX, "%s%s", env, "/.config/moedit/config.txt");
 	return buffer;
 }
 

@@ -14,7 +14,9 @@
 #define BUTTON_HORIZONTAL_TEXT_PADDING 15
 #define MENU_ITEM_WIDTH 220
 #define CHECKBOX_SIZE BLOCK_HEIGHT - 8
-#define TEXTBOX_WIDTH 280
+
+static s32 TEXTBOX_WIDTH = 280;
+
 #define TEXTBOX_HEIGHT BLOCK_HEIGHT
 #define BUTTON_HEIGHT BLOCK_HEIGHT
 #define BUTTON_IMAGE_PADDING 5
@@ -166,6 +168,7 @@ char* name_of_day(s32 day);
 char* name_of_month(s32 month);
 void ui_set_style(u16 style);
 void set_active_textbox(textbox_state *textbox);
+void ui_set_textbox_text(textbox_state *textbox, char *text);
 
 // widget initialization
 checkbox_state ui_create_checkbox(bool selected);
@@ -185,11 +188,13 @@ void ui_push_menu_item_separator();
 bool ui_push_dropdown(dropdown_state *state, char *title);
 bool ui_push_dropdown_item(image *icon, char *title, s32 index);
 void ui_push_separator();
+void ui_push_rect(s32 w, color rec);
 void ui_push_vertical_dragbar();
 void ui_block_begin(layout_direction direction);
 void ui_block_end();
 void ui_end_menu_bar();
 void ui_push_text(char *text);
+bool ui_push_text_width(char *text, s32 maxw, bool active);
 void ui_push_textf(font *f, char *text);
 void ui_push_textf_width(font *f, char *text, s32 maxw);
 bool ui_push_hypertext_link(char *text);
