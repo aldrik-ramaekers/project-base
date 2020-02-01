@@ -195,6 +195,7 @@ void platform_destroy();
 void platform_set_icon(platform_window *window, image *img);
 void platform_autocomplete_path(char *buffer, bool want_dir);
 bool platform_directory_exists(char *path);
+void platform_create_directory(char *path);
 bool platform_file_exists(char *path);
 void platform_show_alert(char *title, char *message);
 char *get_config_save_location(char *buffer);

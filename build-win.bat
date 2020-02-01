@@ -5,7 +5,7 @@ windres misc/icon.rc -O coff -o misc/icon.res
 DEL /S /Q bin
 cd src
 
-ld -r -b binary -o ../bin/data.o ../data/imgs/en.png ../data/imgs/error.png ../data/imgs/folder.png ../data/imgs/nl.png ../data/imgs/search.png ../data/imgs/logo_64.png ../data/fonts/mono.ttf ../data/translations/en-English.mo ../data/translations/nl-Dutch.mo ../data/imgs/list.png ../data/imgs/delete.png ../data/imgs/exclaim.png ../data/imgs/add.png ../data/imgs/set.png
+ld -r -b binary -o ../bin/data.o ../data/imgs/en.png  ../data/imgs/nl.png ../data/imgs/logo_64.png ../data/fonts/mono.ttf ../data/translations/en-English.mo ../data/translations/nl-Dutch.mo ../data/imgs/list.png ../data/imgs/delete.png ../data/imgs/exclaim.png ../data/imgs/add.png ../data/imgs/set.png
 
 if "%1"=="-w" (SET defs=-DMODE_DEVELOPER -DMODE_GDBDEBUG) else (SET defs=-DMODE_DEVELOPER)
 

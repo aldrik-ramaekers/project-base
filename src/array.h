@@ -7,6 +7,8 @@
 #ifndef INCLUDE_ARRAY
 #define INCLUDE_ARRAY
 
+#define ASSERT(e_) {if(!(e_)){*(int*)0=0;}}
+
 typedef struct t_array
 {
 	u32 length;

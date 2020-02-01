@@ -11,17 +11,31 @@
 
 // TODO(Aldrik): option to disable menu item
 // TODO(Aldrik): move the delete button for term to edit panel on the topright and put a exclamation mark at the old spot to indicate a missing translation
+// TODO(Aldrik): language name validation
+// TODO(Aldrik): language mo file name preview when entering name
+// TODO(Aldrik): option to mark languages with colors
+// TODO(Aldrik): change save icon
+
+s32 global_language_id = 1;
+
+#define MAX_LANGUAGE_COUNT 100
+
+typedef struct t_language
+{
+	char *name;
+	s32 id;
+} language;
 
 typedef struct t_translation
 {
-	bool valid;
+	s32 language_id;
 	char *value;
 } translation;
 
 typedef struct t_term
 {
 	char *name;
-	translation translations[COUNTRY_CODE_COUNT];
+	array translations;
 } term;
 
 typedef struct t_translation_project
@@ -43,7 +57,8 @@ button_state btn_set_term_name;
 dropdown_state dd_available_countries;
 textbox_state tb_filter;
 textbox_state tb_new_term;
-textbox_state tb_translation_list[COUNTRY_CODE_COUNT];
+textbox_state tb_new_language;
+textbox_state tb_translation_list[MAX_LANGUAGE_COUNT];
 
 image *set_img;
 image *add_img;
@@ -83,47 +98,33 @@ static void load_assets()
 								 _binary____data_fonts_mono_ttf_end, 12);
 }
 
-s32 get_available_country_index()
+bool term_has_missing_translations(term *t)
 {
-	s32 found_index = -1;
-	for (s32 x = 0; x < COUNTRY_CODE_COUNT; x++)
+	for (s32 i = 0; i < t->translations.length; i++)
 	{
-		bool found = false;
-		for (s32 i = 0; i < current_project->languages.length; i++)
-		{
-			s32 ind = *(s32*)array_at(&current_project->languages, i);
-			if (ind == x) found = true;
-		}
-		
-		if (!found) found_index = x;
-	}
-	
-	return found_index;
-}
-
-bool country_has_been_added_to_project(s32 index)
-{
-	for (s32 i = 0; i < current_project->languages.length; i++)
-	{
-		s32 ind = *(s32*)array_at(&current_project->languages, i);
-		
-		if (index == ind) return true;
+		translation *tr = array_at(&t->translations, i);
+		if (!tr->value) return true;
 	}
 	
 	return false;
 }
 
-s32 get_translated_count_for_language(s32 index)
+s32 get_translated_count_for_language(s32 language_id)
 {
 	s32 count = 0;
 	for (s32 i = 0; i < current_project->terms.length; i++)
 	{
 		term *t = array_at(&current_project->terms, i);
 		
-		translation *tr = &t->translations[index];
-		if (tr->valid && tr->value)
+		for (s32 x = 0; x < t->translations.length; x++)
 		{
-			count++;
+			translation *tr = array_at(&t->translations, x);
+			
+			if (tr->language_id == language_id && tr->value) 
+			{
+				count++;
+				break;
+			}
 		}
 	}
 	
@@ -145,16 +146,46 @@ bool term_name_is_available(char *name)
 	return true;
 }
 
-void add_country_to_project()
+language* get_language_by_id(s32 language_id)
 {
-	array_push(&current_project->languages, &dd_available_countries.selected_index);
+	for (s32 i = 0; i < current_project->languages.length; i++)
+	{
+		language *l = array_at(&current_project->languages, i);
+		if (l->id == language_id)
+		{
+			return l;
+		}
+	}
+	return 0;
+}
+
+void add_language_to_project(char *buffer)
+{
+	if (string_equals(buffer, ""))
+	{
+		// TODO(Aldrik): localize
+		platform_show_message(main_window, "Language name cannot be empty", "Invalid info");
+		return;
+	}
+	
+	char *val = mem_alloc(MAX_INPUT_LENGTH);
+	string_copyn(val, buffer, MAX_INPUT_LENGTH);
+	
+	language l;
+	l.name = val;
+	l.id = global_language_id++;
+	
+	s32 index = array_push(&current_project->languages, &l);
 	
 	for (s32 x = 0; x < current_project->terms.length; x++)
 	{
 		term *t = array_at(&current_project->terms, x);
 		
-		translation *tr = &t->translations[dd_available_countries.selected_index];
-		tr->valid = true;
+		translation new_t;
+		new_t.value = 0;
+		new_t.language_id = l.id;
+		
+		array_push(&t->translations, &new_t);
 	}
 }
 
@@ -172,25 +203,45 @@ void set_term_name(s32 index, char *name)
 	}
 }
 
-void remove_country_from_project(s32 index)
+void remove_term_from_project(s32 index)
+{
+	term *t = array_at(&current_project->terms, index);
+	mem_free(t->name);
+	for (s32 i = 0; i < t->translations.length; i++)
+	{
+		translation *tr = array_at(&t->translations, i);
+		mem_free(tr->value);
+	}
+	array_destroy(&t->translations);
+	array_remove_at(&current_project->terms, index);
+}
+
+void remove_language_from_project(s32 language_id)
 {
 	for (s32 i = 0; i < current_project->languages.length; i++)
 	{
-		s32 ind = *(s32*)array_at(&current_project->languages, i);
-		
-		if (ind == index)
+		language *l = array_at(&current_project->languages, i);
+		if (l->id == language_id)
+		{
 			array_remove_at(&current_project->languages, i);
+			break;
+		}
 	}
 	
 	for (s32 x = 0; x < current_project->terms.length; x++)
 	{
 		term *tr = array_at(&current_project->terms, x);
 		
-		tr->translations[index].valid = false;
-		if (tr->translations[index].value)
+		for (s32 i = 0; i < tr->translations.length; i++)
 		{
-			mem_free(tr->translations[index].value);
-			tr->translations[index].value = 0;
+			translation *t = array_at(&tr->translations, i);
+			
+			if (t->language_id == language_id)
+			{
+				mem_free(t->value);
+				array_remove_at(&tr->translations, i);
+				break;
+			}
 		}
 	}
 }
@@ -201,17 +252,19 @@ void select_term(s32 index)
 	term *t = array_at(&current_project->terms, index);
 	ui_set_textbox_text(&tb_new_term, t->name);
 	
-	for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
+	for (s32 i = 0; i < current_project->languages.length; i++)
 	{
-		textbox_state tb = tb_translation_list[i];
+		translation *tr = array_at(&t->translations, i);
+		textbox_state *tb = &tb_translation_list[i];
+		tb->state = false;
 		
-		if (t->translations[i].value)
+		if (tr->value)
 		{
-			string_copyn(tb.buffer, t->translations[i].value, MAX_INPUT_LENGTH);
+			ui_set_textbox_text(tb, tr->value);
 		}
 		else
 		{
-			string_copyn(tb.buffer, "", MAX_INPUT_LENGTH);
+			ui_set_textbox_text(tb, "");
 		}
 	}
 }
@@ -234,19 +287,17 @@ s32 add_term_to_project()
 	}
 	while(!term_name_is_available(t.name));
 	
-	for (s32 x = 0; x < COUNTRY_CODE_COUNT; x++)
-	{
-		translation tr;
-		tr.value = 0;
-		tr.valid = false;
-		t.translations[x] = tr;
-	}
+	t.translations = array_create(sizeof(translation));
+	array_reserve(&t.translations, current_project->languages.length);
 	
 	for (s32 i = 0; i < current_project->languages.length; i++)
 	{
-		s32 index = *(s32*)array_at(&current_project->languages, i);
-		translation *tr = &t.translations[index];
-		tr->valid = true;
+		language *l = array_at(&current_project->languages, i);
+		
+		translation tr;
+		tr.value = 0;
+		tr.language_id = l->id;
+		array_push(&t.translations, &tr);
 	}
 	
 	return array_push(&current_project->terms, &t);
@@ -258,18 +309,19 @@ void save_term_changes()
 	
 	term *t = array_at(&current_project->terms, current_project->selected_term_index);
 	
-	for (s32 x = 0; x < COUNTRY_CODE_COUNT; x++)
+	for (s32 i = 0; i < current_project->languages.length; i++)
 	{
-		textbox_state *tb = &tb_translation_list[x];
+		translation *tr = array_at(&t->translations, i);
+		textbox_state *tb = &tb_translation_list[i];
 		
-		if (t->translations[x].valid && strlen(tb->buffer))
+		if (strlen(tb->buffer) || tr->value)
 		{
-			if (!t->translations[x].value)
+			if (!tr->value)
 			{
-				t->translations[x].value = mem_alloc(MAX_INPUT_LENGTH);
+				tr->value = mem_alloc(MAX_INPUT_LENGTH);
 			}
 			
-			string_copyn(t->translations[x].value, tb->buffer, MAX_INPUT_LENGTH);
+			string_copyn(tr->value, tb->buffer, MAX_INPUT_LENGTH);
 		}
 	}
 }
@@ -282,7 +334,7 @@ void start_new_project()
 	array_reserve(&current_project->terms, 100);
 	current_project->terms.reserve_jump = 100;
 	
-	current_project->languages = array_create(sizeof(s32));
+	current_project->languages = array_create(sizeof(language));
 	array_reserve(&current_project->languages, 100);
 	current_project->languages.reserve_jump = 100;
 	
@@ -320,7 +372,7 @@ int main(int argc, char **argv)
 	
 	s32 window_w = settings_config_get_number(&config, "WINDOW_WIDTH");
 	s32 window_h = settings_config_get_number(&config, "WINDOW_HEIGHT");
-	if (window_w <= 800 || window_h <= 600)
+	if (window_w < 800 || window_h < 600)
 	{
 		window_w = 800;
 		window_h = 600;
@@ -345,7 +397,6 @@ int main(int argc, char **argv)
 	camera.rotation = 0;
 	
 	ui_create(&window, &keyboard, &mouse, &camera, font_small);
-	dd_available_countries = ui_create_dropdown();
 	term_scroll = ui_create_scroll(1);
 	lang_scroll = ui_create_scroll(1);
 	trans_scroll = ui_create_scroll(1);
@@ -355,8 +406,9 @@ int main(int argc, char **argv)
 	btn_new_language = ui_create_button();
 	tb_filter = ui_create_textbox(MAX_INPUT_LENGTH);
 	tb_new_term = ui_create_textbox(MAX_TERM_NAME_LENGTH);
+	tb_new_language = ui_create_textbox(MAX_INPUT_LENGTH);
 	
-	for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
+	for (s32 i = 0; i < MAX_LANGUAGE_COUNT; i++)
 		tb_translation_list[i] = ui_create_textbox(MAX_INPUT_LENGTH);
 	
 	// asset worker
@@ -477,12 +529,21 @@ int main(int argc, char **argv)
 						
 						if (!strlen(tb_filter.buffer) || string_contains(t->name, tb_filter.buffer))
 						{
-							ui_push_button_image(&btn_summary, "", delete_img);
+							bool removed = false;
+							if (ui_push_button_image(&btn_summary, "", delete_img))
+							{
+								removed = true;
+							}
+							
 							//ui_push_image(exclaim_img, 14, 14, 1, rgb(255,255,255));
 							
 							if (i == current_project->selected_term_index)
 							{
 								ui_push_rect(10, global_ui_context.style.textbox_active_border);
+							}
+							else if (term_has_missing_translations(t))
+							{
+								ui_push_rect(10, MISSING_TRANSLATION_COLOR);
 							}
 							else
 							{
@@ -495,6 +556,15 @@ int main(int argc, char **argv)
 							}
 							
 							ui_block_end();
+							
+							if (removed)
+							{
+								remove_term_from_project(i);
+								--i;
+								
+								if (current_project->selected_term_index >= 0)
+									current_project->selected_term_index--;
+							}
 						}
 					}
 				}
@@ -552,39 +622,38 @@ int main(int argc, char **argv)
 				{
 					if (!current_project->languages.length)
 					{
+						// TODO(Aldrik): localize
 						ui_push_text("No languages added to project yet.");
 					}
 					else
 					{
-						for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
+						for (s32 i = 0; i < t->translations.length; i++)
 						{
-							translation *tr = &t->translations[i];
+							translation *tr = array_at(&t->translations, i);
 							
-							if (tr->valid)
+							TEXTBOX_WIDTH = global_ui_context.layout.width - 130;
+							
+							if (!tr->value && !strlen(tb_translation_list[i].buffer))
 							{
-								TEXTBOX_WIDTH = global_ui_context.layout.width - 130;
-								
-								if (!tr->value && !strlen(tb_translation_list[i].buffer))
-								{
-									ui_push_rect(10, MISSING_TRANSLATION_COLOR);
-								}
-								else if (tr->value && string_equals(tb_translation_list[i].buffer, 
-																	tr->value))
-								{
-									ui_push_rect(10, global_ui_context.style.background);
-								}
-								else
-								{
-									ui_push_rect(10, UNSAVED_CHANGES_COLOR);
-								}
-								
-								ui_push_textbox(&tb_translation_list[i], "");
-								ui_push_image(list_img, TEXTBOX_HEIGHT,TEXTBOX_HEIGHT,1,rgb(255,255,255));
-								ui_push_text_width(global_langues[i].code, 25, false);
-								
-								global_ui_context.layout.offset_y += TEXTBOX_HEIGHT + WIDGET_PADDING;
-								global_ui_context.layout.offset_x = 310;
+								ui_push_rect(10, MISSING_TRANSLATION_COLOR);
 							}
+							else if (tr->value && string_equals(tb_translation_list[i].buffer, 
+																tr->value))
+							{
+								ui_push_rect(10, global_ui_context.style.background);
+							}
+							else
+							{
+								ui_push_rect(10, UNSAVED_CHANGES_COLOR);
+							}
+							
+							ui_push_textbox(&tb_translation_list[i], "");
+							
+							language *l = get_language_by_id(tr->language_id);
+							ui_push_text(l->name);
+							
+							global_ui_context.layout.offset_y += TEXTBOX_HEIGHT + WIDGET_PADDING;
+							global_ui_context.layout.offset_x = 310;
 						}
 					}
 				}
@@ -596,7 +665,7 @@ int main(int argc, char **argv)
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
 					// TODO(Aldrik): translate
-					ui_push_textf_width(font_medium, "Overview", 200);
+					ui_push_textf_width(font_medium, "Overview", 100);
 					
 					char info_text[60];
 					sprintf(info_text, "%d terms, %d languages", current_project->terms.length, current_project->languages.length);
@@ -612,31 +681,24 @@ int main(int argc, char **argv)
 				
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
-					s32 av_index = get_available_country_index();
+					// TODO(Aldrik): translate
+					ui_push_textbox(&tb_new_language, "Add language");
 					
-					if (dd_available_countries.selected_index == -1 && av_index >= 0)
-						dd_available_countries.selected_index = av_index;
-					
-					if (dd_available_countries.selected_index >= 0)
+					if (keyboard_is_key_pressed(&keyboard, KEY_ENTER))
 					{
-						if (ui_push_dropdown(&dd_available_countries, 
-											 global_langues[dd_available_countries.selected_index].fullname))
-						{
-							for (s32 i = 0; i < COUNTRY_CODE_COUNT; i++)
-							{
-								if (!country_has_been_added_to_project(i))
-								{
-									ui_push_dropdown_item(0, global_langues[i].fullname, i);
-								}
-							}
-						}
-						
-						// TODO(Aldrik): translate
-						if (ui_push_button(&btn_new_language, "Add"))
-						{
-							add_country_to_project();
-							dd_available_countries.selected_index = -1;
-						}
+						add_language_to_project(tb_new_language.buffer);
+						ui_set_textbox_text(&tb_new_language, "");
+						keyboard_set_input_text(&keyboard, "");
+						tb_new_language.state = true;
+					}
+					
+					// TODO(Aldrik): translate
+					if (ui_push_button(&btn_new_language, "Add"))
+					{
+						add_language_to_project(tb_new_language.buffer);
+						ui_set_textbox_text(&tb_new_language, "");
+						keyboard_set_input_text(&keyboard, "");
+						tb_new_language.state = true;
 					}
 				}
 				ui_block_end();
@@ -658,21 +720,21 @@ int main(int argc, char **argv)
 							pressed = true;
 						}
 						
-						s32 index = *(s32*)array_at(&current_project->languages, i);
-						ui_push_text_width(global_langues[index].fullname, global_ui_context.layout.width-200, false);
+						language *l = array_at(&current_project->languages, i);
+						ui_push_text_width(l->name, global_ui_context.layout.width-200, false);
 						
 						color c = global_ui_context.style.foreground;
 						global_ui_context.style.foreground = rgb(110,110,110);
 						
 						char stats[50];
-						sprintf(stats, "%d/%d translated", get_translated_count_for_language(index), current_project->terms.length);
+						sprintf(stats, "%d/%d translated", get_translated_count_for_language(l->id), current_project->terms.length);
 						ui_push_text(stats);
 						
 						global_ui_context.style.foreground = c;
 						
 						if (pressed)
 						{
-							remove_country_from_project(index);
+							remove_language_from_project(l->id);
 							i--;
 						}
 						
@@ -683,7 +745,15 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				// show no project loaded message/image
+				render_text(font_medium, 330, 50, "Create a new project", global_ui_context.style.foreground);
+				render_text_cutoff(font_small, 330, 70,
+								   "There is no project loaded yet, you can start a\nnew translation project on the left.", global_ui_context.style.foreground, 400);
+				
+				render_rectangle(330, 200, 10, 25, UNSAVED_CHANGES_COLOR);
+				render_text(font_small, 350, 208, "Unsaved changes", global_ui_context.style.foreground);
+				
+				render_rectangle(330, 240, 10, 25, MISSING_TRANSLATION_COLOR);
+				render_text(font_small, 350, 248, "Missing translation", global_ui_context.style.foreground);
 			}
 		}
 		ui_end();
@@ -721,6 +791,7 @@ int main(int argc, char **argv)
 			settings_config_set_string(&config, "LOCALE", current_locale_id);
 		}
 	}
+	printf("%s\n", config_path_buffer);
 	
 	settings_config_write_to_file(&config, config_path_buffer);
 	settings_config_destroy(&config);

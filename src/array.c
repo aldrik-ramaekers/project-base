@@ -19,9 +19,9 @@ array array_create(u64 entry_size)
 
 int array_push(array *array, void *data)
 {
-	assert(array);
-	assert(data);
-	assert(array->reserve_jump >= 1);
+	ASSERT(array);
+	ASSERT(data);
+	ASSERT(array->reserve_jump >= 1);
 	
 	mutex_lock(&array->mutex);
 	array->length++;
@@ -48,9 +48,9 @@ int array_push(array *array, void *data)
 
 int array_push_size(array *array, void *data, s32 data_size)
 {
-	assert(array);
-	assert(data);
-	assert(array->reserve_jump >= 1);
+	ASSERT(array);
+	ASSERT(data);
+	ASSERT(array->reserve_jump >= 1);
 	
 	mutex_lock(&array->mutex);
 	array->length++;
@@ -85,7 +85,7 @@ int array_push_size(array *array, void *data, s32 data_size)
 
 void array_reserve(array *array, u32 reserve_count)
 {
-	assert(array);
+	ASSERT(array);
 	
 	mutex_lock(&array->mutex);
 	u32 reserved_count = array->reserved_length - array->length;
@@ -105,9 +105,9 @@ void array_reserve(array *array, u32 reserve_count)
 
 void array_remove_at(array *array, u32 at)
 {
-	assert(array);
-	assert(at >= 0);
-	assert(at < array->length);
+	ASSERT(array);
+	ASSERT(at >= 0);
+	ASSERT(at < array->length);
 	
 	mutex_lock(&array->mutex);
 	if (array->length > 1)
@@ -136,7 +136,7 @@ void array_remove(array *array, void *ptr)
 
 void array_remove_by(array *array, void *data)
 {
-	assert(array);
+	ASSERT(array);
 	
 	mutex_lock(&array->mutex);
 	for (int i = 0; i < array->length; i++)
@@ -154,9 +154,9 @@ void array_remove_by(array *array, void *data)
 void *array_at(array *array, u32 at)
 {
 	mutex_lock(&array->mutex);
-	assert(array);
-	assert(at >= 0);
-	assert(at < array->length);
+	ASSERT(array);
+	ASSERT(at >= 0);
+	ASSERT(at < array->length);
 	
 	void *result =  array->data + (at * array->entry_size);
 	mutex_unlock(&array->mutex);
@@ -165,16 +165,16 @@ void *array_at(array *array, u32 at)
 
 void array_destroy(array *array)
 {
-	assert(array);
+	ASSERT(array);
 	mem_free(array->data);
 	mutex_destroy(&array->mutex);
 }
 
 void array_swap(array *array, u32 swap1, u32 swap2)
 {
-	assert(array);
-	assert(swap2 >= 0);
-	assert(swap2 < array->length);
+	ASSERT(array);
+	ASSERT(swap2 >= 0);
+	ASSERT(swap2 < array->length);
 	if (swap1 == swap2) return;
 	
 	void *swap1_at = array_at(array, swap1);

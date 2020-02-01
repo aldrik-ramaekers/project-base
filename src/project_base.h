@@ -24,7 +24,6 @@
 
 #include "stdint.h"
 #include "string.h"
-#include "assert.h"
 
 #include <GL/gl.h>
 #ifdef OS_LINUX
