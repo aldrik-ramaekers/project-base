@@ -7,10 +7,11 @@
 #ifndef INCLUDE_SAVE
 #define INCLUDE_SAVE
 
-#define SEARCH_RESULT_FILE_EXTENSION "*.json"
+#define SAVE_FILE_EXTENSION "*.json"
 
-bool export_results(search_result *result);
-void import_results_from_file(char *path_buf);
-void import_results();
+void load_project_from_file(char *path_buf);
+void load_project();
+void save_project_to_file(char *path_buf);
+void save_project();
 
 #endif

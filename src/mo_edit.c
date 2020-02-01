@@ -7,8 +7,6 @@
 #include "config.h"
 #include "project_base.h"
 
-#include "languages.h"
-
 // TODO(Aldrik): option to disable menu item
 // TODO(Aldrik): move the delete button for term to edit panel on the topright and put a exclamation mark at the old spot to indicate a missing translation
 // TODO(Aldrik): language name validation
@@ -17,6 +15,7 @@
 // TODO(Aldrik): change save icon
 
 s32 global_language_id = 1;
+char project_path[MAX_INPUT_LENGTH];
 
 #define MAX_LANGUAGE_COUNT 100
 
@@ -46,6 +45,9 @@ typedef struct t_translation_project
 } translation_project;
 
 translation_project *current_project = 0;
+
+#include "save.h"
+#include "save.c"
 
 scroll_state term_scroll;
 scroll_state lang_scroll;
@@ -346,6 +348,14 @@ void load_config(settings_config *config)
 	char *path = settings_config_get_string(config, "ACTIVE_PROJECT");
 	char *locale_id = settings_config_get_string(config, "LOCALE");
 	
+	if (path)
+	{
+		string_copyn(project_path, path, MAX_INPUT_LENGTH);
+		
+		start_new_project();
+		load_project_from_file(project_path);
+	}
+	
 	if (locale_id)
 		set_locale(locale_id);
 	else
@@ -461,18 +471,26 @@ int main(int argc, char **argv)
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Load Project", "Ctrl + O")) 
 					{ 
+						start_new_project();
+						load_project();
 					}
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Save Project", "Ctrl + S")) 
 					{ 
+						if (string_equals(project_path, ""))
+							save_project();
+						else
+							save_project_to_file(project_path);
 					}
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Save Project As", "Ctrl + E"))  
 					{ 
+						save_project();
 					}
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Export MO files", "Ctrl + X"))  
 					{ 
+						// TODO(Aldrik): export mo files
 					}
 					ui_push_menu_item_separator();
 					if (ui_push_menu_item(localize("quit"), "Ctrl + Q")) 
@@ -682,9 +700,10 @@ int main(int argc, char **argv)
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
 					// TODO(Aldrik): translate
+					bool selected = tb_new_language.state;
 					ui_push_textbox(&tb_new_language, "Add language");
 					
-					if (keyboard_is_key_pressed(&keyboard, KEY_ENTER))
+					if (keyboard_is_key_pressed(&keyboard, KEY_ENTER) && selected)
 					{
 						add_language_to_project(tb_new_language.buffer);
 						ui_set_textbox_text(&tb_new_language, "");
@@ -755,6 +774,31 @@ int main(int argc, char **argv)
 				render_rectangle(330, 240, 10, 25, MISSING_TRANSLATION_COLOR);
 				render_text(font_small, 350, 248, "Missing translation", global_ui_context.style.foreground);
 			}
+			
+			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_O))
+			{
+				start_new_project();
+				load_project();
+			}
+			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_S))
+			{
+				if (string_equals(project_path, ""))
+					save_project();
+				else
+					save_project_to_file(project_path);
+			}
+			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_E))
+			{
+				save_project();
+			}
+			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_X))
+			{
+				// TODO(Aldrik): export mo files
+			}
+			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_Q))
+			{
+				window.is_open = false; 
+			}
 		}
 		ui_end();
 		// end ui
@@ -777,7 +821,8 @@ int main(int argc, char **argv)
 	settings_page_hide_without_save();
 	
 	// write config file
-	//settings_config_set_string(&config, "ACTIVE_PROJECT", textbox_path.buffer);
+	if (!string_equals(project_path, ""))
+		settings_config_set_string(&config, "ACTIVE_PROJECT", project_path);
 	
 	vec2 win_size = platform_get_window_size(&window);
 	settings_config_set_number(&config, "WINDOW_WIDTH", win_size.x);
@@ -791,7 +836,6 @@ int main(int argc, char **argv)
 			settings_config_set_string(&config, "LOCALE", current_locale_id);
 		}
 	}
-	printf("%s\n", config_path_buffer);
 	
 	settings_config_write_to_file(&config, config_path_buffer);
 	settings_config_destroy(&config);

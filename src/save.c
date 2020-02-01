@@ -4,117 +4,97 @@
 *  All rights reserved.
 */
 
-search_result *create_empty_search_result();
-void* destroy_search_result_thread(void *arg);
-
-static void write_json_file(char *buffer, s32 length, search_result *search_result)
+static void write_json_file(char *buffer, s32 length)
 {
-	array matches = search_result->matches;
-	
 	cJSON *result = cJSON_CreateObject();
-	if (cJSON_AddStringToObject(result, "search_directory", 
-								search_result->directory_to_search) == NULL)
+	if (cJSON_AddNumberToObject(result, "next_language_id", 
+								global_language_id) == NULL)
 		return;
 	
-	if (cJSON_AddStringToObject(result, "filter", 
-								search_result->file_filter) == NULL)
-		return;
+	cJSON *langs = cJSON_AddArrayToObject(result, "languages");
+	if (!langs) return;
 	
-	if (cJSON_AddStringToObject(result, "search_query", 
-								search_result->text_to_find) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "duration_us", 
-								search_result->find_duration_us) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "show_error", 
-								search_result->show_error_message) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "file_match_found", 
-								search_result->found_file_matches) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "files_searched", 
-								search_result->files_searched) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "files_matched", 
-								search_result->files_matched) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "query_match_found", 
-								search_result->match_found) == NULL)
-		return;
-	
-	if (cJSON_AddNumberToObject(result, "recursive_search", 
-								search_result->is_recursive) == NULL)
-		return;
-	
-	cJSON *match_list = cJSON_AddArrayToObject(result, "match_list");
-	
-	if (!match_list) return;
-	
-	for (s32 i = 0; i < matches.length; i++)
+	for (s32 i = 0; i < current_project->languages.length; i++)
 	{
-		file_match* m = array_at(&matches, i);
-		
 		cJSON *item = cJSON_CreateObject();
+		language *lang = array_at(&current_project->languages, i);
 		
-		if (cJSON_AddStringToObject(item, "path", 
-									m->file.path) == NULL)
+		if (cJSON_AddStringToObject(item, "name", lang->name) == NULL)
 			return;
 		
-		if (cJSON_AddStringToObject(item, "matched_filter", 
-									m->file.matched_filter) == NULL)
+		if (cJSON_AddNumberToObject(item, "id", lang->id) == NULL)
 			return;
 		
-		if (cJSON_AddNumberToObject(item, "word_offset", 
-									m->word_match_offset) == NULL)
+		cJSON_AddItemToArray(langs, item);
+	}
+	
+	cJSON *terms = cJSON_AddArrayToObject(result, "terms");
+	if (!terms) return;
+	
+	for (s32 i = 0; i < current_project->terms.length; i++)
+	{
+		cJSON *item = cJSON_CreateObject();
+		term *trm = array_at(&current_project->terms, i);
+		
+		if (cJSON_AddStringToObject(item, "name", trm->name) == NULL)
 			return;
 		
-		if (cJSON_AddNumberToObject(item, "word_length", 
-									m->word_match_length) == NULL)
-			return;
+		cJSON *translations = cJSON_AddArrayToObject(item, "translations");
+		if (!translations) return;
 		
-		if (cJSON_AddNumberToObject(item, "file_error", 
-									m->file_error) == NULL)
-			return;
-		
-		if (cJSON_AddNumberToObject(item, "line_nr", 
-									m->line_nr) == NULL)
-			return;
-		
-		if (cJSON_AddNumberToObject(item, "file_size", 
-									m->file_size) == NULL)
-			return;
-		
-		if (m->line_info)
+		for (s32 x = 0; x < trm->translations.length; x++)
 		{
-			if (cJSON_AddStringToObject(item, "line_info", 
-										m->line_info) == NULL)
+			cJSON *sub_item = cJSON_CreateObject();
+			translation *tr = array_at(&trm->translations, x);
+			
+			if (cJSON_AddNumberToObject(sub_item, "language_id", tr->language_id) == NULL)
 				return;
-		}
-		else
-		{
-			if (cJSON_AddNumberToObject(item, "line_info", 0) == NULL)
-				return;
+			
+			if (tr->value)
+			{
+				if (cJSON_AddStringToObject(sub_item, "value", tr->value) == NULL)
+					return;
+			}
+			else
+			{
+				if (cJSON_AddNumberToObject(sub_item, "value", 0) == NULL)
+					return;
+			}
+			
+			cJSON_AddItemToArray(translations, sub_item);
 		}
 		
-		cJSON_AddItemToArray(match_list, item);
+		cJSON_AddItemToArray(terms, item);
 	}
 	
 	cJSON_PrintPreallocated(result, buffer, length, true);
 	cJSON_Delete(result);
 }
 
-static void *export_result_d(void *arg)
+void save_project_to_file(char *path_buf)
 {
-	search_result *search_result = arg;
+	s32 size = ((current_project->terms.length+1)*
+				(current_project->languages.length+1)*MAX_INPUT_LENGTH)*2;
 	
-	array matches = search_result->files;
+	char *buffer = mem_alloc(size);
+	memset(buffer, 0, size);
 	
+	char *file_extension = get_file_extension(path_buf);
+	if (string_equals(file_extension, ".json") || string_equals(file_extension, ""))
+	{
+		write_json_file(buffer, size);
+	}
+	
+	if (string_equals(file_extension, ""))
+	{
+		string_appendn(path_buf, ".json", MAX_INPUT_LENGTH);
+	}
+	
+	platform_write_file_content(path_buf, "w", buffer, size);
+}
+
+static void *save_project_d(void *arg)
+{
 	char path_buf[MAX_INPUT_LENGTH];
 	path_buf[0] = 0;
 	
@@ -124,21 +104,14 @@ static void *export_result_d(void *arg)
 	char default_save_file_extension[50];
 	string_copyn(default_save_file_extension, "json", 50);
 	
-	if (!search_result->is_command_line_search)
-	{
-		struct open_dialog_args *args = mem_alloc(sizeof(struct open_dialog_args));
-		args->buffer = path_buf;
-		args->type = SAVE_FILE;
-		args->file_filter = SEARCH_RESULT_FILE_EXTENSION;
-		args->start_path = start_path;
-		args->default_save_file_extension = default_save_file_extension;
-		
-		platform_open_file_dialog_block(args);
-	}
-	else
-	{
-		string_copyn(path_buf, search_result->export_path, MAX_INPUT_LENGTH);
-	}
+	struct open_dialog_args *args = mem_alloc(sizeof(struct open_dialog_args));
+	args->buffer = path_buf;
+	args->type = SAVE_FILE;
+	args->file_filter = SAVE_FILE_EXTENSION;
+	args->start_path = start_path;
+	args->default_save_file_extension = default_save_file_extension;
+	
+	platform_open_file_dialog_block(args);
 	
 	char tmp_dir_buffer[MAX_INPUT_LENGTH];
 	get_directory_from_path(tmp_dir_buffer, path_buf);
@@ -150,158 +123,103 @@ static void *export_result_d(void *arg)
 	if (string_equals(tmp_name_buffer, "")) return 0;
 	if (!platform_directory_exists(tmp_dir_buffer)) return 0;
 	
-	s32 size = matches.length * (MAX_INPUT_LENGTH*10);
-	char *buffer = mem_alloc(size);
-	memset(buffer, 0, size);
-	
-	char *file_extension = get_file_extension(path_buf);
-	if (string_equals(file_extension, ".json") || string_equals(file_extension, ""))
-	{
-		write_json_file(buffer, size, search_result);
-	}
-	
-	if (string_equals(file_extension, ""))
-	{
-		string_appendn(path_buf, ".json", MAX_INPUT_LENGTH);
-	}
-	
-	platform_write_file_content(path_buf, "w", buffer, size);
-	
+	string_copyn(project_path, path_buf, MAX_INPUT_LENGTH);
+	save_project_to_file(path_buf);
 	return 0;
 }
 
-bool export_results(search_result *search_result)
+void save_project()
 {
 	thread thr;
 	thr.valid = false;
 	
 	while (!thr.valid)
-		thr = thread_start(export_result_d, search_result);
+		thr = thread_start(save_project_d, 0);
 	
-	if (!search_result->is_command_line_search)
-		thread_detach(&thr);
-	else
-		thread_join(&thr);
-	
-	return true;
+	thread_detach(&thr);
 }
 
-static bool read_json_file(char *buffer, s32 size, search_result *search_result)
+static bool read_json_file(char *buffer, s32 size)
 {
 	cJSON *result = cJSON_Parse(buffer);
 	if (!result) return false;
 	
-	cJSON *search_directory = cJSON_GetObjectItemCaseSensitive(result, "search_directory");
-	string_copyn(textbox_path.buffer, search_directory->valuestring, MAX_INPUT_LENGTH);
-	string_copyn(search_result->directory_to_search, search_directory->valuestring, MAX_INPUT_LENGTH);
+	cJSON *nlid = cJSON_GetObjectItem(result, "next_language_id");
+	global_language_id = nlid->valueint;
 	
-	cJSON *filter = cJSON_GetObjectItemCaseSensitive(result, "filter");
-	string_copyn(textbox_file_filter.buffer, filter->valuestring, MAX_INPUT_LENGTH);
-	string_copyn(search_result->file_filter, filter->valuestring, MAX_INPUT_LENGTH);
-	
-	cJSON *search_query = cJSON_GetObjectItemCaseSensitive(result, "search_query");
-	string_copyn(textbox_search_text.buffer, search_query->valuestring, MAX_INPUT_LENGTH);
-	string_copyn(search_result->text_to_find, search_query->valuestring, MAX_INPUT_LENGTH);
-	
-	cJSON *duration_us = cJSON_GetObjectItemCaseSensitive(result, "duration_us");
-	search_result->find_duration_us = duration_us->valueint;
-	
-	cJSON *show_error = cJSON_GetObjectItemCaseSensitive(result, "show_error");
-	search_result->show_error_message = show_error->valueint;
-	
-	cJSON *file_match_found = cJSON_GetObjectItemCaseSensitive(result, "file_match_found");
-	search_result->found_file_matches = file_match_found->valueint;
-	
-	cJSON *files_searched = cJSON_GetObjectItemCaseSensitive(result, "files_searched");
-	search_result->files_searched = files_searched->valueint;
-	
-	cJSON *files_matched = cJSON_GetObjectItemCaseSensitive(result, "files_matched");
-	search_result->files_matched = files_matched->valueint;
-	
-	cJSON *query_match_found = cJSON_GetObjectItemCaseSensitive(result, "query_match_found");
-	search_result->match_found = query_match_found->valueint;
-	
-	cJSON *recursive = cJSON_GetObjectItemCaseSensitive(result, "recursive_search");
-	search_result->is_recursive = recursive->valueint;
-	checkbox_recursive.state = search_result->is_recursive;
-	
-	search_result->search_result_source_dir_len = strlen(search_result->directory_to_search);
-	
-	cJSON *file_list = cJSON_GetObjectItem(result, "match_list");
-	cJSON *file;
-	cJSON_ArrayForEach(file, file_list)
+	cJSON *language_list = cJSON_GetObjectItem(result, "languages");
+	cJSON *lang;
+	cJSON_ArrayForEach(lang, language_list)
 	{
-		file_match new_match;
+		language new_language;
 		
 		////
-		cJSON *path = cJSON_GetObjectItem(file, "path");
-		new_match.file.path = memory_bucket_reserve(&search_result->mem_bucket, strlen(path->valuestring)+1);
-		string_copyn(new_match.file.path, path->valuestring, strlen(path->valuestring)+1);
+		cJSON *langid = cJSON_GetObjectItem(lang, "id");
+		new_language.id = langid->valueint;
 		
 		////
-        cJSON *matched_filter = cJSON_GetObjectItem(file, "matched_filter");
-		new_match.file.matched_filter = memory_bucket_reserve(&search_result->mem_bucket, strlen(matched_filter->valuestring)+1);
-		string_copyn(new_match.file.matched_filter, matched_filter->valuestring, strlen(matched_filter->valuestring)+1);
+        cJSON *langname = cJSON_GetObjectItem(lang, "name");
+		new_language.name = mem_alloc(MAX_INPUT_LENGTH);
+		string_copyn(new_language.name, langname->valuestring, MAX_INPUT_LENGTH);
+		
+		array_push(&current_project->languages, &new_language);
+	}
+	
+	cJSON *term_list = cJSON_GetObjectItem(result, "terms");
+	cJSON *term_dat;
+	cJSON_ArrayForEach(term_dat, term_list)
+	{
+		term new_term;
 		
 		////
-		cJSON *word_offset = cJSON_GetObjectItem(file, "word_offset");
-		new_match.word_match_offset = word_offset->valueint;
+        cJSON *term_datname = cJSON_GetObjectItem(term_dat, "name");
+		new_term.name = mem_alloc(MAX_INPUT_LENGTH);
+		string_copyn(new_term.name, term_datname->valuestring, MAX_INPUT_LENGTH);
 		
-		////
-		cJSON *word_length = cJSON_GetObjectItem(file, "word_length");
-		new_match.word_match_length = word_length->valueint;
+		new_term.translations = array_create(sizeof(translation));
+		array_reserve(&new_term.translations, current_project->languages.length);
 		
-		////
-		cJSON *file_error = cJSON_GetObjectItem(file, "file_error");
-		new_match.file_error = file_error->valueint;
-		
-		////
-		cJSON *line_nr = cJSON_GetObjectItem(file, "line_nr");
-		new_match.line_nr = line_nr->valueint;
-		
-		////
-		cJSON *file_size = cJSON_GetObjectItem(file, "file_size");
-		new_match.file_size = file_size->valueint;
-		
-		////
-		cJSON *line_info = cJSON_GetObjectItem(file, "line_info");
-		if (cJSON_IsString(line_info))
+		cJSON *trans_list = cJSON_GetObjectItem(term_dat, "translations");
+		cJSON *trans_dat;
+		cJSON_ArrayForEach(trans_dat, trans_list)
 		{
-			new_match.line_info = memory_bucket_reserve(&search_result->mem_bucket, strlen(line_info->valuestring)+1);
-			string_copyn(new_match.line_info, line_info->valuestring, strlen(line_info->valuestring)+1);
-			search_result->match_found = true;
-		}
-		else
-		{
-			new_match.line_info = 0;
-		}
-		
-		// calculate highlight offsets
-		if (new_match.line_info)
-		{
-			new_match.word_match_offset_x = 
-				calculate_text_width_upto(font_mini, new_match.line_info, new_match.word_match_offset);
+			translation new_translation;
 			
-			new_match.word_match_width =
-				calculate_text_width_from_upto(font_mini, new_match.line_info, new_match.word_match_offset, new_match.word_match_offset + new_match.word_match_length);
+			////
+			cJSON *trans_datlanid = cJSON_GetObjectItem(trans_dat, "language_id");
+			new_translation.language_id = trans_datlanid->valueint;
+			
+			////
+			cJSON *trans_datname = cJSON_GetObjectItem(trans_dat, "value");
+			new_translation.value = mem_alloc(MAX_INPUT_LENGTH);
+			
+			if (cJSON_IsString(trans_datname))
+			{
+				new_translation.value = mem_alloc(MAX_INPUT_LENGTH);
+				string_copyn(new_translation.value, trans_datname->valuestring, MAX_INPUT_LENGTH);
+			}
+			else
+				new_translation.value = 0;
+			
+			array_push(&new_term.translations, &new_translation);
 		}
 		
-		array_push(&search_result->matches, &new_match);
+		array_push(&current_project->terms, &new_term);
 	}
 	
 	return true;
 }
 
-void import_results_from_file(char *path_buf)
+
+void load_project_from_file(char *path_buf)
 {
 	char *file_extension = get_file_extension(path_buf);
-	if (!string_equals(file_extension, ".json") && !string_equals(file_extension, ".xml") && !string_equals(file_extension, ".yaml"))
+	if (!string_equals(file_extension, ".json"))
 	{
 		platform_show_message(main_window, localize("invalid_search_result_file"), localize("error_importing_results"));
 		return;
 	}
 	
-	scroll_y = 0;
 	file_content content = platform_read_file_content(path_buf, "r");
 	
 	if (!content.content || content.file_error)
@@ -310,30 +228,12 @@ void import_results_from_file(char *path_buf)
 		return;
 	}
 	
-	search_result *new_result = create_empty_search_result();
-	search_result *old_result = current_search_result;
-	current_search_result = new_result;
-	
-	thread cleanup_thread = thread_start(destroy_search_result_thread, old_result);
-	thread_detach(&cleanup_thread);
-	
 	if (string_equals(file_extension, ".json"))
 	{
-		bool result = read_json_file(content.content, content.content_length, new_result);
+		bool result = read_json_file(content.content, content.content_length);
 		if (!result) goto failed_to_load_file;
 	}
-	else
-	{
-		goto failed_to_load_file;
-	}
 	
-	new_result->walking_file_system = false;
-	new_result->done_finding_matches = true;
-	new_result->done_finding_files = true;
-	
-	snprintf(global_status_bar.result_status_text, MAX_INPUT_LENGTH, localize("files_matches_comparison"), current_search_result->matches.length, current_search_result->files_searched, current_search_result->find_duration_us/1000.0);
-	
-	array_destroy(&new_result->files);
 	platform_destroy_file_content(&content);
 	return;
 	
@@ -342,7 +242,7 @@ void import_results_from_file(char *path_buf)
 	platform_destroy_file_content(&content);
 }
 
-static void* import_results_d(void *arg)
+static void* load_project_d(void *arg)
 {
 	char path_buf[MAX_INPUT_LENGTH];
 	path_buf[0] = 0;
@@ -356,7 +256,7 @@ static void* import_results_d(void *arg)
 	struct open_dialog_args *args = mem_alloc(sizeof(struct open_dialog_args));
 	args->buffer = path_buf;
 	args->type = OPEN_FILE;
-	args->file_filter = SEARCH_RESULT_FILE_EXTENSION;
+	args->file_filter = SAVE_FILE_EXTENSION;
 	args->start_path = start_path;
 	args->default_save_file_extension = default_save_file_extension;
 	
@@ -365,16 +265,17 @@ static void* import_results_d(void *arg)
 	if (string_equals(path_buf, "")) return 0;
 	if (!platform_file_exists(path_buf)) return 0;
 	
-	import_results_from_file(path_buf);
+	string_copyn(project_path, path_buf, MAX_INPUT_LENGTH);
+	load_project_from_file(path_buf);
 	return 0;
 }
 
-void import_results()
+void load_project()
 {
 	thread thr;
 	thr.valid = false;
 	
 	while (!thr.valid)
-		thr = thread_start(import_results_d, 0);
+		thr = thread_start(load_project_d, 0);
 	thread_detach(&thr);
 }
