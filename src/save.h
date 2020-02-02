@@ -9,9 +9,9 @@
 
 #define SAVE_FILE_EXTENSION "*.json"
 
-void load_project_from_file(char *path_buf);
+void load_project_from_folder(char *path_buf);
 void load_project();
-void save_project_to_file(char *path_buf);
+void save_project_to_folder(char *path_buf);
 void save_project();
 
 #endif

@@ -105,7 +105,7 @@ bool term_has_missing_translations(term *t)
 	for (s32 i = 0; i < t->translations.length; i++)
 	{
 		translation *tr = array_at(&t->translations, i);
-		if (!tr->value) return true;
+		if (string_equals(tr->value, "")) return true;
 	}
 	
 	return false;
@@ -184,7 +184,8 @@ void add_language_to_project(char *buffer)
 		term *t = array_at(&current_project->terms, x);
 		
 		translation new_t;
-		new_t.value = 0;
+		new_t.value = mem_alloc(MAX_INPUT_LENGTH);
+		string_copyn(new_t.value, "", MAX_INPUT_LENGTH);
 		new_t.language_id = l.id;
 		
 		array_push(&t->translations, &new_t);
@@ -297,7 +298,8 @@ s32 add_term_to_project()
 		language *l = array_at(&current_project->languages, i);
 		
 		translation tr;
-		tr.value = 0;
+		tr.value = mem_alloc(MAX_INPUT_LENGTH);
+		string_copyn(tr.value, "", MAX_INPUT_LENGTH);
 		tr.language_id = l->id;
 		array_push(&t.translations, &tr);
 	}
@@ -316,15 +318,7 @@ void save_term_changes()
 		translation *tr = array_at(&t->translations, i);
 		textbox_state *tb = &tb_translation_list[i];
 		
-		if (strlen(tb->buffer) || tr->value)
-		{
-			if (!tr->value)
-			{
-				tr->value = mem_alloc(MAX_INPUT_LENGTH);
-			}
-			
-			string_copyn(tr->value, tb->buffer, MAX_INPUT_LENGTH);
-		}
+		string_copyn(tr->value, tb->buffer, MAX_INPUT_LENGTH);
 	}
 }
 
@@ -352,8 +346,14 @@ void load_config(settings_config *config)
 	{
 		string_copyn(project_path, path, MAX_INPUT_LENGTH);
 		
-		start_new_project();
-		load_project_from_file(project_path);
+		if (platform_directory_exists(project_path))
+		{
+			load_project_from_folder(project_path);
+		}
+		else
+		{
+			string_copyn(project_path, "", MAX_INPUT_LENGTH);
+		}
 	}
 	
 	if (locale_id)
@@ -471,7 +471,6 @@ int main(int argc, char **argv)
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Load Project", "Ctrl + O")) 
 					{ 
-						start_new_project();
 						load_project();
 					}
 					// TODO(Aldrik): translate
@@ -480,17 +479,12 @@ int main(int argc, char **argv)
 						if (string_equals(project_path, ""))
 							save_project();
 						else
-							save_project_to_file(project_path);
+							save_project_to_folder(project_path);
 					}
 					// TODO(Aldrik): translate
 					if (ui_push_menu_item("Save Project As", "Ctrl + E"))  
 					{ 
 						save_project();
-					}
-					// TODO(Aldrik): translate
-					if (ui_push_menu_item("Export MO files", "Ctrl + X"))  
-					{ 
-						// TODO(Aldrik): export mo files
 					}
 					ui_push_menu_item_separator();
 					if (ui_push_menu_item(localize("quit"), "Ctrl + Q")) 
@@ -651,12 +645,12 @@ int main(int argc, char **argv)
 							
 							TEXTBOX_WIDTH = global_ui_context.layout.width - 130;
 							
-							if (!tr->value && !strlen(tb_translation_list[i].buffer))
+							if (!strlen(tb_translation_list[i].buffer))
 							{
 								ui_push_rect(10, MISSING_TRANSLATION_COLOR);
 							}
-							else if (tr->value && string_equals(tb_translation_list[i].buffer, 
-																tr->value))
+							else if (string_equals(tb_translation_list[i].buffer, 
+												   tr->value))
 							{
 								ui_push_rect(10, global_ui_context.style.background);
 							}
@@ -777,7 +771,6 @@ int main(int argc, char **argv)
 			
 			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_O))
 			{
-				start_new_project();
 				load_project();
 			}
 			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_S))
@@ -785,15 +778,11 @@ int main(int argc, char **argv)
 				if (string_equals(project_path, ""))
 					save_project();
 				else
-					save_project_to_file(project_path);
+					save_project_to_folder(project_path);
 			}
 			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_E))
 			{
 				save_project();
-			}
-			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_X))
-			{
-				// TODO(Aldrik): export mo files
 			}
 			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_Q))
 			{
