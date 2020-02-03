@@ -130,7 +130,6 @@ bool assets_queue_worker_load_font(font *font)
 		new_glyph.yoff = yoff;
 		
 		if (i == 'M') font->px_h = -yoff;
-		if (i == ' ') new_glyph.xoff = font->size/3;
 		
 		font->glyphs[i-TEXT_CHARSET_START] = new_glyph;
 	}

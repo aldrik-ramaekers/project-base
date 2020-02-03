@@ -13,6 +13,15 @@
 // TODO(Aldrik): language mo file name preview when entering name
 // TODO(Aldrik): option to mark languages with colors
 // TODO(Aldrik): change save icon
+// TODO(Aldrik): press tab to go to next translation textbox
+// TODO(Aldrik): scissor on textbox in scroll
+// TODO(Aldrik): delete file of language when deleting language
+// TODO(Aldrik): confirmation on deletion of term and language
+// TODO(Aldrik): creating a new term when term name textbox is selected doesnt overwrite new name
+// TODO(Aldrik): deleting the term selected doesnt select a valid term
+// TODO(Aldrik): reset textbox vertical scroll when new term is selected
+// TODO(Aldrik): ctrl+x to select+delete selection
+// TODO(Aldrik): ctrl+del to delete up to space char
 
 s32 global_language_id = 1;
 char project_path[MAX_INPUT_LENGTH];
@@ -122,7 +131,7 @@ s32 get_translated_count_for_language(s32 language_id)
 		{
 			translation *tr = array_at(&t->translations, x);
 			
-			if (tr->language_id == language_id && tr->value) 
+			if (tr->language_id == language_id && !string_equals(tr->value, "")) 
 			{
 				count++;
 				break;
@@ -203,8 +212,7 @@ void set_term_name(s32 index, char *name)
 	}
 	else
 	{
-		// TODO(Aldrik): translate
-		platform_show_message(main_window, "Term name cannot be empty", "Invalid input");
+		platform_show_message(main_window, localize("term_name_cannot_be_empty"), localize("invalid_input"));
 	}
 }
 
@@ -471,21 +479,18 @@ int main(int argc, char **argv)
 			{
 				if (ui_push_menu(localize("file")))
 				{
-					// TODO(Aldrik): translate
-					if (ui_push_menu_item("Load Project", "Ctrl + O")) 
+					if (ui_push_menu_item(localize("load_project"), "Ctrl + O")) 
 					{ 
 						load_project();
 					}
-					// TODO(Aldrik): translate
-					if (ui_push_menu_item("Save Project", "Ctrl + S")) 
+					if (ui_push_menu_item(localize("save_project"), "Ctrl + S")) 
 					{ 
 						if (string_equals(project_path, ""))
 							save_project();
 						else
 							save_project_to_folder(project_path);
 					}
-					// TODO(Aldrik): translate
-					if (ui_push_menu_item("Save Project As", "Ctrl + E"))  
+					if (ui_push_menu_item(localize("save_project_as"), "Ctrl + E"))  
 					{ 
 						save_project();
 					}
@@ -512,8 +517,7 @@ int main(int argc, char **argv)
 						current_project->selected_term_index = -1;
 					}
 					
-					// TODO(Aldrik): translate
-					ui_push_textf_width(font_medium, "Terms", global_ui_context.layout.width-150);
+					ui_push_textf_width(font_medium, localize("terms"), global_ui_context.layout.width-150);
 					
 					if (ui_push_button_image(&btn_summary, "", add_img))
 					{
@@ -527,9 +531,8 @@ int main(int argc, char **argv)
 				
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
-					// TODO(Aldrik): translate
 					TEXTBOX_WIDTH = 280;
-					ui_push_textbox(&tb_filter, "Filter terms..");
+					ui_push_textbox(&tb_filter, localize("filter_terms"));
 				}
 				ui_block_end();
 				
@@ -587,8 +590,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				// TODO(Aldrik): translate
-				if (ui_push_button(&btn_new_project, "Create new project"))
+				if (ui_push_button(&btn_new_project, localize("create_new_project")))
 				{
 					start_new_project();
 				}
@@ -618,8 +620,7 @@ int main(int argc, char **argv)
 					else
 						ui_push_rect(10, UNSAVED_CHANGES_COLOR);
 					
-					// TODO(Aldrik): localize
-					ui_push_textbox(&tb_new_term, "Term name");
+					ui_push_textbox(&tb_new_term, localize("term_name"));
 					
 					if (ui_push_button_image(&btn_set_term_name, "", set_img))
 					{
@@ -637,8 +638,7 @@ int main(int argc, char **argv)
 				{
 					if (!current_project->languages.length)
 					{
-						// TODO(Aldrik): localize
-						ui_push_text("No languages added to project yet.");
+						ui_push_text(localize("no_languages_added"));
 					}
 					else
 					{
@@ -679,11 +679,10 @@ int main(int argc, char **argv)
 				// overview
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
-					// TODO(Aldrik): translate
-					ui_push_textf_width(font_medium, "Overview", 100);
+					ui_push_textf_width(font_medium, localize("overview"), 100);
 					
 					char info_text[60];
-					sprintf(info_text, "%d terms, %d languages", current_project->terms.length, current_project->languages.length);
+					sprintf(info_text, localize("info_text"), current_project->terms.length, current_project->languages.length);
 					
 					color c = global_ui_context.style.foreground;
 					global_ui_context.style.foreground = rgb(110,110,110);
@@ -696,9 +695,8 @@ int main(int argc, char **argv)
 				
 				ui_block_begin(LAYOUT_HORIZONTAL);
 				{
-					// TODO(Aldrik): translate
 					bool selected = tb_new_language.state;
-					ui_push_textbox(&tb_new_language, "Add language");
+					ui_push_textbox(&tb_new_language, localize("add_language"));
 					
 					if (keyboard_is_key_pressed(&keyboard, KEY_ENTER) && selected)
 					{
@@ -708,8 +706,7 @@ int main(int argc, char **argv)
 						tb_new_language.state = true;
 					}
 					
-					// TODO(Aldrik): translate
-					if (ui_push_button(&btn_new_language, "Add"))
+					if (ui_push_button(&btn_new_language, localize("add")))
 					{
 						add_language_to_project(tb_new_language.buffer);
 						ui_set_textbox_text(&tb_new_language, "");
@@ -743,7 +740,7 @@ int main(int argc, char **argv)
 						global_ui_context.style.foreground = rgb(110,110,110);
 						
 						char stats[50];
-						sprintf(stats, "%d/%d translated", get_translated_count_for_language(l->id), current_project->terms.length);
+						sprintf(stats, localize("translated_stats"), get_translated_count_for_language(l->id), current_project->terms.length);
 						ui_push_text(stats);
 						
 						global_ui_context.style.foreground = c;
@@ -761,15 +758,15 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				render_text(font_medium, 330, 50, "Create a new project", global_ui_context.style.foreground);
+				render_text(font_medium, 330, 50, localize("create_a_new_project"), global_ui_context.style.foreground);
 				render_text_cutoff(font_small, 330, 70,
-								   "There is no project loaded yet, you can start a\nnew translation project on the left.", global_ui_context.style.foreground, 400);
+								   localize("no_project_loaded_info"), global_ui_context.style.foreground, 400);
 				
 				render_rectangle(330, 200, 10, 25, UNSAVED_CHANGES_COLOR);
-				render_text(font_small, 350, 208, "Unsaved changes", global_ui_context.style.foreground);
+				render_text(font_small, 350, 208, localize("unsaved_changes"), global_ui_context.style.foreground);
 				
 				render_rectangle(330, 240, 10, 25, MISSING_TRANSLATION_COLOR);
-				render_text(font_small, 350, 248, "Missing translation", global_ui_context.style.foreground);
+				render_text(font_small, 350, 248, localize("missing_translation"), global_ui_context.style.foreground);
 			}
 			
 			if (keyboard_is_key_down(&keyboard, KEY_LEFT_CONTROL) && keyboard_is_key_pressed(&keyboard, KEY_O))

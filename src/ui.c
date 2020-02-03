@@ -1022,7 +1022,7 @@ void ui_push_textf_width(font *f, char *text, s32 maxw)
 	s32 text_y = y + (BLOCK_HEIGHT/2) - (f->px_h/2) + spacing_y;
 	s32 total_w = maxw +
 		WIDGET_PADDING + WIDGET_PADDING;
-	
+	maxw -= (WIDGET_PADDING*2);
 	if (global_ui_context.layout.block_height < f->px_h)
 		global_ui_context.layout.block_height = f->px_h+5;
 	
@@ -1097,7 +1097,7 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 	
 	if (global_ui_context.layout.block_height < global_ui_context.font_small->px_h)
 		global_ui_context.layout.block_height = global_ui_context.font_small->px_h+5;
-	
+	maxw -= (WIDGET_PADDING*2);
 	if (active)
 	{
 		bool hovered = false;

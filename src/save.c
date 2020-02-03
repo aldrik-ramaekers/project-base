@@ -16,7 +16,7 @@ s32 write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 	
 	mo_header header;
 	header.magic_number = 0x950412de;
-	header.file_format_revision = 1;
+	header.file_format_revision = 0;
 	header.number_of_strings = current_project->terms.length;
 	header.identifier_table_offset = 0x40; // keep empty bytes (0x2-0x4) for format changes
 	header.translation_table_offset = header.identifier_table_offset + identifier_table_size;
@@ -166,8 +166,7 @@ bool read_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 	}
 	else if (current_project->terms.length != header.number_of_strings)
 	{
-		// TODO(Aldrik): localize
-		platform_show_message(main_window, "Warning", "File is missing terms");
+		platform_show_message(main_window, localize("warning"), localize("file_is_missing_terms"));
 	}
 	
 	for (s32 i = 0; i < current_project->terms.length; i++)
@@ -189,8 +188,7 @@ void load_project_from_folder(char *path_buf)
 {
 	if (!platform_directory_exists(path_buf))
 	{
-		// TODO(Aldrik): localize
-		platform_show_message(main_window, "Error loading project", "Project directory does not exist");
+		platform_show_message(main_window, localize("error_loading_project"), localize("project_directory_does_not_exist"));
 		return;
 	}
 	
