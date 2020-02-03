@@ -5,6 +5,7 @@
 */
 
 void start_new_project();
+s32 add_language_to_project(char *buffer);
 
 s32 write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 {
@@ -143,8 +144,43 @@ void save_project()
 	thread_detach(&thr);
 }
 
-bool read_mo_file(char *buffer, s32 buffer_size)
+bool read_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 {
+	mo_header header = *((mo_header*)buffer);
+	
+	mo_entry *identifiers = (mo_entry*)(buffer + header.identifier_table_offset);
+	mo_entry *translations = (mo_entry*)(buffer + header.translation_table_offset);
+	
+	if (current_project->terms.length == 0)
+	{
+		for (s32 i = 0; i < header.number_of_strings; i++)
+		{
+			term t;
+			t.name = mem_alloc(MAX_TERM_NAME_LENGTH);
+			t.translations = array_create(sizeof(translation));
+			array_reserve(&t.translations, current_project->languages.length);
+			
+			string_copyn(t.name, buffer+identifiers[i].offset, MAX_INPUT_LENGTH);
+			array_push(&current_project->terms, &t);
+		}
+	}
+	else if (current_project->terms.length != header.number_of_strings)
+	{
+		// TODO(Aldrik): localize
+		platform_show_message(main_window, "Warning", "File is missing terms");
+	}
+	
+	for (s32 i = 0; i < current_project->terms.length; i++)
+	{
+		term *t = array_at(&current_project->terms, i);
+		
+		translation tr;
+		tr.value = mem_alloc(MAX_INPUT_LENGTH);
+		string_copyn(tr.value, buffer+translations[i].offset, MAX_INPUT_LENGTH);
+		tr.language_id = language_id;
+		array_push(&t->translations, &tr);
+	}
+	
 	return true;
 }
 
@@ -160,15 +196,53 @@ void load_project_from_folder(char *path_buf)
 	
 	start_new_project();
 	
-#if 0
-	// foreach file in path_buf
-	file_content content = platform_read_file_content(path_buf, "rb");
-	if (!content.content || content.file_error)
-	{
-		platform_destroy_file_content(&content);
-		return;
-	}
+	array files = array_create(sizeof(found_file));
+	array filters = get_filters("*.mo");
+	
+	bool is_cancelled = false;
+	
+	char total_path[MAX_INPUT_LENGTH];
+	total_path[0] = 0;
+	string_copyn(total_path, path_buf, MAX_INPUT_LENGTH);
+	
+#ifdef OS_WIN
+	string_appendn(total_path, "\\", MAX_INPUT_LENGTH);
 #endif
+#ifdef OS_LINUX
+	string_appendn(total_path, "/", MAX_INPUT_LENGTH);
+#endif
+	
+	platform_list_files_block(&files, total_path, filters, false, 0, false, &is_cancelled);
+	for (s32 i = 0; i < files.length; i++)
+	{
+		found_file *file = array_at(&files, i);
+		
+		file_content content = platform_read_file_content(file->path, "rb");
+		if (content.content && !content.file_error)
+		{
+			char name[MAX_INPUT_LENGTH];
+			get_name_from_path(name, file->path);
+			name[strlen(name)-3] = 0; // remove .mo extension
+			
+			language l;
+			l.name = mem_alloc(MAX_INPUT_LENGTH);
+			string_copyn(l.name, name, MAX_INPUT_LENGTH);
+			l.id = global_language_id++;
+			array_push(&current_project->languages, &l);
+			
+			read_mo_file(content.content, content.content_length, l.id);
+		}
+		platform_destroy_file_content(&content);
+	}
+	array_destroy(&filters);
+	
+	for (s32 i = 0; i < files.length; i++)
+	{
+		found_file *match = array_at(&files, i);
+		mem_free(match->matched_filter);
+		mem_free(match->path);
+	}
+	array_destroy(&files);
 }
 
 static void* load_project_d(void *arg)

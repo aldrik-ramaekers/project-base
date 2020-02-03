@@ -24,8 +24,7 @@ mo_file load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *
 		mo_entry *identifiers = (mo_entry*)(buffer + mo.header.identifier_table_offset);
 		mo_entry *translations = (mo_entry*)(buffer + mo.header.translation_table_offset);
 		
-		// skip first one because this is file information
-		for (s32 i = 1; i < mo.header.number_of_strings; i++)
+		for (s32 i = 0; i < mo.header.number_of_strings; i++)
 		{
 			mo_entry *entry = &identifiers[i];
 			mo_entry *trans = &translations[i];

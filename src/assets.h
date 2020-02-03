@@ -16,7 +16,7 @@
 #endif
 
 #ifndef ASSET_QUEUE_COUNT
-#define ASSET_QUEUE_COUNT 10
+#define ASSET_QUEUE_COUNT 20
 #endif
 
 // binary blobs

@@ -161,13 +161,13 @@ language* get_language_by_id(s32 language_id)
 	return 0;
 }
 
-void add_language_to_project(char *buffer)
+s32 add_language_to_project(char *buffer)
 {
 	if (string_equals(buffer, ""))
 	{
 		// TODO(Aldrik): localize
 		platform_show_message(main_window, "Language name cannot be empty", "Invalid info");
-		return;
+		return -1;
 	}
 	
 	char *val = mem_alloc(MAX_INPUT_LENGTH);
@@ -190,6 +190,8 @@ void add_language_to_project(char *buffer)
 		
 		array_push(&t->translations, &new_t);
 	}
+	
+	return l.id;
 }
 
 void set_term_name(s32 index, char *name)
@@ -324,6 +326,7 @@ void save_term_changes()
 
 void start_new_project()
 {
+	global_language_id = 1;
 	current_project = mem_alloc(sizeof(translation_project));
 	
 	current_project->terms = array_create(sizeof(term));

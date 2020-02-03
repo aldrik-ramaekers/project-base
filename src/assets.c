@@ -131,7 +131,6 @@ bool assets_queue_worker_load_font(font *font)
 		
 		if (i == 'M') font->px_h = -yoff;
 		if (i == ' ') new_glyph.xoff = font->size/3;
-		if (i == 'g') new_glyph.xoff += 1; // stupid font or stupid me?
 		
 		font->glyphs[i-TEXT_CHARSET_START] = new_glyph;
 	}
