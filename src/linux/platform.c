@@ -196,7 +196,8 @@ bool platform_write_file_content(char *path, const char *mode, char *buffer, s32
 	}
 	else
 	{
-		fprintf(file, "%s", buffer);
+		fwrite(buffer, 1, len, file); // TODO(Aldrik): is this correct?
+		//fprintf(file, "%s", buffer);
 	}
 	
 	//done:

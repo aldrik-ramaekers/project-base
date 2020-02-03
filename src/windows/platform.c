@@ -854,7 +854,8 @@ bool platform_write_file_content(char *path, const char *mode, char *buffer, s32
 	}
 	else
 	{
-		fprintf(file, buffer);
+		fwrite(buffer, 1, len, file);
+		//fprintf(file, buffer);
 	}
 	
 	//done:

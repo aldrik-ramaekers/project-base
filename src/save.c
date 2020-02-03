@@ -6,14 +6,16 @@
 
 void start_new_project();
 
-void write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
+s32 write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 {
 	s32 identifier_table_size = current_project->terms.length * 8;
 	s32 translation_table_size = current_project->terms.length * 8;
 	
+	s32 size_written = 0;
+	
 	mo_header header;
 	header.magic_number = 0x950412de;
-	header.file_format_revision = 0;
+	header.file_format_revision = 1;
 	header.number_of_strings = current_project->terms.length;
 	header.identifier_table_offset = 0x40; // keep empty bytes (0x2-0x4) for format changes
 	header.translation_table_offset = header.identifier_table_offset + identifier_table_size;
@@ -34,7 +36,6 @@ void write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 		
 		memcpy(buffer+current_data_write_offset, t->name, new_identifier_entry.length);
 		current_data_write_offset += new_identifier_entry.length+1;
-		
 		identifier_table[i] = new_identifier_entry;
 	}
 	
@@ -57,13 +58,17 @@ void write_mo_file(char *buffer, s32 buffer_size, s32 language_id)
 				
 				memcpy(buffer+current_data_write_offset, tr->value, new_translation_entry.length);
 				current_data_write_offset += new_translation_entry.length+1;
+				break;
 			}
 		}
 		
 		translation_table[i] = new_translation_entry;
 	}
 	
+	size_written = current_data_write_offset;
+	
 	memcpy(buffer, &header, sizeof(mo_header));
+	return size_written;
 }
 
 void save_project_to_folder(char *path_buf)
@@ -77,7 +82,7 @@ void save_project_to_folder(char *path_buf)
 		char *buffer = mem_alloc(size);
 		memset(buffer, 0, size);
 		
-		write_mo_file(buffer, size, lang->id);
+		s32 size_written = write_mo_file(buffer, size, lang->id);
 		
 		char complete_path_buf[MAX_INPUT_LENGTH];
 #ifdef OS_WIN
@@ -87,7 +92,7 @@ void save_project_to_folder(char *path_buf)
 		sprintf(complete_path_buf, "%s/%s.mo", path_buf, lang->name);
 #endif
 		
-		platform_write_file_content(complete_path_buf, "wb", buffer, size);
+		platform_write_file_content(complete_path_buf, "wb", buffer, size_written);
 		mem_free(buffer);
 	}
 }
