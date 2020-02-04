@@ -88,6 +88,11 @@ inline scroll_state ui_create_scroll(s32 scroll)
 
 void ui_set_textbox_text(textbox_state *textbox, char *text)
 {
+	if (global_ui_context.current_active_textbox == textbox)
+	{
+		keyboard_set_input_text(global_ui_context.keyboard, text);
+	}
+	
 	string_copyn(textbox->buffer, text, textbox->max_len);
 }
 
@@ -522,7 +527,7 @@ static void ui_set_active_textbox(textbox_state *state)
 	global_ui_context.current_active_textbox = state;
 }
 
-void set_active_textbox(textbox_state *textbox)
+void ui_set_textbox_active(textbox_state *textbox)
 {
 	ui_set_active_textbox(textbox);
 	keyboard_set_input_text(global_ui_context.keyboard, textbox->buffer);

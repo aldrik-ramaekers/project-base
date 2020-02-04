@@ -145,16 +145,6 @@ typedef struct t_ui_context
 	bool item_hovered;
 } ui_context;
 
-///// our global ui states ////
-checkbox_state checkbox_recursive;
-textbox_state textbox_search_text;
-textbox_state textbox_path;
-textbox_state textbox_file_filter;
-button_state button_select_directory;
-button_state button_find_text;
-button_state button_cancel;
-///////////////////////////////
-
 ui_context global_ui_context;
 
 u32 ui_get_id();
@@ -169,6 +159,7 @@ char* name_of_month(s32 month);
 void ui_set_style(u16 style);
 void set_active_textbox(textbox_state *textbox);
 void ui_set_textbox_text(textbox_state *textbox, char *text);
+void ui_set_textbox_active(textbox_state *textbox);
 
 // widget initialization
 checkbox_state ui_create_checkbox(bool selected);

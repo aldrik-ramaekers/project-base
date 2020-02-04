@@ -1,7 +1,0 @@
-bin/
-release/
-art/
-project.4coder
-src/.gitignore
-generate-graph.sh
-download-translations.sh
