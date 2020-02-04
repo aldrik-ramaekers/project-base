@@ -28,6 +28,8 @@ typedef struct t_glyph
 {
 	s32 width;
 	s32 height;
+	s32 advance;
+	s32 lsb;
 	s32 xoff;
 	s32 yoff;
 	void *bitmap;

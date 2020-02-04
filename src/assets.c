@@ -129,6 +129,10 @@ bool assets_queue_worker_load_font(font *font)
 		new_glyph.xoff = xoff;
 		new_glyph.yoff = yoff;
 		
+		stbtt_GetCodepointHMetrics(&info, i, &new_glyph.advance, &new_glyph.lsb);
+		new_glyph.advance *= scale;
+		new_glyph.lsb *= scale;
+		
 		if (i == 'M') font->px_h = -yoff;
 		
 		font->glyphs[i-TEXT_CHARSET_START] = new_glyph;

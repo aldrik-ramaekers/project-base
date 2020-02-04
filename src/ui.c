@@ -675,10 +675,6 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	}
 	
 	s32 cursor_text_w;
-	s32 cursor_x = 0;
-	
-	//if (!global_ui_context.keyboard->has_selection)
-	//state->diff = 0;
 	
 	// select first character on click
 	if (clicked_to_set_cursor)
@@ -780,10 +776,9 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		
 		s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
 		
-		cursor_x = text_x + cursor_text_w - state->diff;
-		
+#if 1
 		// change offset after cursor position change
-		if (!is_selecting && !global_ui_context.keyboard->has_selection)
+		if (!is_selecting && !global_ui_context.keyboard->has_selection && !state->attempting_to_select)
 		{
 			if (cursor_text_w < state->diff)
 			{
@@ -794,6 +789,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 				state->diff = (cursor_text_w) - (TEXTBOX_WIDTH - 10);
 			}
 		}
+#endif
 		
 		// make sure offset is recalculated when text changes or a portion of text is changed so the textbox doesnt end up half empty
 #if 1
@@ -839,24 +835,25 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	}
 	
 	
+#if 1
 	if (is_selecting)
 	{
 		// move text offset x when selecting so we can select more text than available on screen.
-		if (global_ui_context.mouse->x < x + 10)
+		if (global_ui_context.mouse->x < x + 20)
 		{
 			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
-			if (text_w > TEXTBOX_WIDTH-10)
+			if (text_w > TEXTBOX_WIDTH-20)
 			{
 				state->diff -= TEXTBOX_SCROLL_X_SPEED;
 				if (state->diff < 0) state->diff = 0;
 			}
 		}
-		if (global_ui_context.mouse->x > x + TEXTBOX_WIDTH - 10)
+		if (global_ui_context.mouse->x > x + TEXTBOX_WIDTH - 25)
 		{
 			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
-			s32 diff = text_w - TEXTBOX_WIDTH + 10;
+			s32 diff = text_w - TEXTBOX_WIDTH + 25;
 			
-			if (text_w > TEXTBOX_WIDTH-10)
+			if (text_w > TEXTBOX_WIDTH-25)
 			{
 				state->diff += TEXTBOX_SCROLL_X_SPEED;
 				if (state->diff > diff)
@@ -865,6 +862,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		}
 		///////////////////////////////////////////////////////////
 	}
+#endif
 	
 	// change selection area based on cursor position.
 	// if double clicked to select the entire textbox we should only 
@@ -894,44 +892,6 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			state->double_clicked_to_select = false;
 		}
 	}
-	
-	// render cursor
-	if (state->state)
-	{
-		last_cursor_pos = global_ui_context.keyboard->cursor;
-		
-		s32 cursor_y = y + 4;
-		s32 cursor_h = TEXTBOX_HEIGHT - 8;
-		s32 cursor_w = 2;
-		
-		if (cursor_tick % 40 < 20 && !global_ui_context.keyboard->has_selection)
-			render_rectangle(cursor_x, cursor_y, cursor_w, cursor_h, global_ui_context.style.textbox_foreground);
-	}
-	
-	
-	// render selection area
-	if (global_ui_context.keyboard->has_selection && state->state)
-	{
-		char tmp_buffer[MAX_INPUT_LENGTH];
-		utf8_str_copy_upto(state->buffer,
-						   global_ui_context.keyboard->selection_begin_offset,
-						   tmp_buffer);
-		
-		s32 selection_start_x = calculate_text_width(global_ui_context.font_small, 
-													 tmp_buffer);
-		
-		utf8_str_copy_upto(
-			utf8_str_upto(
-			state->buffer,
-			global_ui_context.keyboard->selection_begin_offset),
-			global_ui_context.keyboard->selection_length,
-			tmp_buffer);
-		
-		s32 selection_width = calculate_text_width(global_ui_context.font_small, 
-												   tmp_buffer);
-		
-		render_rectangle(text_x - state->diff + selection_start_x, y+4, selection_width, TEXTBOX_HEIGHT-8, global_ui_context.style.textbox_active_border);
-	}
 #endif
 	
 	if (!has_text)
@@ -941,8 +901,19 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	}
 	else
 	{
-		render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
-					state->buffer, global_ui_context.style.foreground);
+		s32 www;
+		last_cursor_pos = global_ui_context.keyboard->cursor;
+		
+		if (global_ui_context.keyboard->has_selection && state->state && global_ui_context.keyboard->selection_length)
+			render_text_with_selection(global_ui_context.font_small, text_x - state->diff, text_y, 
+									   state->buffer, global_ui_context.style.foreground, global_ui_context.keyboard->selection_begin_offset,
+									   global_ui_context.keyboard->selection_length);
+		else if (state->state)
+			render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
+									state->buffer, global_ui_context.style.foreground, global_ui_context.keyboard->cursor);
+		else
+			render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
+						state->buffer, global_ui_context.style.foreground);
 	}
 	
 	ui_pop_scissor();

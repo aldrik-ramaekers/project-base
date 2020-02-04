@@ -39,6 +39,7 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint);
 s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color tint);
 s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cutoff_width);
 s32 render_text_vertical(font *font, s32 x, s32 y, char *text, color tint);
+s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s32 cursor_pos);
 
 s32 calculate_cursor_position(font *font, char *text, s32 click_x);
 s32 calculate_text_width(font *font, char *text);

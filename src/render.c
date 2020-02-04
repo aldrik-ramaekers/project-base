@@ -88,11 +88,8 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		
 		s32 width = g.width;
 		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		s32 y_ = y + font->px_h + g.yoff;
-		s32 x_to_render = x_ + (lsb*font->scale);
+		s32 x_to_render = x_ + (g.lsb);
 		
 		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
 		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
@@ -102,8 +99,8 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		glEnd();
 		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x_ += (advance*font->scale)+(kern*font->scale);
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x_ += (g.advance);
 		
 		if (!in_ellipse && (x_-x) > maxw-(font->glyphs['.'].width*3))
 		{
@@ -115,6 +112,122 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 	glDisable(GL_TEXTURE_2D);
 	
 	return maxw;
+}
+
+s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint, s32 selection_start, s32 selection_length)
+{
+	if (!font->loaded)
+		return 0;
+	
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	
+	s32 x_ = x;
+	utf8_int32_t ch;
+	s32 index = 0;
+	s32 selection_start_x = x_;
+	s32 selection_end_x = x_;
+	while((text = utf8codepoint(text, &ch)) && ch)
+	{
+		if (ch == 9) ch = 32;
+		utf8_int32_t ch_next;
+		utf8codepoint(text, &ch_next);
+		if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END) 
+		{
+			ch = 0x3f;
+		}
+		
+		glyph g = font->glyphs[ch];
+		
+		glBindTexture(GL_TEXTURE_2D, g.textureID);
+		glBegin(GL_QUADS);
+		
+		s32 width = g.width;
+		
+		s32 y_ = y + font->px_h + g.yoff;
+		s32 x_to_render = x_ + (g.lsb);
+		
+		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+		
+		glEnd();
+		
+		/* add kerning */
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x_ += (g.advance);
+		
+		index++;
+		if (index == selection_start)
+		{
+			selection_start_x = x_;
+		}
+		if (index == selection_start+selection_length)
+		{
+			selection_end_x = x_;
+		}
+	}
+	
+	glDisable(GL_TEXTURE_2D);
+	
+	render_rectangle(selection_start_x, y-3, selection_end_x-selection_start_x, TEXTBOX_HEIGHT - 10, rgba(66, 134, 244, 120));
+	
+	return x_ - x;
+}
+
+s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s32 cursor_pos)
+{
+	if (!font->loaded)
+		return 0;
+	
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	
+	float x_ = x;
+	utf8_int32_t ch;
+	s32 index = 0;
+	s32 cursor_x = x_;
+	while((text = utf8codepoint(text, &ch)) && ch)
+	{
+		if (ch == 9) ch = 32;
+		utf8_int32_t ch_next;
+		utf8codepoint(text, &ch_next);
+		if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END) 
+		{
+			ch = 0x3f;
+		}
+		
+		glyph g = font->glyphs[ch];
+		
+		glBindTexture(GL_TEXTURE_2D, g.textureID);
+		glBegin(GL_QUADS);
+		
+		s32 y_ = y + font->px_h + g.yoff;
+		s32 x_to_render = x_ + (g.lsb);
+		
+		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+		
+		glEnd();
+		
+		/* add kerning */
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x_ += (g.advance);
+		index++;
+		
+		if (index == cursor_pos)
+		{
+			cursor_x = x_;
+		}
+	}
+	glDisable(GL_TEXTURE_2D);
+	
+	render_rectangle(cursor_x, y-3, 2, TEXTBOX_HEIGHT - 10, global_ui_context.style.textbox_foreground);
+	
+	return x_ - x;
 }
 
 s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
@@ -142,13 +255,8 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		glBindTexture(GL_TEXTURE_2D, g.textureID);
 		glBegin(GL_QUADS);
 		
-		s32 width = g.width;
-		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		s32 y_ = y + font->px_h + g.yoff;
-		s32 x_to_render = x_ + (lsb*font->scale);
+		s32 x_to_render = x_ + (g.lsb);
 		
 		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
 		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
@@ -158,8 +266,8 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		glEnd();
 		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x_ += (advance*font->scale)+(kern*font->scale);
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x_ += (g.advance);
 	}
 	
 	glDisable(GL_TEXTURE_2D);
@@ -213,13 +321,8 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		glBindTexture(GL_TEXTURE_2D, g.textureID);
 		glBegin(GL_QUADS);
 		
-		s32 width = g.width;
-		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		s32 y__ = y_ + font->px_h + g.yoff;
-		s32 x_to_render = x_ + (lsb*font->scale);
+		s32 x_to_render = x_ + (g.lsb);
 		
 		glTexCoord2i(0, 0); glVertex3i(x_to_render,y__, render_depth);
 		glTexCoord2i(0, 1); glVertex3i(x_to_render,y__+g.height, render_depth);
@@ -229,8 +332,8 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		glEnd();
 		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x_ += (advance*font->scale)+(kern*font->scale);
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x_ += (g.advance);
 		
 		if (x_ > x+cutoff_width)
 		{
@@ -271,13 +374,9 @@ s32 calculate_cursor_position(font *font, char *text, s32 click_x)
 		s32 width_next = font->glyphs[ch_next].width;
 		
 		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x += (advance*font->scale)+(kern*font->scale);
-		
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x += (g.advance);
 		if (x - (width_next/5) > click_x)
 		{
 			return index;
@@ -314,12 +413,9 @@ s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index)
 		
 		if (i >= from)
 		{
-			int advance, lsb, kern;
-			stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-			
 			/* add kerning */
-			kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-			x += (advance*font->scale)+(kern*font->scale);
+			//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+			x += (g.advance);
 		}
 		
 		i++;
@@ -351,12 +447,9 @@ s32 calculate_text_width_upto(font *font, char *text, s32 index)
 		glyph g = font->glyphs[ch];
 		s32 width = g.width;
 		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x += (advance*font->scale)+(kern*font->scale);
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x += (g.advance);
 		
 		i++;
 	}
@@ -369,7 +462,7 @@ s32 calculate_text_width(font *font, char *text)
 	if (!font->loaded)
 		return 0;
 	
-	s32 x = 0;
+	float x = 0;
 	utf8_int32_t ch;
 	while((text = utf8codepoint(text, &ch)) && ch)
 	{
@@ -384,12 +477,9 @@ s32 calculate_text_width(font *font, char *text)
 		glyph g = font->glyphs[ch];
 		s32 width = g.width;
 		
-		int advance, lsb, kern;
-		stbtt_GetCodepointHMetrics(&font->info, ch, &advance, &lsb);
-		
 		/* add kerning */
-		kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
-		x += (advance*font->scale)+(kern*font->scale);
+		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
+		x += (g.advance);
 	}
 	
 	return x;
