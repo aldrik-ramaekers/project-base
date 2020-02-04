@@ -285,7 +285,7 @@ void platform_create_config_directory()
 	char tmp[PATH_MAX];
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, tmp)))
 	{
-		string_appendn(tmp, "/moedit", PATH_MAX);
+		string_appendn(tmp, CONFIG_DIRECTORY, PATH_MAX);
 	}
 	
 	
@@ -299,7 +299,7 @@ char* get_config_save_location(char *buffer)
 {
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, buffer)))
 	{
-		string_appendn(buffer, "\\moedit\\config.txt", MAX_INPUT_LENGTH);
+		string_appendn(buffer, CONFIG_DIRECTORY"\\config.txt", MAX_INPUT_LENGTH);
 		return buffer;
 	}
 	
