@@ -7,52 +7,6 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
-#ifndef ASSET_IMAGE_COUNT
-#define ASSET_IMAGE_COUNT 10
-#endif
-
-#ifndef ASSET_FONT_COUNT
-#define ASSET_FONT_COUNT 10
-#endif
-
-#ifndef ASSET_QUEUE_COUNT
-#define ASSET_QUEUE_COUNT 20
-#endif
-
-// binary blobs
-extern u8 _binary____data_imgs_en_png_start[];
-extern u8 _binary____data_imgs_en_png_end[];
-
-extern u8 _binary____data_imgs_nl_png_start[];
-extern u8 _binary____data_imgs_nl_png_end[];
-
-extern u8 _binary____data_imgs_logo_64_png_start[];
-extern u8 _binary____data_imgs_logo_64_png_end[];
-
-extern u8 _binary____data_fonts_mono_ttf_start[];
-extern u8 _binary____data_fonts_mono_ttf_end[];
-
-extern u8 _binary____data_translations_en_English_mo_start[];
-extern u8 _binary____data_translations_en_English_mo_end[];
-
-extern u8 _binary____data_translations_nl_Dutch_mo_start[];
-extern u8 _binary____data_translations_nl_Dutch_mo_end[];
-
-extern u8 _binary____data_imgs_list_png_start[];
-extern u8 _binary____data_imgs_list_png_end[];
-
-extern u8 _binary____data_imgs_delete_png_start[];
-extern u8 _binary____data_imgs_delete_png_end[];
-
-extern u8 _binary____data_imgs_exclaim_png_start[];
-extern u8 _binary____data_imgs_exclaim_png_end[];
-
-extern u8 _binary____data_imgs_add_png_start[];
-extern u8 _binary____data_imgs_add_png_end[];
-
-extern u8 _binary____data_imgs_set_png_start[];
-extern u8 _binary____data_imgs_set_png_end[];
-
 typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;
