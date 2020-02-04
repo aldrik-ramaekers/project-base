@@ -72,12 +72,10 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 	
 	//printf("%s %s\n", text_to_search, text_to_find);
 	s32 index = 0;
-	char *text_to_ss = text_to_search;
-	while((text_to_ss = utf8codepoint(text_to_search, &text_to_search_ch)) 
+	while((text_to_search = utf8codepoint(text_to_search, &text_to_search_ch)) 
 		  && text_to_search_ch)
 	{
 		if (cancel_search && *cancel_search) goto set_info_and_return_failure;
-		
 		word_offset_val++;
 		if (text_to_search_ch == '\n') 
 		{
@@ -87,15 +85,14 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 		}
 		
 		char *text_to_search_current_attempt = text_to_search;
-		utf8_int32_t text_to_search_current_attempt_ch = 0;
+		utf8_int32_t text_to_search_current_attempt_ch = text_to_search_ch;
 		
 		bool in_wildcard = false;
 		
 		text_to_find = utf8codepoint(text_to_find, &text_to_find_ch);
-		text_to_search_current_attempt = utf8codepoint(text_to_search_current_attempt,
-													   &text_to_search_current_attempt_ch);
+		//text_to_search_current_attempt = utf8codepoint(text_to_search_current_attempt,
+		//&text_to_search_current_attempt_ch);
 		
-		text_to_search = text_to_ss;
 		word_match_len_val = 0;
 		while(text_to_search_current_attempt_ch)
 		{
@@ -124,7 +121,7 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 				{
 					text_match new_match;
 					new_match.line_nr = line_nr_val;
-					new_match.word_offset = word_offset_val;
+					new_match.word_offset = word_offset_val-1;
 					new_match.word_match_len = word_match_len_val;
 					new_match.line_start = line_start_ptr;
 					new_match.line_info = 0;
