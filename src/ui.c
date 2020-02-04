@@ -93,6 +93,7 @@ void ui_set_textbox_text(textbox_state *textbox, char *text)
 		keyboard_set_input_text(global_ui_context.keyboard, text);
 	}
 	
+	textbox->diff = 0;
 	string_copyn(textbox->buffer, text, textbox->max_len);
 }
 
