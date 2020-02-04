@@ -839,21 +839,21 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (is_selecting)
 	{
 		// move text offset x when selecting so we can select more text than available on screen.
-		if (global_ui_context.mouse->x < x + 20)
+		if (global_ui_context.mouse->x < x + 10)
 		{
 			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
-			if (text_w > TEXTBOX_WIDTH-20)
+			if (text_w > TEXTBOX_WIDTH-10)
 			{
 				state->diff -= TEXTBOX_SCROLL_X_SPEED;
 				if (state->diff < 0) state->diff = 0;
 			}
 		}
-		if (global_ui_context.mouse->x > x + TEXTBOX_WIDTH - 25)
+		if (global_ui_context.mouse->x > x + TEXTBOX_WIDTH - 10)
 		{
 			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
-			s32 diff = text_w - TEXTBOX_WIDTH + 25;
+			s32 diff = text_w - TEXTBOX_WIDTH + 10;
 			
-			if (text_w > TEXTBOX_WIDTH-25)
+			if (text_w > TEXTBOX_WIDTH-10)
 			{
 				state->diff += TEXTBOX_SCROLL_X_SPEED;
 				if (state->diff > diff)
@@ -1440,7 +1440,7 @@ inline void ui_end_menu_bar()
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.offset_y += MENU_BAR_HEIGHT;
 	
-	ui_push_separator();
+	//ui_push_separator();
 }
 
 inline void ui_destroy()

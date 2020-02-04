@@ -199,9 +199,46 @@ void keyboard_handle_input_string(platform_window *window, keyboard_input *keybo
 		}
 	}
 	
+	if (keyboard_is_key_pressed(keyboard, KEY_X))
+	{
+		bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+		
+		if (is_lctrl_down)
+		{
+			// copy selection
+			if (keyboard->has_selection)
+			{
+				char buffer[MAX_INPUT_LENGTH];
+				utf8_str_copy_range(keyboard->input_text, 
+									keyboard->selection_begin_offset,
+									keyboard->selection_begin_offset+keyboard->selection_length,
+									buffer);
+				
+				if (!string_equals(buffer, ""))
+					platform_set_clipboard(window, buffer);
+			}
+			
+			// delete selection
+			if (keyboard->has_selection)
+			{
+				utf8_str_remove_range(keyboard->input_text, keyboard->selection_begin_offset,
+									  keyboard->selection_begin_offset + keyboard->selection_length);
+				keyboard->has_selection = false;
+				keyboard->text_changed = true;
+				
+				if (keyboard->selection_begin_offset < keyboard->cursor)
+				{
+					keyboard->cursor -= keyboard->selection_length;
+				}
+			}
+			
+			keyboard->input_text_len = utf8len(keyboard->input_text);
+		}
+	}
+	
 	if (keyboard_is_key_down(keyboard, KEY_BACKSPACE))
 	{
-		current_keyboard_to_handle->keys[KEY_BACKSPACE] = false;
+		keyboard->keys[KEY_BACKSPACE] = false;
 		
 		bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
 		
@@ -214,16 +251,29 @@ void keyboard_handle_input_string(platform_window *window, keyboard_input *keybo
 			
 			if (keyboard->selection_begin_offset < keyboard->cursor)
 			{
-				keyboard->cursor -= keyboard->selection_length-1;
+				keyboard->cursor -= keyboard->selection_length;
 			}
 		}
 		else if (is_lctrl_down)
 		{
-			for (s32 i = 0; i < keyboard->cursor; i++)
+			char *iter = keyboard->input_text;
+			s32 index = 0;
+			s32 found_index = 0;
+			utf8_int32_t br;
+			while((iter = utf8codepoint(iter, &br)) && index < keyboard->cursor && br)
 			{
-				utf8_str_remove_at(keyboard->input_text, 0);
+				index++;
+				if (br == ' ' && index+1 < keyboard->cursor)
+				{
+					found_index = index;
+				}
 			}
-			keyboard->cursor = 0;
+			
+			for (s32 i = found_index; i < keyboard->cursor; i++)
+			{
+				utf8_str_remove_at(keyboard->input_text, found_index);
+			}
+			keyboard->cursor = found_index;
 			keyboard->text_changed = true;
 		}
 		else if (keyboard->cursor > 0)
