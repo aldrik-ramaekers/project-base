@@ -656,9 +656,9 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (global_ui_context.layout.scroll->in_scroll)
 	{
 		vec4 v = render_get_scissor();
-		s32 scissor_x = v.x + WIDGET_PADDING + 5;
+		s32 scissor_x = x+3;
 		s32 scissor_y = global_ui_context.layout.scroll->scroll_start_offset_y;
-		s32 scissor_w = v.w;
+		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
 		render_set_scissor(global_ui_context.layout.active_window, scissor_x,
@@ -895,16 +895,22 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	}
 #endif
 	
+	if (state->state)
+	{
+		last_cursor_pos = global_ui_context.keyboard->cursor;
+	}
+	
 	if (!has_text)
 	{
-		render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
-					placeholder, global_ui_context.style.textbox_placeholder_foreground);
+		if (!state->state)
+			render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
+						placeholder, global_ui_context.style.textbox_placeholder_foreground);
+		else
+			render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
+									placeholder, global_ui_context.style.textbox_placeholder_foreground, global_ui_context.keyboard->cursor);
 	}
 	else
 	{
-		s32 www;
-		last_cursor_pos = global_ui_context.keyboard->cursor;
-		
 		if (global_ui_context.keyboard->has_selection && state->state && global_ui_context.keyboard->selection_length)
 			render_text_with_selection(global_ui_context.font_small, text_x - state->diff, text_y, 
 									   state->buffer, global_ui_context.style.foreground, global_ui_context.keyboard->selection_begin_offset,
@@ -1071,6 +1077,16 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
 	s32 virt_top = y;
 	s32 virt_bottom = y + h;
+	
+	if (global_ui_context.layout.scroll->in_scroll)
+	{
+		s32 bottom = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
+		if (bottom < virt_bottom)
+			virt_bottom = bottom;
+		s32 top = global_ui_context.layout.scroll->scroll_start_offset_y - WIDGET_PADDING;
+		if (top > virt_top)
+			virt_top = top;
+	}
 	
 	if (global_ui_context.layout.block_height < global_ui_context.font_small->px_h)
 		global_ui_context.layout.block_height = global_ui_context.font_small->px_h+5;
