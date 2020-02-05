@@ -129,6 +129,9 @@ void ui_set_style(u16 style)
 		global_ui_context.style.textbox_foreground = rgb(10,10,10);
 		global_ui_context.style.textbox_placeholder_foreground = rgb(80,80,80);
 		global_ui_context.style.textbox_active_border = rgb(66, 134, 244);
+		global_ui_context.style.widget_confirm_background = rgb(211, 80, 80);
+		global_ui_context.style.widget_confirm_hover_background = rgb(211, 53, 53);
+		global_ui_context.style.widget_confirm_border = rgb(130, 0, 0);
 	}
 	if (style == UI_STYLE_DARK)
 	{
@@ -874,7 +877,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 index = calculate_cursor_position(global_ui_context.font_small, 
 											  state->buffer, mouse_x + state->diff - text_x)+1;
 		
-		if (double_clicked_to_select_first) 
+		if (double_clicked_to_select_first)
 			state->double_clicked_to_select_cursor_index = index;
 		
 		if (!state->double_clicked_to_select || (state->double_clicked_to_select && index != state->double_clicked_to_select_cursor_index))
@@ -1356,6 +1359,135 @@ bool ui_push_button(button_state *state, char *title)
 	return result;
 }
 
+bool ui_push_button_image_with_confirmation(button_state *state, char *title, image *img)
+{
+	bool result = false;
+	u32 id = ui_get_id();
+	
+	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
+	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
+	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
+	s32 text_y = y + (BUTTON_HEIGHT/2) - (global_ui_context.font_small->px_h/2);
+	s32 text_w = calculate_text_width(global_ui_context.font_small, title);
+	s32 total_w = text_w + BUTTON_HORIZONTAL_TEXT_PADDING;
+	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
+	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
+	s32 h = BUTTON_HEIGHT;
+	bool confirming = global_ui_context.confirming_button_id == id;
+	
+	if (title[0] == 0)
+	{
+		total_w = 0;
+	}
+	
+	color bg_color;
+	color border_color;
+	
+	if (confirming)
+	{
+		bg_color = global_ui_context.style.widget_confirm_background;
+		border_color = global_ui_context.style.widget_confirm_border;
+	}
+	else
+	{
+		bg_color = global_ui_context.style.widget_background;
+		border_color = global_ui_context.style.border;
+	}
+	
+	if (global_ui_context.layout.block_height < h)
+		global_ui_context.layout.block_height = h;
+	
+	int icon_w = 1;
+	int icon_h = 1;
+	if (img->loaded)
+	{
+		float max_icon_size = BUTTON_HEIGHT - (BUTTON_IMAGE_PADDING*2);
+		float scale = 1.0f;
+		if (img->width >= img->height)
+		{
+			scale = img->width / max_icon_size;
+			
+			icon_w = img->width / scale;
+			icon_h = icon_w;
+		}
+		else if (img->height >= img->width)
+		{
+			scale = img->height / max_icon_size;
+			
+			icon_h = img->height / scale;
+			icon_w = icon_h;
+		}
+		
+		total_w += icon_w + (BUTTON_IMAGE_SPACING*2);
+	}
+	
+	s32 virt_top = y;
+	s32 virt_bottom = y + h;
+	if (global_ui_context.layout.scroll->in_scroll)
+	{
+		s32 bottom = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
+		if (bottom < virt_bottom)
+			virt_bottom = bottom;
+		s32 top = global_ui_context.layout.scroll->scroll_start_offset_y - WIDGET_PADDING;
+		if (top > virt_top)
+			virt_top = top;
+	}
+	
+	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
+	{
+		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		
+		if (confirming)
+			bg_color = global_ui_context.style.widget_confirm_hover_background;
+		else
+			bg_color = global_ui_context.style.widget_hover_background;
+		
+		if (is_left_clicked(global_ui_context.mouse)) 
+		{
+			global_ui_context.mouse->left_state &= ~MOUSE_CLICK;
+			state->state = 1;
+			
+			if (confirming)
+			{
+				result = true;
+				global_ui_context.confirming_button_id = -1;
+			}
+		}
+		if (is_left_released(global_ui_context.mouse) && (state->state || confirming))
+		{
+			state->state = 0;
+			
+			if (!confirming)
+			{
+				global_ui_context.confirming_button_id = id;
+			}
+		}
+	}
+	else
+	{
+		if (is_left_clicked(global_ui_context.mouse) && confirming) 
+		{
+			global_ui_context.confirming_button_id = -1;
+		}
+	}
+	
+	if (is_left_released(global_ui_context.mouse))
+	{
+		state->state = 0;
+	}
+	
+	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, border_color);
+	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+	
+	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
+		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
+	else
+		global_ui_context.layout.offset_y += BUTTON_HEIGHT + WIDGET_PADDING;
+	
+	return result;
+}
 
 bool ui_push_button_image(button_state *state, char *title, image *img)
 {

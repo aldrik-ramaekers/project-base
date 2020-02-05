@@ -51,9 +51,12 @@ typedef struct t_ui_style
 	color menu_foreground;
 	color widget_hover_background;
 	color widget_background;
+	color widget_confirm_background;
+	color widget_confirm_hover_background;
 	color hypertext_foreground;
 	color hypertext_hover_foreground;
 	color textbox_placeholder_foreground;
+	color widget_confirm_border;
 } ui_style;
 
 typedef enum t_layout_direction
@@ -141,6 +144,7 @@ typedef struct t_ui_context
 	u32 next_id;
 	s32 menu_item_count;
 	dropdown_state *active_dropdown;
+	u32 confirming_button_id;
 	textbox_state *current_active_textbox;
 	bool item_hovered;
 } ui_context;
