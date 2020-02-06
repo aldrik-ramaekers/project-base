@@ -136,6 +136,7 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		
@@ -197,6 +198,7 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		

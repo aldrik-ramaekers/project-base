@@ -108,6 +108,7 @@ typedef struct t_textbox_history_entry
 typedef struct t_textbox_state
 {
 	bool deselect_on_enter;
+	bool accept_newline;
 	char *buffer;
 	s32 selection_start_index;
 	bool state;

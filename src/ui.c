@@ -52,6 +52,7 @@ inline textbox_state ui_create_textbox(u16 max_len)
 	state.last_click_cursor_index = -1;
 	state.attempting_to_select = false;
 	state.deselect_on_enter = true;
+	state.accept_newline = false;
 	
 	return state;
 }
@@ -654,6 +655,12 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		global_ui_context.keyboard->has_selection = false;
 		state->state = false;
 	}
+	if (state->state && keyboard_is_key_down(global_ui_context.keyboard, KEY_LEFT_CONTROL) &&
+		keyboard_is_key_pressed(global_ui_context.keyboard, KEY_ENTER) &&
+		state->accept_newline)
+	{
+		keyboard_handle_input_string(global_ui_context.layout.active_window, global_ui_context.keyboard, "\n");
+	}
 	
 	// calculate scissor rectangle
 	if (global_ui_context.layout.scroll->in_scroll)
@@ -763,6 +770,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			}
 			
 			string_copyn(state->buffer, global_ui_context.keyboard->input_text, state->max_len);
+			
 			if (global_ui_context.keyboard->cursor > state->max_len)
 			{
 				global_ui_context.keyboard->cursor = state->max_len;

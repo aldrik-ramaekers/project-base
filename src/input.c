@@ -152,6 +152,8 @@ void keyboard_handle_input_string(platform_window *window, keyboard_input *keybo
 	
 	if (ch)
 	{
+		if (string_equals(ch, "\n")) is_lctrl_down = false;
+		
 		if (keyboard->input_text_len < MAX_INPUT_LENGTH && !is_lctrl_down)
 		{
 			if (keyboard->has_selection)
