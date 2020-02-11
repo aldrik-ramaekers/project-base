@@ -251,6 +251,7 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		
@@ -368,7 +369,7 @@ s32 calculate_cursor_position(font *font, char *text, s32 click_x)
 		{
 			ch = 0x3f;
 		}
-		
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		
@@ -409,6 +410,7 @@ s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index)
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		s32 width = g.width;
@@ -445,6 +447,7 @@ s32 calculate_text_width_upto(font *font, char *text, s32 index)
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		s32 width = g.width;
@@ -475,6 +478,7 @@ s32 calculate_text_width(font *font, char *text)
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		s32 width = g.width;
