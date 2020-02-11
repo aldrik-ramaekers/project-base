@@ -269,7 +269,7 @@ void ui_push_vertical_dragbar()
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 	s32 h = global_ui_context.layout.height;
 	
-	render_rectangle(x, y, 5, h, global_ui_context.style.border);
+	render_rectangle(x, y, 2, h, global_ui_context.style.border);
 }
 
 inline void ui_push_menu_item_separator()
@@ -391,7 +391,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	if (icon)
 	{
 		render_image(icon, x+(BUTTON_HORIZONTAL_TEXT_PADDING/2), 
-					 y + (h - (h-10))/2, h-10, h-10);
+					 y + (h - (h-6))/2, h-6, h-6);
 		text_x += h-10;
 	}
 	render_text(global_ui_context.font_small, text_x+(BUTTON_HORIZONTAL_TEXT_PADDING/2)-5, text_y, title, global_ui_context.style.foreground);

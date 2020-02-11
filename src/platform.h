@@ -204,6 +204,7 @@ void get_name_from_path(char *buffer, char *path);
 void get_directory_from_path(char *buffer, char *path);
 vec2 platform_get_window_size(platform_window *window);
 s32 filter_matches(array *filters, char *string, char **matched_filter);
+void platform_delete_file(char *path);
 
 u64 platform_get_time(time_type time_type, time_precision precision);
 s32 platform_get_memory_size();

@@ -184,6 +184,12 @@ bool set_active_directory(char *path)
 	return !chdir(path);
 }
 
+
+void platform_delete_file(char *path)
+{
+	remove(path);
+}
+
 bool platform_write_file_content(char *path, const char *mode, char *buffer, s32 len)
 {
 	bool result = false;

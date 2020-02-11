@@ -69,10 +69,14 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 	char *ellipse = "...";
 	bool in_ellipse = false;
 	
+	s32 len = utf8len(text);
+	
 	s32 x_ = x;
 	utf8_int32_t ch;
+	s32 count = 0;
 	while((text = utf8codepoint(text, &ch)) && ch)
 	{
+		count++;
 		if (ch == 9) ch = 32;
 		utf8_int32_t ch_next;
 		utf8codepoint(text, &ch_next);
@@ -80,6 +84,7 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		{
 			ch = 0x3f;
 		}
+		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
 		
@@ -102,7 +107,7 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
 		x_ += (g.advance);
 		
-		if (!in_ellipse && (x_-x) > maxw-(font->glyphs['.'].width*3))
+		if (!in_ellipse && (x_-x) > maxw-(font->glyphs['.'].width*3) && count < len-3)
 		{
 			in_ellipse = true;
 			text = ellipse;

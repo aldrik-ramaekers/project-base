@@ -842,6 +842,11 @@ file_content platform_read_file_content(char *path, const char *mode)
 	return result;
 }
 
+void platform_delete_file(char *path)
+{
+	remove(path);
+}
+
 bool platform_write_file_content(char *path, const char *mode, char *buffer, s32 len)
 {
 	bool result = false;
