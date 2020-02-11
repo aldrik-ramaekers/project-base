@@ -74,9 +74,13 @@ typedef struct t_dropdown_state
 typedef struct t_scroll_state
 {
 	s32 height;
+	s32 width;
+	s32 x;
+	s32 y;
 	s32 scroll;
 	s32 scroll_start_offset_y;
 	bool in_scroll;
+	bool mouse_scrolling;
 } scroll_state;
 
 typedef struct t_ui_layout

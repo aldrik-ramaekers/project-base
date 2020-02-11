@@ -83,6 +83,7 @@ inline scroll_state ui_create_scroll(s32 scroll)
 	scroll_state state;
 	state.scroll = 0;
 	state.height = scroll;
+	state.mouse_scrolling = false;
 	
 	return state;
 }
@@ -1616,6 +1617,11 @@ void ui_scroll_begin(scroll_state *state)
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 	
+	state->width = w;
+	state->height = h;
+	state->x = x;
+	state->y = y;
+	
 	//global_ui_context.layout.offset_x += WIDGET_PADDING;
 	global_ui_context.layout.start_offset_x = global_ui_context.layout.offset_x;
 	//global_ui_context.layout.offset_y += WIDGET_PADDING;
@@ -1628,7 +1634,7 @@ void ui_scroll_begin(scroll_state *state)
 void ui_scroll_end()
 {
 	s32 max_scroll = (global_ui_context.layout.scroll->scroll_start_offset_y -
-					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height;
+					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height - WIDGET_PADDING;
 	
 	//global_ui_context.layout.offset_x -= WIDGET_PADDING;
 	global_ui_context.layout.offset_y = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
@@ -1637,12 +1643,20 @@ void ui_scroll_end()
 	// draw scrollbar
 	if (max_scroll < 0)
 	{
-		s32 scroll_y = 0;
-		if (global_ui_context.mouse->scroll_state == SCROLL_UP)
-			scroll_y+=SCROLL_SPEED;
-		if (global_ui_context.mouse->scroll_state == SCROLL_DOWN)
-			scroll_y-=SCROLL_SPEED;
-		global_ui_context.layout.scroll->scroll += scroll_y;
+		if (global_ui_context.mouse->x >= global_ui_context.layout.scroll->x &&
+			global_ui_context.mouse->x <= global_ui_context.layout.scroll->x+global_ui_context.layout.scroll->width &&
+			global_ui_context.mouse->y >= global_ui_context.layout.scroll->y &&
+			global_ui_context.mouse->y <= global_ui_context.layout.scroll->y+global_ui_context.layout.scroll->height)
+		{
+			s32 scroll_y = 0;
+			if (global_ui_context.mouse->scroll_state == SCROLL_UP)
+				scroll_y+=SCROLL_SPEED;
+			if (global_ui_context.mouse->scroll_state == SCROLL_DOWN)
+				scroll_y-=SCROLL_SPEED;
+			global_ui_context.layout.scroll->scroll += scroll_y;
+		}
+		
+		
 		if (global_ui_context.layout.scroll->scroll > 0)
 			global_ui_context.layout.scroll->scroll = 0;
 		if (global_ui_context.layout.scroll->scroll < max_scroll)
@@ -1663,8 +1677,28 @@ void ui_scroll_end()
 		
 		scrollbar_pos_y += (global_ui_context.layout.scroll->height - 
 							scrollbar_height + WIDGET_PADDING - 2) * percentage;
-		
+		if (is_left_clicked(global_ui_context.mouse) &&
+			global_ui_context.mouse->x >= scrollbar_pos_x && global_ui_context.mouse->x <= scrollbar_pos_x + 10 &&
+			global_ui_context.mouse->y >= global_ui_context.layout.scroll->y && global_ui_context.mouse->y <= global_ui_context.layout.scroll->y + global_ui_context.layout.scroll->height)
+		{
+			global_ui_context.layout.scroll->mouse_scrolling = true;
+		}
+		else if (is_left_released(global_ui_context.mouse))
+		{
+			global_ui_context.layout.scroll->mouse_scrolling = false;
+		}
 		render_reset_scissor();
+		if (global_ui_context.layout.scroll->mouse_scrolling)
+		{
+			float mouse_percentage = (global_ui_context.mouse->y-global_ui_context.layout.scroll->y-(scrollbar_height/2))/
+				(float)(global_ui_context.layout.scroll->height-(scrollbar_height));
+			
+			global_ui_context.layout.scroll->scroll = (s32)(mouse_percentage * max_scroll);
+			if (global_ui_context.layout.scroll->scroll > 0) global_ui_context.layout.scroll->scroll = 0;
+			if (global_ui_context.layout.scroll->scroll < max_scroll)
+				global_ui_context.layout.scroll->scroll = max_scroll;
+		}
+		
 		render_rectangle(scrollbar_pos_x, scrollbar_pos_y, 10, scrollbar_height, global_ui_context.style.scrollbar_handle_background);
 	}
 	render_reset_scissor();
