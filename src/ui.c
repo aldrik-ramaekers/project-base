@@ -185,13 +185,12 @@ static void ui_pop_scissor()
 {
 	if (global_ui_context.layout.scroll->in_scroll)
 	{
-		s32 w = global_ui_context.layout.width;
-		s32 h = global_ui_context.layout.height;
-		s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
-		s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
+		s32 w = global_ui_context.layout.scroll->width;
+		s32 h = global_ui_context.layout.scroll->height;
+		s32 x = global_ui_context.layout.scroll->x;
+		s32 y = global_ui_context.layout.scroll->y;
 		
-		render_set_scissor(global_ui_context.layout.active_window,
-						   0,y,global_ui_context.layout.active_window->width,h);
+		render_set_scissor(global_ui_context.layout.active_window, x,y,w,h);
 	}
 	else
 	{
@@ -563,18 +562,6 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	
 	bool has_text = state->buffer[0] != 0;
 	
-	if (!state->state)
-	{
-		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
-		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.border);
-	}
-	else
-	{
-		cursor_tick++;
-		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
-		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.textbox_active_border);
-	}
-	
 	s32 virt_top = y;
 	s32 virt_bottom = y + TEXTBOX_HEIGHT;
 	if (global_ui_context.layout.scroll->in_scroll)
@@ -663,12 +650,45 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		keyboard_handle_input_string(global_ui_context.layout.active_window, global_ui_context.keyboard, "\n");
 	}
 	
-	// calculate scissor rectangle
+	// calculate scissor rectangle for background
 	if (global_ui_context.layout.scroll->in_scroll)
 	{
-		vec4 v = render_get_scissor();
+		s32 scissor_x = x;
+		s32 scissor_y = global_ui_context.layout.scroll->y;
+		s32 scissor_w = TEXTBOX_WIDTH;
+		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
+		
+		render_set_scissor(global_ui_context.layout.active_window, scissor_x,
+						   scissor_y, scissor_w, scissor_h);
+	}
+	else
+	{
+		s32 scissor_x = x - global_ui_context.camera->x;
+		s32 scissor_y = y - global_ui_context.camera->y;
+		s32 scissor_w = TEXTBOX_WIDTH;
+		s32 scissor_h = TEXTBOX_HEIGHT;
+		
+		render_set_scissor(global_ui_context.layout.active_window, 
+						   scissor_x, scissor_y, scissor_w, scissor_h);
+	}
+	
+	if (!state->state)
+	{
+		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
+		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.border);
+	}
+	else
+	{
+		cursor_tick++;
+		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
+		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.textbox_active_border);
+	}
+	
+	// calculate scissor rectangle for text
+	if (global_ui_context.layout.scroll->in_scroll)
+	{
 		s32 scissor_x = x+3;
-		s32 scissor_y = global_ui_context.layout.scroll->scroll_start_offset_y;
+		s32 scissor_y = global_ui_context.layout.scroll->y;
 		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
@@ -679,7 +699,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	{
 		s32 scissor_x = x - global_ui_context.camera->x+3;
 		s32 scissor_y = y - global_ui_context.camera->y;
-		s32 scissor_w = TEXTBOX_WIDTH - 5;
+		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = TEXTBOX_HEIGHT;
 		
 		render_set_scissor(global_ui_context.layout.active_window, 
@@ -936,6 +956,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	}
 	
 	ui_pop_scissor();
+	//render_reset_scissor();
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += TEXTBOX_WIDTH + WIDGET_PADDING;
@@ -1059,6 +1080,18 @@ void ui_push_rect(s32 w, color c)
 	s32 total_w = w +
 		WIDGET_PADDING + WIDGET_PADDING;
 	s32 h = BUTTON_HEIGHT;
+	
+	s32 virt_top = y;
+	s32 virt_bottom = y + TEXTBOX_HEIGHT;
+	if (global_ui_context.layout.scroll->in_scroll)
+	{
+		s32 bottom = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
+		if (bottom < virt_bottom)
+			virt_bottom = bottom;
+		s32 top = global_ui_context.layout.scroll->scroll_start_offset_y - WIDGET_PADDING;
+		if (top > virt_top)
+			virt_top = top;
+	}
 	
 	if (global_ui_context.layout.block_height < h)
 		global_ui_context.layout.block_height = h;
@@ -1634,7 +1667,7 @@ void ui_scroll_begin(scroll_state *state)
 void ui_scroll_end()
 {
 	s32 max_scroll = (global_ui_context.layout.scroll->scroll_start_offset_y -
-					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height - WIDGET_PADDING;
+					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height;
 	
 	//global_ui_context.layout.offset_x -= WIDGET_PADDING;
 	global_ui_context.layout.offset_y = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
@@ -1643,6 +1676,8 @@ void ui_scroll_end()
 	// draw scrollbar
 	if (max_scroll < 0)
 	{
+		s32 scroll_w = 14;
+		
 		if (global_ui_context.mouse->x >= global_ui_context.layout.scroll->x &&
 			global_ui_context.mouse->x <= global_ui_context.layout.scroll->x+global_ui_context.layout.scroll->width &&
 			global_ui_context.mouse->y >= global_ui_context.layout.scroll->y &&
@@ -1656,7 +1691,6 @@ void ui_scroll_end()
 			global_ui_context.layout.scroll->scroll += scroll_y;
 		}
 		
-		
 		if (global_ui_context.layout.scroll->scroll > 0)
 			global_ui_context.layout.scroll->scroll = 0;
 		if (global_ui_context.layout.scroll->scroll < max_scroll)
@@ -1667,18 +1701,18 @@ void ui_scroll_end()
 		
 		float scrollbar_height_percentage = -(max_scroll - global_ui_context.layout.scroll->height) / (float)global_ui_context.layout.scroll->height;
 		
-		s32 scrollbar_height = global_ui_context.layout.scroll->height / scrollbar_height_percentage;
+		s32 scrollbar_height = (global_ui_context.layout.scroll->height / scrollbar_height_percentage);
 		s32 scrollbar_pos_y = global_ui_context.layout.scroll->scroll_start_offset_y - WIDGET_PADDING;
 		
 		s32 tw = global_ui_context.layout.width - WIDGET_PADDING*2;
 		s32 tx = global_ui_context.layout.offset_x + global_ui_context.camera->x + WIDGET_PADDING;
 		
-		s32 scrollbar_pos_x = tx + tw + WIDGET_PADDING - 10;
+		s32 scrollbar_pos_x = tx + tw + WIDGET_PADDING - scroll_w;
 		
 		scrollbar_pos_y += (global_ui_context.layout.scroll->height - 
-							scrollbar_height + WIDGET_PADDING - 2) * percentage;
+							scrollbar_height) * percentage;
 		if (is_left_clicked(global_ui_context.mouse) &&
-			global_ui_context.mouse->x >= scrollbar_pos_x && global_ui_context.mouse->x <= scrollbar_pos_x + 10 &&
+			global_ui_context.mouse->x >= scrollbar_pos_x && global_ui_context.mouse->x <= scrollbar_pos_x + scroll_w &&
 			global_ui_context.mouse->y >= global_ui_context.layout.scroll->y && global_ui_context.mouse->y <= global_ui_context.layout.scroll->y + global_ui_context.layout.scroll->height)
 		{
 			global_ui_context.layout.scroll->mouse_scrolling = true;
@@ -1687,7 +1721,7 @@ void ui_scroll_end()
 		{
 			global_ui_context.layout.scroll->mouse_scrolling = false;
 		}
-		render_reset_scissor();
+		//render_reset_scissor();
 		if (global_ui_context.layout.scroll->mouse_scrolling)
 		{
 			float mouse_percentage = (global_ui_context.mouse->y-global_ui_context.layout.scroll->y-(scrollbar_height/2))/
@@ -1699,7 +1733,25 @@ void ui_scroll_end()
 				global_ui_context.layout.scroll->scroll = max_scroll;
 		}
 		
-		render_rectangle(scrollbar_pos_x, scrollbar_pos_y, 10, scrollbar_height, global_ui_context.style.scrollbar_handle_background);
+		{
+			// scroll background
+			render_rectangle(scrollbar_pos_x,global_ui_context.layout.scroll->y,
+							 scroll_w,global_ui_context.layout.scroll->height,global_ui_context.style.scrollbar_background);
+			
+			render_rectangle_outline(scrollbar_pos_x,global_ui_context.layout.scroll->y-1,
+									 scroll_w,global_ui_context.layout.scroll->height+2, 1,
+									 global_ui_context.style.border);
+			
+			// scrollbar
+			render_rectangle(scrollbar_pos_x, scrollbar_pos_y-1,
+							 scroll_w,scrollbar_height+2,global_ui_context.style.scrollbar_handle_background);
+			
+			render_rectangle_outline(scrollbar_pos_x, scrollbar_pos_y-1,
+									 scroll_w,scrollbar_height+2, 1,
+									 global_ui_context.style.border);
+			
+			//render_rectangle(scrollbar_pos_x, scrollbar_pos_y, 10, scrollbar_height, global_ui_context.style.scrollbar_handle_background);
+		}
 	}
 	render_reset_scissor();
 	global_ui_context.layout.scroll->in_scroll = false;
