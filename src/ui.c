@@ -997,7 +997,7 @@ bool ui_push_hypertext_link(char *text)
 	s32 text_width = render_text(global_ui_context.font_small, text_x, text_y, text, bg_color);
 	
 	if (result)
-		render_rectangle(text_x, text_y + text_h-1, text_width, 1, bg_color);
+		render_rectangle(text_x, text_y + text_h+2, text_width, 1, bg_color);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
