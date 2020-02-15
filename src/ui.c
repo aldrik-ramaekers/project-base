@@ -84,6 +84,7 @@ inline scroll_state ui_create_scroll(s32 scroll)
 	state.scroll = 0;
 	state.height = scroll;
 	state.mouse_scrolling = false;
+	state.in_scroll = false;
 	
 	return state;
 }
