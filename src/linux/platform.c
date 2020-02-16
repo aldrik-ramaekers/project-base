@@ -22,6 +22,12 @@
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
 
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <openssl/ssl.h>
+
 #define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
 
 struct t_platform_window
@@ -593,6 +599,7 @@ static void create_key_tables(platform_window window)
 	XkbFreeKeyboard(desc, 0, True);
 }
 
+SSL_CTX *ssl_ctx;
 inline void platform_init(int argc, char **argv)
 {
 #if 0
@@ -613,6 +620,10 @@ inline void platform_init(int argc, char **argv)
 	char buf[MAX_INPUT_LENGTH];
 	get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
+
+	SSL_load_error_strings();
+	SSL_library_init();
+	ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	
 	assets_create();
 }
@@ -1601,9 +1612,60 @@ void platform_set_icon(platform_window *window, image *img)
 
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {
+	//	char *getRequest = "GET /path/to/server.aspx?Action=GetConfig&MachineName=node1 HTTP/1.1\n";
 	// https://www.unix.com/programming/187337-c-http-get-request-using-sockets.html
 	// https://stackoverflow.com/questions/32738030/c-sending-http-get-request-in-linux
 	bool response = true;
+
+	int sockfd, portno, n;
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
+
+	portno = 80;
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0) goto failure;
+
+	server = gethostbyname(url);
+	if (server == NULL) goto failure;
+
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	bcopy((char *)server->h_addr,
+    (char *)&serv_addr.sin_addr.s_addr,
+    server->h_length);
+	serv_addr.sin_port = htons(portno);
+	printf("1\n");
+	if (connect(sockfd,(const struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) goto failure;
+
+	SSL *conn = SSL_new(ssl_ctx);
+	SSL_set_fd(conn, sockfd);
+	printf("2\n");
+	int err = SSL_connect(conn);
+	if (err != 1) goto failure;
+printf("2.5\n");
+	char buffer[MAX_INPUT_LENGTH];
+	sprintf(buffer, "GET /%s HTTP/1.1\r\n"
+		"Host: %s\r\n"
+		"Connection: Keep-alive\r\n"
+		"Content-Type: application/json\r\n\r\n", params, url);
+	printf("%s\n", buffer);
+	n = SSL_write(conn,buffer,strlen(buffer));
+	if (n < 0) goto failure;
+printf("3\n");
+	n = SSL_read(conn,response_buffer,MAX_INPUT_LENGTH);
+  	if (n < 0) goto failure;
+printf("4\n");
+	goto done;
+	
+	failure:
+	printf("err %d\n", SSL_get_error(conn, err));
+	printf("failure");
+	response = false;
+	
+	done:
+	SSL_shutdown(conn);
+	SSL_free(conn);
+	close(sockfd);
 	
 	return response;
 }
