@@ -1597,3 +1597,13 @@ void platform_set_icon(platform_window *window, image *img)
 								 property, cardinal, 32, PropModeReplace, 
 								 (unsigned char *)data, nelements);
 }
+
+
+bool platform_send_http_request(char *url, char *params, char *response_buffer)
+{
+	// https://www.unix.com/programming/187337-c-http-get-request-using-sockets.html
+	// https://stackoverflow.com/questions/32738030/c-sending-http-get-request-in-linux
+	bool response = true;
+	
+	return response;
+}
