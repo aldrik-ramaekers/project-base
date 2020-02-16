@@ -4,6 +4,7 @@
 *  All rights reserved.
 */
 
+#include <wininet.h>
 #include <locale.h>
 #include <windows.h>
 #include <GL/gl.h>
@@ -1270,4 +1271,52 @@ s16 string_to_s16(char *str)
 s8 string_to_s8(char *str)
 {
 	return (s8)strtoul(str, 0, 10);
+}
+
+bool platform_send_http_request(char *url, char *params, char *response_buffer)
+{
+	// https://www.unix.com/programming/187337-c-http-get-request-using-sockets.html
+	
+	bool response = true;
+	HINTERNET hIntSession = 0;
+	HINTERNET hHttpSession = 0;
+	HINTERNET hHttpRequest = 0;
+	
+	hIntSession = InternetOpen("Text-Search", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	if (!hIntSession) goto failure;
+	
+	hHttpSession = InternetConnect(hIntSession, url, 80, 0, 0, INTERNET_SERVICE_HTTP, 0, 0);
+	if (!hHttpSession) goto failure;
+	
+	hHttpRequest = HttpOpenRequest(
+		hHttpSession, 
+		"GET", 
+		params,
+		0, 0, 0, INTERNET_FLAG_RELOAD, 0);
+	
+	
+	char* szHeaders = "Content-Type: application/json";
+	char szReq[1024] = "";
+    if(!HttpSendRequest(hHttpRequest, szHeaders, strlen(szHeaders), szReq, strlen(szReq))) {
+		goto failure;
+	}
+	
+    DWORD dwRead=0;
+    while(InternetReadFile(hHttpRequest, response_buffer, MAX_INPUT_LENGTH-1, &dwRead) && dwRead) {
+		response_buffer[dwRead] = 0;
+		dwRead=0;
+    }
+	
+	goto done;
+	
+	failure:
+	printf("failure");
+	response = false;
+	
+	done:
+	InternetCloseHandle(hHttpRequest);
+	InternetCloseHandle(hHttpSession);
+	InternetCloseHandle(hIntSession);
+	
+	return response;
 }

@@ -188,6 +188,7 @@ bool is_platform_in_darkmode();
 void *platform_open_file_dialog_block(void *arg);
 char *platform_get_full_path(char *file);
 void platform_open_url(char *command);
+bool platform_send_http_request(char *url, char *params, char *response_buffer);
 void platform_run_command(char *command);
 void platform_window_make_current(platform_window *window);
 void platform_init(int argc, char **argv);
