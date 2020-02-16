@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
+#include <curl/curl.h>
 
 #define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
 
@@ -593,6 +594,7 @@ static void create_key_tables(platform_window window)
 	XkbFreeKeyboard(desc, 0, True);
 }
 
+CURL *curl;
 inline void platform_init(int argc, char **argv)
 {
 #if 0
@@ -614,12 +616,16 @@ inline void platform_init(int argc, char **argv)
 	get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
 
+	curl = curl_easy_init();
+
 	assets_create();
 }
 
 inline void platform_destroy()
 {
 	assets_destroy();
+	curl_easy_cleanup(curl);
+	curl_global_cleanup();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();
@@ -1598,40 +1604,27 @@ void platform_set_icon(platform_window *window, image *img)
 								 (unsigned char *)data, nelements);
 }
 
+uint write_cb(char *in, uint size, uint nmemb, char *buffer)
+{
+	string_appendn(buffer, in, MAX_INPUT_LENGTH);
+	return size * nmemb;
+}
 
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {
 	string_copyn(response_buffer, "", MAX_INPUT_LENGTH);
-	char buffer[128];
-	FILE *fp = 0;
-	char command[MAX_INPUT_LENGTH];
 
-	if (platform_file_exists("/bin/wget"))
-	{
-		sprintf(command, "/bin/wget -qO- https://%s/%s", url, params);
-		fp = popen(command, "r");
-	}
-	else if (platform_file_exists("/usr/bin/wget"))
-	{
-		sprintf(command, "/usr/bin/wget -qO- https://%s/%s", url, params);
-		fp = popen(command, "r");
-	}
+	char fullurl[200];
+	sprintf(fullurl, "https://%s/%s", url, params);
+	curl_easy_setopt(curl, CURLOPT_URL,fullurl);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
+	CURLcode res = curl_easy_perform(curl);
+	if (res != CURLE_OK) return false;
 
-	if (fp == NULL)
-	{
-		return false;
-	}
-
-	while(!feof(fp))
-	{
-		if (fgets(buffer, 128, fp) != NULL)
-		{
-			string_appendn(response_buffer, buffer, MAX_INPUT_LENGTH);
-		}
-	}
-	
-
-  	/* close */
-  	pclose(fp);
 	return true;
 }
