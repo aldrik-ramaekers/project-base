@@ -829,14 +829,23 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 #if 1
 		if (!clicked_to_select && !clicked_to_set_cursor && !is_selecting && !global_ui_context.keyboard->has_selection && global_ui_context.keyboard->text_changed)
 		{
-			if ((text_w > TEXTBOX_WIDTH -10) && (global_ui_context.keyboard->text_changed || global_ui_context.keyboard->cursor != last_cursor_pos))
+			s32 max_offset_x = text_w - (TEXTBOX_WIDTH-10);
+			
+			if (state->diff > max_offset_x && max_offset_x > 0)
+				state->diff = max_offset_x;
+			else if ((cursor_text_w <= TEXTBOX_WIDTH -10))
+				state->diff = 0;
+			
+#if 0
+			if ((state->diff+cursor_text_w > TEXTBOX_WIDTH -10) && (global_ui_context.keyboard->text_changed || global_ui_context.keyboard->cursor != last_cursor_pos))
 			{
-				state->diff = text_w - TEXTBOX_WIDTH + 10;
+				state->diff = cursor_text_w - TEXTBOX_WIDTH + 10;
 			}
-			else if ((text_w <= TEXTBOX_WIDTH -10))
+			else if ((state->diff+cursor_text_w <= TEXTBOX_WIDTH -10))
 			{
 				state->diff = 0;
 			}
+#endif
 		}
 #endif
 	}
