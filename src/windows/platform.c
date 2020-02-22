@@ -17,6 +17,7 @@
 #include <shellapi.h>
 #include <gdiplus.h>
 #include <shlobj.h>
+#include <iphlpapi.h>
 #include "../external/LooplessSizeMove.c"
 
 struct t_platform_window
@@ -1319,4 +1320,41 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 	InternetCloseHandle(hIntSession);
 	
 	return response;
+}
+
+bool platform_get_mac_address(char *buffer, s32 buf_size)
+{
+	PIP_ADAPTER_INFO pAdapterInfo;
+    PIP_ADAPTER_INFO pAdapter = NULL;
+    DWORD dwRetVal = 0;
+    UINT i;
+	
+	ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+	pAdapterInfo = mem_alloc(sizeof(IP_ADAPTER_INFO));
+	
+	if (!pAdapterInfo) return false;
+	
+	if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+        mem_free(pAdapterInfo);
+        pAdapterInfo = mem_alloc(ulOutBufLen);
+        if (!pAdapterInfo) return false;
+    }
+	
+	if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
+		pAdapter = pAdapterInfo;
+		
+		if (pAdapter) {
+			for (i = 0; i < pAdapter->AddressLength; i++) {
+                if (i == (pAdapter->AddressLength - 1))
+                    buffer += sprintf(buffer, "%.2X", (int)pAdapter->Address[i]);
+                else
+                    buffer += sprintf(buffer, "%.2X-", (int)pAdapter->Address[i]);
+            }
+			
+			if (pAdapterInfo) mem_free(pAdapterInfo);
+			return true;
+		}
+	}
+	
+	return false;
 }

@@ -7,11 +7,19 @@
 #ifndef INCLUDE_LICENSING
 #define INCLUDE_LICENSING
 
+typedef enum t_license_status
+{
+	LICENSE_STATUS_VALID = 1,
+	LICENSE_STATUS_INVALID = 2,
+	LICENSE_STATUS_TOO_MANY_USERS = 3,
+} license_status;
+
 // NOTE DO NOT TOUCH THIS!
 char license_key[18] = { "[LICENSELOCATION]" };
 // NOTE DO NOT TOUCH THIS!
 
-bool license_is_valid = true;
+license_status global_license_status = LICENSE_STATUS_VALID;
 void validate_license();
+bool license_check_status();
 
 #endif

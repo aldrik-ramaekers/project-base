@@ -615,9 +615,9 @@ inline void platform_init(int argc, char **argv)
 	char buf[MAX_INPUT_LENGTH];
 	get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
-
+	
 	curl = curl_easy_init();
-
+	
 	assets_create();
 }
 
@@ -1613,7 +1613,7 @@ uint write_cb(char *in, uint size, uint nmemb, char *buffer)
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {
 	string_copyn(response_buffer, "", MAX_INPUT_LENGTH);
-
+	
 	char fullurl[200];
 	sprintf(fullurl, "https://%s/%s", url, params);
 	curl_easy_setopt(curl, CURLOPT_URL,fullurl);
@@ -1625,6 +1625,12 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
 	CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK) return false;
+	
+	return true;
+}
 
+bool platform_get_mac_address(char *buffer, s32 buf_size)
+{
+	string_copyn(buffer, "", buf_size);
 	return true;
 }
