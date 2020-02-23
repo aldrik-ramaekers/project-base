@@ -137,6 +137,22 @@ typedef struct t_button_state
 	bool state;
 } button_state;
 
+typedef struct t_submenu_state
+{
+	bool open;
+	bool hovered;
+	s32 item_count;
+	s32 w;
+	s32 x;
+	s32 y;
+} submenu_state;
+
+typedef struct t_submenus
+{
+	s32 count;
+	submenu_state *submenu_stack[5];
+} submenus;
+
 typedef struct t_ui_context
 {
 	ui_style style;
@@ -151,6 +167,7 @@ typedef struct t_ui_context
 	dropdown_state *active_dropdown;
 	u32 confirming_button_id;
 	textbox_state *current_active_textbox;
+	submenus submenus;
 	bool item_hovered;
 } ui_context;
 
@@ -176,6 +193,7 @@ textbox_state ui_create_textbox(u16 max_len);
 button_state ui_create_button();
 scroll_state ui_create_scroll(s32 scroll);
 dropdown_state ui_create_dropdown();
+submenu_state ui_create_submenu();
 
 void ui_destroy_textbox(textbox_state *state);
 
@@ -184,7 +202,10 @@ bool is_shortcut_down(s32 shortcut_keys[2]);
 void ui_begin_menu_bar();
 bool ui_push_menu(char *title);
 bool ui_push_menu_item(char *title, char *shortcut);
+void ui_begin_menu_submenu(submenu_state *state, char *title);
+void ui_end_menu_submenu();
 void ui_push_menu_item_separator();
+void ui_end_menu_bar();
 bool ui_push_dropdown(dropdown_state *state, char *title);
 bool ui_push_dropdown_item(image *icon, char *title, s32 index);
 void ui_push_separator();
@@ -192,7 +213,6 @@ void ui_push_rect(s32 w, color rec);
 void ui_push_vertical_dragbar();
 void ui_block_begin(layout_direction direction);
 void ui_block_end();
-void ui_end_menu_bar();
 void ui_push_text(char *text);
 bool ui_push_text_width(char *text, s32 maxw, bool active);
 void ui_push_textf(font *f, char *text);

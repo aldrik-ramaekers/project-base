@@ -13,11 +13,23 @@ inline void ui_begin(s32 id)
 	global_ui_context.layout.width = global_ui_context.layout.active_window->width;
 	global_ui_context.layout.height = global_ui_context.layout.active_window->height;
 	global_ui_context.layout.active_dropdown_state = 0;
+	global_ui_context.submenus.count = 0;
 }
 
 inline void ui_end()
 {
 	
+}
+
+inline submenu_state ui_create_submenu()
+{
+	submenu_state state;
+	state.open = false;
+	state.hovered = false;
+	state.item_count = 0;
+	state.w = MENU_ITEM_WIDTH;
+	
+	return state;
 }
 
 inline checkbox_state ui_create_checkbox(bool selected)
@@ -1239,32 +1251,131 @@ inline bool is_shortcut_down(s32 shortcut_keys[2])
 		keyboard_is_key_pressed(global_ui_context.keyboard, shortcut_keys[1]);
 }
 
+void ui_begin_menu_submenu(submenu_state *state, char *title)
+{
+	bool result = ui_push_menu_item(title, "");
+	
+	s32 w = state->w;
+	s32 h = MENU_BAR_HEIGHT;
+	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
+	s32 y = global_ui_context.layout.offset_y + (global_ui_context.menu_item_count * h)+1 +
+		global_ui_context.layout.menu_offset_y + global_ui_context.camera->y;
+	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
+	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
+	
+	state->x = x + MENU_ITEM_WIDTH;
+	state->y = y;
+	state->item_count = 0;
+	
+	if ((mouse_x >= x && mouse_x < x + MENU_ITEM_WIDTH && mouse_y >= y && mouse_y < y + h))
+	{
+		state->hovered = true;
+		state->open = true;
+	}
+	else
+	{
+		state->hovered = false;
+	}
+	
+	assert(global_ui_context.submenus.count <= 4);
+	global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count++] = state;
+	
+	if (result) state->open = false;
+}
+
+void ui_end_menu_submenu()
+{
+	set_render_depth(30);
+	
+	submenu_state *state = global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count-1];
+	
+	s32 w = state->w;
+	s32 h = MENU_BAR_HEIGHT;
+	s32 total_h = state->item_count*h;
+	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
+	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
+	
+	if (state->open)
+	{
+		if (!(mouse_x >= state->x && mouse_x < state->x + w && mouse_y >= state->y && mouse_y < state->y + total_h) && !state->hovered)
+		{
+			state->open = false;
+		}
+		
+		if (!state->item_count)
+		{
+			s32 text_h = global_ui_context.font_small->px_h;
+			s32 text_y = state->y - (text_h / 2) + (h / 2);
+			s32 text_x = state->x + MENU_HORIZONTAL_PADDING;
+			
+			total_h = h;
+			render_rectangle(state->x, state->y, w, total_h, global_ui_context.style.widget_background);
+			render_rectangle_outline(state->x, state->y, w, total_h, 1, global_ui_context.style.border);
+			
+			// TODO(Aldrik): localize
+			render_text(global_ui_context.font_small, text_x, text_y, "No recent projects.", global_ui_context.style.foreground);
+		}
+		else
+		{
+			render_rectangle(state->x, state->y, w, 1, global_ui_context.style.border);
+		}
+	}
+	
+	
+	global_ui_context.submenus.count--;
+	
+	set_render_depth(1);
+}
+
 bool ui_push_menu_item(char *title, char *shortcut)
 {
 	bool result = false;
 	
 	set_render_depth(30);
 	
-	global_ui_context.menu_item_count++;
-	
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
 	s32 w = MENU_ITEM_WIDTH;
 	s32 text_h = global_ui_context.font_small->px_h;
 	s32 h = MENU_BAR_HEIGHT;
-	s32 y = global_ui_context.layout.offset_y + (global_ui_context.menu_item_count * h)+1 +
+	s32 y = global_ui_context.layout.offset_y + ((global_ui_context.menu_item_count+1) * h)+1 +
 		global_ui_context.layout.menu_offset_y + global_ui_context.camera->y;
-	s32 text_y = y - (text_h / 2) + (h / 2);
-	s32 text_x = x + MENU_HORIZONTAL_PADDING;
-	s32 text_2_x = x + w - MENU_HORIZONTAL_PADDING
-		- calculate_text_width(global_ui_context.font_small, shortcut);
 	
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
 	
-	if (global_ui_context.layout.block_height < h)
-		global_ui_context.layout.block_height = h;
-	
 	color bg_color = global_ui_context.style.menu_background;
+	
+	s32 text_y = 0;
+	s32 text_x = 0;
+	s32 text_2_x = 0;
+	
+	submenu_state *state = 0;
+	if (global_ui_context.submenus.count)
+	{
+		state = global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count-1];
+		w = state->w;
+		
+		if (!state->open) return false;
+		
+		x = state->x;
+		y = state->y + (state->item_count*h);
+		
+		text_y = y - (text_h / 2) + (h / 2);
+		text_x = x + MENU_HORIZONTAL_PADDING;
+		text_2_x = x + w - MENU_HORIZONTAL_PADDING
+			- calculate_text_width(global_ui_context.font_small, shortcut);
+		
+		state->item_count++;
+	}
+	else
+	{
+		global_ui_context.menu_item_count++;
+		
+		text_y = y - (text_h / 2) + (h / 2);
+		text_x = x + MENU_HORIZONTAL_PADDING;
+		text_2_x = x + w - MENU_HORIZONTAL_PADDING
+			- calculate_text_width(global_ui_context.font_small, shortcut);
+	}
 	
 	if ((mouse_x >= x && mouse_x < x + w && mouse_y >= y && mouse_y < y + h))
 	{
@@ -1274,6 +1385,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
 		{
+			if (state) state->open = false;
 			global_ui_context.mouse->left_state &= ~MOUSE_CLICK;
 			result = true;
 		}
@@ -1677,7 +1789,7 @@ void ui_scroll_begin(scroll_state *state)
 void ui_scroll_end()
 {
 	s32 max_scroll = (global_ui_context.layout.scroll->scroll_start_offset_y -
-					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height;
+					  global_ui_context.layout.offset_y) + global_ui_context.layout.scroll->height - WIDGET_PADDING;
 	
 	//global_ui_context.layout.offset_x -= WIDGET_PADDING;
 	global_ui_context.layout.offset_y = global_ui_context.layout.scroll->scroll_start_offset_y + global_ui_context.layout.scroll->height;
