@@ -22,6 +22,8 @@
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
 #include <curl/curl.h>
+#include <ifaddrs.h>
+#include <netpacket/packet.h>
 
 #define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
 
@@ -1619,7 +1621,7 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 	curl_easy_setopt(curl, CURLOPT_URL,fullurl);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
@@ -1631,6 +1633,36 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 
 bool platform_get_mac_address(char *buffer, s32 buf_size)
 {
-	string_copyn(buffer, "", buf_size);
-	return true;
+	struct ifaddrs *ifaddr=NULL;
+    struct ifaddrs *ifa = NULL;
+    int i = 0;
+	
+    if (getifaddrs(&ifaddr) == -1)
+    {
+		return false;
+	}
+    else
+    {
+		for ( ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+		{
+			if ( (ifa->ifa_addr) && (ifa->ifa_addr->sa_family == AF_PACKET) )
+			{
+				struct sockaddr_ll *s = (struct sockaddr_ll*)ifa->ifa_addr;
+				for (i=0; i <s->sll_halen; i++)
+				{
+					buffer += sprintf(buffer, "%02x", (s->sll_addr[i]));
+					
+					if (i+1!=s->sll_halen)
+					{
+						buffer += sprintf(buffer, "%c", '-');
+					}
+				}
+				
+				freeifaddrs(ifaddr);
+				return true;
+			}
+		}
+    }
+	
+	return false;
 }
