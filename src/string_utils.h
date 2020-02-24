@@ -72,6 +72,7 @@ bool string_remove(char **buffer, char *text);
 char* string_get_json_literal(char **buffer, char *tmp);
 s32 string_get_json_number(char **buffer);
 s32 string_get_json_ulong_number(char **buffer);
+char *string_get_next(char *list, char *buffer, char seperator);
 
 utf8_int32_t utf8_str_at(char *str, s32 index);
 void utf8_str_remove_at(char *str, s32 at);
