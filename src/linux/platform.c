@@ -21,9 +21,9 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
-#include <curl/curl.h>
-#include <ifaddrs.h>
-#include <netpacket/packet.h>
+//#include <curl/curl.h>
+//#include <ifaddrs.h>
+//#include <netpacket/packet.h>
 
 #define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
 
@@ -1606,6 +1606,7 @@ void platform_set_icon(platform_window *window, image *img)
 								 (unsigned char *)data, nelements);
 }
 
+#if 0
 uint write_cb(char *in, uint size, uint nmemb, char *buffer)
 {
 	string_appendn(buffer, in, MAX_INPUT_LENGTH);
@@ -1666,3 +1667,4 @@ bool platform_get_mac_address(char *buffer, s32 buf_size)
 	
 	return false;
 }
+#endif

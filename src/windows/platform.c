@@ -4,7 +4,7 @@
 *  All rights reserved.
 */
 
-#include <wininet.h>
+//#include <wininet.h>
 #include <locale.h>
 #include <windows.h>
 #include <GL/gl.h>
@@ -17,7 +17,7 @@
 #include <shellapi.h>
 #include <gdiplus.h>
 #include <shlobj.h>
-#include <iphlpapi.h>
+//#include <iphlpapi.h>
 #include "../external/LooplessSizeMove.c"
 
 struct t_platform_window
@@ -526,10 +526,6 @@ void platform_get_focus(platform_window *window)
 
 platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h)
 {
-#if !defined(MODE_GDBDEBUG) && !defined(MODE_DEVELOPER)
-	ShowWindow(GetConsoleWindow(), SW_HIDE);
-#endif
-	
 	platform_window window;
 	window.has_focus = true;
 	window.window_handle = 0;
@@ -546,7 +542,7 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 	current_window_to_handle = &window;
 	
 	memset(&window.window_class, 0, sizeof(WNDCLASS));
-	window.window_class.style = CS_OWNDC;
+	window.window_class.style = CS_OWNDC|CS_VREDRAW|CS_HREDRAW;
 	window.window_class.lpfnWndProc = main_window_callback;
 	window.window_class.hInstance = instance;
 	window.window_class.lpszClassName = name;
@@ -562,18 +558,17 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 		else
 			style |= WS_THICKFRAME;
 		
-		window.window_handle = CreateWindowEx(0,
-											  window.window_class.lpszClassName,
-											  name,
-											  style,
-											  CW_USEDEFAULT,
-											  CW_USEDEFAULT,
-											  width,
-											  height,
-											  0,
-											  0,
-											  instance,
-											  0);
+		window.window_handle = CreateWindow(window.window_class.lpszClassName,
+											name,
+											style,
+											CW_USEDEFAULT,
+											CW_USEDEFAULT,
+											width,
+											height,
+											0,
+											0,
+											instance,
+											0);
 		
 		if (window.window_handle)
 		{
@@ -608,6 +603,10 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			wglMakeCurrent(window.hdc, window.gl_context);
 			
 			ShowWindow(window.window_handle, cmd_show);
+			//BringWindowToTop(window.window_handle);
+			
+			AllowSetForegroundWindow(ASFW_ANY);
+			SetForegroundWindow(window.window_handle);
 			
 			// blending
 			glEnable(GL_DEPTH_TEST);
@@ -1274,6 +1273,7 @@ s8 string_to_s8(char *str)
 	return (s8)strtoul(str, 0, 10);
 }
 
+#if 0
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {
 	// https://www.unix.com/programming/187337-c-http-get-request-using-sockets.html
@@ -1358,3 +1358,4 @@ bool platform_get_mac_address(char *buffer, s32 buf_size)
 	
 	return false;
 }
+#endif
