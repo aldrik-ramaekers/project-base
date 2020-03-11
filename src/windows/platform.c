@@ -780,6 +780,18 @@ void platform_window_swap_buffers(platform_window *window)
 	SwapBuffers(window->hdc);
 }
 
+s32 platform_get_file_size(char *path)
+{
+	FILE *file = fopen(path, "r");
+	if (!file) return -1;
+	
+	fseek(file, 0 , SEEK_END);
+	int length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	return length;
+}
+
 file_content platform_read_file_content(char *path, const char *mode)
 {
 	file_content result;

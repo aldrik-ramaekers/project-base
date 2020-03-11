@@ -258,6 +258,19 @@ bool platform_directory_exists(char *path)
 	}
 }
 
+
+s32 platform_get_file_size(char *path)
+{
+	FILE *file = fopen(path, "r");
+	if (!file) return -1;
+	
+	fseek(file, 0 , SEEK_END);
+	int length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	return length;
+}
+
 file_content platform_read_file_content(char *path, const char *mode)
 {
 	file_content result;
@@ -596,7 +609,7 @@ static void create_key_tables(platform_window window)
 	XkbFreeKeyboard(desc, 0, True);
 }
 
-CURL *curl;
+//CURL *curl;
 inline void platform_init(int argc, char **argv)
 {
 #if 0
@@ -618,7 +631,7 @@ inline void platform_init(int argc, char **argv)
 	get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
 	
-	curl = curl_easy_init();
+	//curl = curl_easy_init();
 	
 	assets_create();
 }
@@ -626,8 +639,8 @@ inline void platform_init(int argc, char **argv)
 inline void platform_destroy()
 {
 	assets_destroy();
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
+	//curl_easy_cleanup(curl);
+	//curl_global_cleanup();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();

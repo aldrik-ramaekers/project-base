@@ -175,6 +175,7 @@ void platform_window_swap_buffers(platform_window *window);
 void platform_set_cursor(platform_window *window, cursor_type type);
 void platform_window_set_title(platform_window *window, char *name);
 file_content platform_read_file_content(char *path, const char *mode);
+s32 platform_get_file_size(char *path);
 bool platform_write_file_content(char *path, const char *mode, char *buffer, s32 len);
 void platform_destroy_file_content(file_content *content);
 bool get_active_directory(char *buffer);
