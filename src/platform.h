@@ -124,6 +124,7 @@ typedef enum t_file_open_error
 	FILE_ERROR_REMOTE_IO_ERROR = 8,
 	FILE_ERROR_STALE = 9, // NFS server file is removed/renamed
 	FILE_ERROR_GENERIC = 10,
+	FILE_ERROR_TOO_BIG = 11,
 } file_open_error;
 
 struct open_dialog_args

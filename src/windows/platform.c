@@ -782,7 +782,7 @@ void platform_window_swap_buffers(platform_window *window)
 
 s32 platform_get_file_size(char *path)
 {
-	FILE *file = fopen(path, "r");
+	FILE *file = fopen(path, "rb");
 	if (!file) return -1;
 	
 	fseek(file, 0 , SEEK_END);

@@ -261,7 +261,7 @@ bool platform_directory_exists(char *path)
 
 s32 platform_get_file_size(char *path)
 {
-	FILE *file = fopen(path, "r");
+	FILE *file = fopen(path, "rb");
 	if (!file) return -1;
 	
 	fseek(file, 0 , SEEK_END);
