@@ -153,6 +153,12 @@ typedef struct t_submenus
 	submenu_state *submenu_stack[5];
 } submenus;
 
+typedef struct t_ui_tooltip
+{
+	s32 x;
+	s32 y;
+} ui_tooltip;
+
 typedef struct t_ui_context
 {
 	ui_style style;
@@ -169,6 +175,9 @@ typedef struct t_ui_context
 	textbox_state *current_active_textbox;
 	submenus submenus;
 	bool item_hovered;
+	u32 item_hovered_id;
+	u32 item_hovered_duration;
+	ui_tooltip tooltip;
 } ui_context;
 
 ui_context global_ui_context;
@@ -224,7 +233,9 @@ bool ui_push_checkbox(checkbox_state *state, char *title);
 bool ui_push_textbox(textbox_state *state, char *title);
 bool ui_push_button(button_state *button, char *title);
 bool ui_push_button_image(button_state *button, char *title, image *img);
+bool ui_push_button_image_with_confirmation(button_state *state, char *title, image *img);
 void ui_scroll_begin(scroll_state *state);
+void ui_push_tooltip(char *text);
 void ui_scroll_end();
 
 #endif

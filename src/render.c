@@ -496,13 +496,24 @@ s32 calculate_text_width(font *font, char *text)
 	return x;
 }
 
-void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint)
+void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction dir)
 {
 	glBegin(GL_TRIANGLES);
 	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-	glVertex3i(x+(w/2), y+h, render_depth);
-	glVertex3i(x, y, render_depth);
-	glVertex3i(x+w, y, render_depth);
+	
+	if (dir == TRIANGLE_DOWN)
+	{
+		glVertex3i(x+(w/2), y+h, render_depth);
+		glVertex3i(x, y, render_depth);
+		glVertex3i(x+w, y, render_depth);
+	}
+	else if (dir == TRIANGLE_UP)
+	{
+		glVertex3i(x+(w/2), y, render_depth);
+		glVertex3i(x+w, y+h, render_depth);
+		glVertex3i(x, y+h, render_depth);
+	}
+	
 	glEnd();
 }
 

@@ -22,6 +22,12 @@ typedef struct t_vec4
 	s32 h;
 } vec4;
 
+typedef enum t_triangle_direction
+{
+	TRIANGLE_DOWN,
+	TRIANGLE_UP,
+} triangle_direction;
+
 s32 render_depth = 1;
 void set_render_depth(s32 depth);
 
@@ -50,7 +56,7 @@ s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index);
 void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint);
 void render_rectangle_tint(s32 x, s32 y, s32 width, s32 height, color tint[4]);
 void render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16 outline_w, color tint);
-void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint);
+void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction dir);
 
 // utils
 void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h);

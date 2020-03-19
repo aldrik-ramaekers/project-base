@@ -4,6 +4,20 @@
 *  All rights reserved.
 */
 
+void ui_set_hovered(u32 id, s32 x, s32 y)
+{
+	global_ui_context.item_hovered = true;
+	global_ui_context.tooltip.x = x;
+	global_ui_context.tooltip.y = y;
+	
+	if (global_ui_context.item_hovered_id == id)
+		global_ui_context.item_hovered_duration++;
+	else
+		global_ui_context.item_hovered_duration = 0;
+	
+	global_ui_context.item_hovered_id = id;
+}
+
 inline void ui_begin(s32 id)
 {
 	global_ui_context.item_hovered = false;
@@ -18,7 +32,7 @@ inline void ui_begin(s32 id)
 
 inline void ui_end()
 {
-	
+	if (!global_ui_context.item_hovered) global_ui_context.item_hovered_duration = 0;
 }
 
 inline submenu_state ui_create_submenu()
@@ -186,10 +200,18 @@ inline void ui_create(platform_window *window, keyboard_input *keyboard, mouse_i
 	
 	global_ui_context.keyboard = keyboard;
 	global_ui_context.mouse = mouse;
+	global_ui_context.camera = camera;
 	global_ui_context.font_small = font_small;
 	global_ui_context.active_menus = array_create(sizeof(s32));
 	global_ui_context.menu_item_count = 0;
-	global_ui_context.camera = camera;
+	
+	global_ui_context.active_dropdown = 0;
+	global_ui_context.confirming_button_id = -1;
+	global_ui_context.current_active_textbox = 0;
+	
+	global_ui_context.item_hovered = false;
+	global_ui_context.item_hovered_id = -1;
+	global_ui_context.item_hovered_duration = 0;
 	
 	array_reserve(&global_ui_context.active_menus, 100);
 }
@@ -213,6 +235,7 @@ static void ui_pop_scissor()
 
 inline void ui_block_begin(layout_direction direction)
 {
+	u32 id = ui_get_id();
 	global_ui_context.layout.layout_direction = direction;
 	global_ui_context.layout.block_height = 0;
 	global_ui_context.layout.start_offset_y = global_ui_context.layout.offset_y;
@@ -277,6 +300,7 @@ inline void ui_push_separator()
 
 void ui_push_vertical_dragbar()
 {
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x + global_ui_context.layout.width;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 	s32 h = global_ui_context.layout.height;
@@ -303,6 +327,7 @@ bool ui_push_color_button(char *text, bool selected, color c)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
@@ -385,7 +410,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y > y && mouse_y < y + h)
 	{
-		global_ui_context.item_hovered = true;
+		ui_set_hovered(id, x+(total_w/2) + WIDGET_PADDING, y-WIDGET_PADDING);
 		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
@@ -444,7 +469,8 @@ bool ui_push_dropdown(dropdown_state *state, char *title)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= y && mouse_y < y + h && !global_ui_context.item_hovered)
 	{
-		global_ui_context.item_hovered = true;
+		ui_set_hovered(id, x+(total_w/2), y+h);
+		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
@@ -464,7 +490,7 @@ bool ui_push_dropdown(dropdown_state *state, char *title)
 	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
 	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
-	render_triangle(x+total_w - h, y+(h-(h-12))/2, h-12, h-12, global_ui_context.style.border);
+	render_triangle(x+total_w - h, y+(h-(h-12))/2, h-12, h-12, global_ui_context.style.border, TRIANGLE_DOWN);
 	global_ui_context.layout.dropdown_x = global_ui_context.layout.offset_x;
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -563,6 +589,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (!global_ui_context.layout.active_window->has_focus)
 		state->state = false;
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + 5;
@@ -992,6 +1019,7 @@ bool ui_push_hypertext_link(char *text)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1031,6 +1059,7 @@ bool ui_push_hypertext_link(char *text)
 
 void ui_push_textf(font *f, char *text)
 {
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1053,6 +1082,7 @@ void ui_push_textf(font *f, char *text)
 
 void ui_push_textf_width(font *f, char *text, s32 maxw)
 {
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1075,6 +1105,7 @@ void ui_push_textf_width(font *f, char *text, s32 maxw)
 
 void ui_push_text(char *text)
 {
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1096,6 +1127,7 @@ void ui_push_text(char *text)
 
 void ui_push_rect(s32 w, color c)
 {
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
@@ -1132,6 +1164,7 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1192,6 +1225,7 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1219,8 +1253,10 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 			virt_top = top;
 	}
 	
-	if (mouse_x >= x && mouse_x < x + CHECKBOX_SIZE && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
+	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
+		ui_set_hovered(id, x+(total_w/2), y+CHECKBOX_SIZE);
+		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
@@ -1255,6 +1291,7 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 {
 	bool result = ui_push_menu_item(title, "");
 	
+	u32 id = ui_get_id();
 	s32 w = state->w;
 	s32 h = MENU_BAR_HEIGHT;
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
@@ -1333,6 +1370,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	
 	set_render_depth(30);
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
 	s32 w = MENU_ITEM_WIDTH;
 	s32 text_h = global_ui_context.font_small->px_h;
@@ -1381,7 +1419,8 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	{
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		bg_color = global_ui_context.style.menu_hover_background;
-		global_ui_context.item_hovered = true;
+		
+		ui_set_hovered(id, x+w + WIDGET_PADDING, y - WIDGET_PADDING);
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
 		{
@@ -1413,6 +1452,7 @@ bool ui_push_image(image *img, s32 w, s32 h, s32 outline, color tint)
 	
 	if (!img->loaded) return result;
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 total_w = w;
@@ -1463,6 +1503,7 @@ bool ui_push_button(button_state *state, char *title)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
@@ -1526,8 +1567,8 @@ bool ui_push_button(button_state *state, char *title)
 bool ui_push_button_image_with_confirmation(button_state *state, char *title, image *img)
 {
 	bool result = false;
-	u32 id = ui_get_id();
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
@@ -1657,6 +1698,7 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 {
 	bool result = false;
 	
+	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
@@ -1715,6 +1757,8 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
+		ui_set_hovered(id, x+(total_w/2), y+h);
+		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		bg_color = global_ui_context.style.widget_hover_background;
 		
@@ -1877,4 +1921,28 @@ void ui_scroll_end()
 	}
 	render_reset_scissor();
 	global_ui_context.layout.scroll->in_scroll = false;
+}
+
+void ui_push_tooltip(char *text)
+{
+	if (global_ui_context.item_hovered && global_ui_context.item_hovered_id == global_ui_context.next_id-1)
+	{
+		if (global_ui_context.item_hovered_duration > (1000/TARGET_FRAMERATE)/2)
+		{
+			s32 total_w = calculate_text_width(global_ui_context.font_small, text) +
+				WIDGET_PADDING + WIDGET_PADDING;
+			s32 x = global_ui_context.tooltip.x - (total_w/2);
+			s32 y = global_ui_context.tooltip.y + WIDGET_PADDING+3;
+			
+			set_render_depth(30);
+			
+			s32 triangle_s = 20;
+			render_triangle(x+(total_w/2)-(triangle_s/2), y-6,triangle_s,9, rgb(40,40,40), TRIANGLE_UP);
+			render_rectangle(x, y,total_w,TEXTBOX_HEIGHT, rgb(40,40,40));
+			
+			
+			render_text(global_ui_context.font_small, x + WIDGET_PADDING, y + (TEXTBOX_HEIGHT/2)- (global_ui_context.font_small->px_h/2), text, rgb(240,240,240));
+			set_render_depth(1);
+		}
+	}
 }
