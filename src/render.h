@@ -26,6 +26,8 @@ typedef enum t_triangle_direction
 {
 	TRIANGLE_DOWN,
 	TRIANGLE_UP,
+	TRIANGLE_LEFT,
+	TRIANGLE_RIGHT,
 } triangle_direction;
 
 s32 render_depth = 1;

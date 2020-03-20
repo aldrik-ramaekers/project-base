@@ -157,6 +157,8 @@ typedef struct t_ui_tooltip
 {
 	s32 x;
 	s32 y;
+	s32 w;
+	s32 h;
 } ui_tooltip;
 
 typedef struct t_ui_context

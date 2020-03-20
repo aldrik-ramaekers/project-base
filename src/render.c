@@ -513,6 +513,16 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 		glVertex3i(x+w, y+h, render_depth);
 		glVertex3i(x, y+h, render_depth);
 	}
+	else if (dir == TRIANGLE_LEFT)
+	{
+		glVertex3i(x, y+(w/2), render_depth);
+		glVertex3i(x+h, y, render_depth);
+		glVertex3i(x+h, y+w, render_depth);
+	}
+	else if (dir == TRIANGLE_RIGHT)
+	{
+		// TODO(Aldrik): implement
+	}
 	
 	glEnd();
 }
@@ -560,14 +570,14 @@ void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 	glScissor(x-1, window->height-h-y-1, w+1, h+1);
 }
 
-vec4 render_get_scissor()
+vec4 render_get_scissor(platform_window *window)
 {
 	vec4 vec;
 	glGetIntegerv(GL_SCISSOR_BOX, (GLint*)(&vec));
 	vec.x += 1;
-	vec.y += 1;
 	vec.w -= 1;
 	vec.h -= 1;
+	vec.y += 1;
 	return vec;
 }
 

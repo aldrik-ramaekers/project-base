@@ -4,11 +4,13 @@
 *  All rights reserved.
 */
 
-void ui_set_hovered(u32 id, s32 x, s32 y)
+void ui_set_hovered(u32 id, s32 x, s32 y, s32 w, s32 h)
 {
 	global_ui_context.item_hovered = true;
 	global_ui_context.tooltip.x = x;
 	global_ui_context.tooltip.y = y;
+	global_ui_context.tooltip.w = w;
+	global_ui_context.tooltip.h = h;
 	
 	if (global_ui_context.item_hovered_id == id)
 		global_ui_context.item_hovered_duration++;
@@ -410,7 +412,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y > y && mouse_y < y + h)
 	{
-		ui_set_hovered(id, x+(total_w/2) + WIDGET_PADDING, y-WIDGET_PADDING);
+		ui_set_hovered(id, x,y,total_w,h);
 		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
@@ -469,7 +471,7 @@ bool ui_push_dropdown(dropdown_state *state, char *title)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= y && mouse_y < y + h && !global_ui_context.item_hovered)
 	{
-		ui_set_hovered(id, x+(total_w/2), y+h);
+		ui_set_hovered(id, x,y,total_w,h);
 		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
@@ -1255,7 +1257,7 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
-		ui_set_hovered(id, x+(total_w/2), y+CHECKBOX_SIZE);
+		ui_set_hovered(id, x,y,total_w,CHECKBOX_SIZE);
 		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
@@ -1420,7 +1422,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		bg_color = global_ui_context.style.menu_hover_background;
 		
-		ui_set_hovered(id, x+w + WIDGET_PADDING, y - WIDGET_PADDING);
+		ui_set_hovered(id, x,y,w,h);
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
 		{
@@ -1533,6 +1535,7 @@ bool ui_push_button(button_state *state, char *title)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
+		ui_set_hovered(id, x,y,total_w,h);
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		bg_color = global_ui_context.style.widget_hover_background;
 		
@@ -1640,6 +1643,7 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
+		ui_set_hovered(id, x,y,total_w,h);
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		
 		if (confirming)
@@ -1757,7 +1761,7 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
-		ui_set_hovered(id, x+(total_w/2), y+h);
+		ui_set_hovered(id, x,y,total_w,h);
 		
 		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
 		bg_color = global_ui_context.style.widget_hover_background;
@@ -1931,18 +1935,46 @@ void ui_push_tooltip(char *text)
 		{
 			s32 total_w = calculate_text_width(global_ui_context.font_small, text) +
 				WIDGET_PADDING + WIDGET_PADDING;
-			s32 x = global_ui_context.tooltip.x - (total_w/2);
-			s32 y = global_ui_context.tooltip.y + WIDGET_PADDING+3;
+			
+			s32 x = 0;
+			s32 y = 0;
+			s32 triangle_s = 20;
+			
+			render_reset_scissor();
 			
 			set_render_depth(30);
 			
-			s32 triangle_s = 20;
-			render_triangle(x+(total_w/2)-(triangle_s/2), y-6,triangle_s,9, rgb(40,40,40), TRIANGLE_UP);
+			// align right
+			if (global_ui_context.tooltip.x < (total_w/2))
+			{
+				x = global_ui_context.tooltip.x + global_ui_context.tooltip.w + WIDGET_PADDING+3;
+				y = global_ui_context.tooltip.y;
+				
+				render_triangle(x-6, y+(TEXTBOX_HEIGHT/2)-9,triangle_s,9, rgb(40,40,40), TRIANGLE_LEFT);
+			}
+			// align left
+			else if (global_ui_context.tooltip.x > 
+					 global_ui_context.layout.active_window->width-(total_w/2))
+			{
+				// TODO(Aldrik): implement
+			}
+			// align bottom
+			else
+			{
+				x = global_ui_context.tooltip.x - (total_w/2) + (global_ui_context.tooltip.w/2);
+				y = global_ui_context.tooltip.y + global_ui_context.tooltip.h + 
+					WIDGET_PADDING+3;
+				
+				render_triangle(x+(total_w/2)-(triangle_s/2), y-6,triangle_s,9, rgb(40,40,40), TRIANGLE_UP);
+			}
+			
 			render_rectangle(x, y,total_w,TEXTBOX_HEIGHT, rgb(40,40,40));
 			
-			
 			render_text(global_ui_context.font_small, x + WIDGET_PADDING, y + (TEXTBOX_HEIGHT/2)- (global_ui_context.font_small->px_h/2), text, rgb(240,240,240));
+			
 			set_render_depth(1);
+			
+			ui_pop_scissor();
 		}
 	}
 }
