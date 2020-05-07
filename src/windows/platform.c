@@ -526,6 +526,13 @@ void platform_get_focus(platform_window *window)
 
 platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h)
 {
+	debug_print_elapsed_title("window creation");
+	debug_print_elapsed_indent();
+	
+#ifdef MODE_DEVELOPER
+	u64 startup_stamp = platform_get_time(TIME_FULL, TIME_US);
+#endif
+	
 	platform_window window;
 	window.has_focus = true;
 	window.window_handle = 0;
@@ -549,8 +556,12 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 	window.window_class.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 	//window.window_class.hCursor = LoadCursor(NULL, IDC_ARROW);
 	
+	debug_print_elapsed(startup_stamp, "setup");
+	
 	if (RegisterClass(&window.window_class))
 	{
+		debug_print_elapsed(startup_stamp, "register class");
+		
 		int style = WS_VISIBLE|WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
 		
 		if (min_w != max_w && min_h != max_h)
@@ -570,6 +581,8 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 											instance,
 											0);
 		
+		debug_print_elapsed(startup_stamp, "create window");
+		
 		if (window.window_handle)
 		{
 			window.hdc = GetDC(window.window_handle);
@@ -582,13 +595,17 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			format.cColorBits = 24;
 			format.cAlphaBits = 8;
 			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
-			s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format);
+			s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format); // SLOW AF??
 			
 			PIXELFORMATDESCRIPTOR actual_format;
 			DescribePixelFormat(window.hdc, suggested_format_index, sizeof(actual_format), &actual_format);
 			SetPixelFormat(window.hdc, suggested_format_index, &actual_format);
 			
+			debug_print_elapsed(startup_stamp, "pixel format");
+			
 			window.gl_context = wglCreateContext(window.hdc);
+			
+			debug_print_elapsed(startup_stamp, "gl context");
 			
 			static HGLRC share_list = 0;
 			if (share_list == 0)
@@ -605,8 +622,8 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			ShowWindow(window.window_handle, cmd_show);
 			//BringWindowToTop(window.window_handle);
 			
-			AllowSetForegroundWindow(ASFW_ANY);
-			SetForegroundWindow(window.window_handle);
+			//AllowSetForegroundWindow(ASFW_ANY);
+			//SetForegroundWindow(window.window_handle);
 			
 			// blending
 			glEnable(GL_DEPTH_TEST);
@@ -626,34 +643,19 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
 #endif
 			
-			// https://stackoverflow.com/questions/5627229/sub-pixel-drawing-with-opengl
-			//glHint(GL_POINT_SMOOTH, GL_NICEST);
-			//glHint(GL_LINE_SMOOTH, GL_NICEST);
-			//glHint(GL_POLYGON_SMOOTH, GL_NICEST);
-			
-			//glEnable(GL_SMOOTH);
-			//glEnable(GL_POINT_SMOOTH);
-			//glEnable(GL_LINE_SMOOTH);
-			//glEnable(GL_POLYGON_SMOOTH);
-			//////////////////
-			
 			window.is_open = true;
 			
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glOrtho(0, width, height, 0, -1, 1);
-			
-			//GLint m_viewport[4];
-			//glGetIntegerv( GL_VIEWPORT, m_viewport );
-			//printf("%d %d %d %d\n", m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
-			
 			glMatrixMode(GL_MODELVIEW);
+			
+			debug_print_elapsed(startup_stamp, "gl setup");
 			
 			TRACKMOUSEEVENT track;
 			track.cbSize = sizeof(track);
 			track.dwFlags = TME_LEAVE;
 			track.hwndTrack = window.window_handle;
 			TrackMouseEvent(&track);
+			
+			debug_print_elapsed(startup_stamp, "track mouse");
 		}
 		else
 		{
@@ -668,6 +670,8 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 	}
 	
 	platform_get_focus(&window);
+	
+	debug_print_elapsed_undent();
 	
 	return window;
 }
@@ -789,6 +793,7 @@ s32 platform_get_file_size(char *path)
 	int length = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	
+	fclose(file);
 	return length;
 }
 

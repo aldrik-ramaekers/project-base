@@ -256,7 +256,8 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		{
 			ch = 0x3f;
 		}
-		if (ch == '\n') ch = 0xB6;
+		if (ch == 10) ch = 0xB6;
+		if (ch == 13) continue;
 		
 		glyph g = font->glyphs[ch];
 		

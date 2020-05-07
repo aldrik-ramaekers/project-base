@@ -95,6 +95,10 @@ void assets_do_post_process()
 
 bool assets_queue_worker_load_image(image *image)
 {
+#ifdef MODE_DEVELOPER
+	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
+#endif
+	
 	set_active_directory(binary_path);
 	
 	image->data = stbi_load_from_memory(image->start_addr,
@@ -104,11 +108,17 @@ bool assets_queue_worker_load_image(image *image)
 										&image->channels,
 										STBI_rgb_alpha);
 	
+	debug_print_elapsed(stamp, "loaded image in");
+	
 	return !(image->data == 0);
 }
 
 bool assets_queue_worker_load_font(font *font)
 {
+#ifdef MODE_DEVELOPER
+	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
+#endif
+	
 	unsigned char *ttf_buffer = (unsigned char*)font->start_addr;
 	
     stbtt_fontinfo info;
@@ -140,6 +150,8 @@ bool assets_queue_worker_load_font(font *font)
 	
 	font->info = info;
 	font->scale = scale;
+	
+	debug_print_elapsed(stamp, "loaded font in");
 	
 	return true;
 }
@@ -183,8 +195,7 @@ void *assets_queue_worker()
 			mutex_unlock(&asset_mutex);
 		}
 		
-		// 3 ms
-		thread_sleep(3000);
+		thread_sleep(1000);
 	}
 	
 	return 0;

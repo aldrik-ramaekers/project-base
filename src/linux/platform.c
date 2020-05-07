@@ -268,6 +268,7 @@ s32 platform_get_file_size(char *path)
 	int length = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	
+	fclose(file);
 	return length;
 }
 
