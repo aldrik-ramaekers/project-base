@@ -12,12 +12,13 @@ typedef struct t_image {
 	u8 *end_addr;
 	bool loaded;
 	bool keep_in_memory;
+	bool is_bitmap;
 	s32 width;
 	s32 height;
 	s32 channels;
 	void *data;
 	s16 references;
-	GLuint textureID;
+	u32 textureID;
 } image;
 
 #define TEXT_CHARSET_START 0
@@ -33,7 +34,7 @@ typedef struct t_glyph
 	s32 xoff;
 	s32 yoff;
 	void *bitmap;
-	GLuint textureID;
+	u32 textureID;
 } glyph;
 
 typedef struct t_font
@@ -52,6 +53,7 @@ typedef struct t_font
 typedef enum t_asset_task_type
 {
 	ASSET_IMAGE,
+	ASSET_BITMAP,
 	ASSET_FONT,
 } asset_task_type;
 
@@ -91,6 +93,9 @@ void *assets_queue_worker();
 
 image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory);
 void assets_destroy_image(image *image);
+
+image *assets_load_bitmap(u8 *start_addr, s32 width, s32 height, s32 channels);
+void assets_destroy_bitmap(image *image);
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 void assets_destroy_font(font *font);

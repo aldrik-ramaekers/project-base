@@ -224,6 +224,17 @@ inline bool string_equals(char *first, char *second)
 	return (strcmp(first, second) == 0);
 }
 
+s32 string_length(char *str)
+{
+	utf8_int32_t ch = 0;
+	s32 i = 0;
+	while((str = utf8codepoint(str, &ch)) && ch)
+	{
+		i++;
+	}
+	return i;
+}
+
 // replaces " with \" for file formats
 void string_appendf(char *buffer, char *text)
 {

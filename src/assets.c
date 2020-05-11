@@ -35,13 +35,21 @@ inline static bool is_big_endian()
 
 void assets_do_post_process()
 {
+#if 0
+	static PFNGLTEXIMAGE2DMULTISAMPLEPROC glTexImage2DMultisample = NULL;
+#ifdef OS_WINDOWS
+	if (!glTexImage2DMultisample)
+		glTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLEPROC)wglGetProcAddress("glTexImage2DMultisample");
+#endif
+#endif
+	
 	mutex_lock(&asset_mutex);
 	
 	for (int i = 0; i < global_asset_collection.post_process_queue.length; i++)
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);
 		
-		if (task->type == ASSET_IMAGE)
+		if (task->type == ASSET_IMAGE || task->type == ASSET_BITMAP)
 		{
 			if (task->image->data && task->valid)
 			{
@@ -53,9 +61,16 @@ void assets_do_post_process()
 				
 				glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 							 task->image->height, 0,  GL_RGBA, flag, task->image->data);
+				
+#if 0
+				if (glTexImage2DMultisample)
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA8, task->image->width, task->image->height, TRUE);
+#endif
+				
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				task->image->loaded = true;
+				glBindTexture(GL_TEXTURE_2D, 0);
 				
 				if (!task->image->keep_in_memory)
 					stbi_image_free(task->image->data);
@@ -91,6 +106,19 @@ void assets_do_post_process()
 	}
 	
 	mutex_unlock(&asset_mutex);
+}
+
+bool assets_queue_worker_load_bitmap(image *image)
+{
+#ifdef MODE_DEVELOPER
+	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
+#endif
+	
+	image->data = image->start_addr;
+	
+	debug_print_elapsed(stamp, "loaded image in");
+	
+	return !(image->data == 0);
 }
 
 bool assets_queue_worker_load_image(image *image)
@@ -178,6 +206,11 @@ void *assets_queue_worker()
 			if (buf.type == ASSET_IMAGE)
 			{
 				bool result = assets_queue_worker_load_image(buf.image);
+				buf.valid = result;
+			}
+			if (buf.type == ASSET_BITMAP)
+			{
+				bool result = assets_queue_worker_load_bitmap(buf.image);
 				buf.valid = result;
 			}
 			else if (buf.type == ASSET_FONT)
@@ -324,4 +357,62 @@ void assets_destroy()
 	mem_free(binary_path);
 	
 	mutex_destroy(&asset_mutex);
+}
+
+
+image *assets_load_bitmap(u8 *start_addr, s32 width, s32 height, s32 channels)
+{
+	// check if image is already loaded or loading
+	for (int i = 0; i < global_asset_collection.images.length; i++)
+	{
+		image *img_at = array_at(&global_asset_collection.images, i);
+		
+		if (start_addr == img_at->start_addr)
+		{
+			// image is already loaded/loading
+			img_at->references++;
+			return img_at;
+		}
+	}
+	
+	image new_image;
+	new_image.loaded = false;
+	new_image.start_addr = start_addr;
+	new_image.end_addr = 0;
+	new_image.references = 1;
+	new_image.keep_in_memory = false;
+	new_image.channels = channels;
+	new_image.width = width;
+	new_image.height = height;
+	
+	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
+	// invalidated.
+	assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
+	
+	int index = array_push(&global_asset_collection.images, &new_image);
+	
+	asset_task task;
+	task.type = ASSET_BITMAP;
+	task.image = array_at(&global_asset_collection.images, index);
+	
+	mutex_lock(&asset_mutex);
+	array_push(&global_asset_collection.queue.queue, &task);
+	mutex_unlock(&asset_mutex);
+	
+	return task.image;
+}
+
+void assets_destroy_bitmap(image *image_to_destroy)
+{
+	if (image_to_destroy->references == 1)
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDeleteTextures(1, &image_to_destroy->textureID);
+		
+		//array_remove(&global_asset_collection.images, image_at);
+	}
+	else
+	{
+		image_to_destroy->references--;
+	}
 }

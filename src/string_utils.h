@@ -64,6 +64,7 @@ bool string_match(char *first, char *second);
 bool string_contains_ex(char *big, char *small, array *text_matches, bool *cancel_search);
 void string_trim(char *string);
 bool string_equals(char *first, char *second);
+s32 string_length(char *buffer);
 void string_append(char *buffer, char *text);
 bool string_is_asteriks(char *text);
 void string_copyn(char *buffer, char *text, s32 bufferlen);

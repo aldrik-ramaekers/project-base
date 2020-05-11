@@ -7,7 +7,7 @@
 #ifndef INCLUDE_STOPWATCH
 #define INCLUDE_STOPWATCH
 
-#ifdef MODE_DEVELOPER
+#if defined(MODE_DEVELOPER) && !defined(MODE_TEST)
 s32 _indent_c = 0;
 #define debug_print_elapsed_title(_title) printf("%.*s", _indent_c+1, "|---------------------"); printf("%s\n",  _title)
 #define debug_print_elapsed_indent() _indent_c+=2;

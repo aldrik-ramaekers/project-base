@@ -1777,7 +1777,7 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 			result = true;
 		}
 	}
-	if (is_left_released(global_ui_context.mouse))
+	else if (is_left_released(global_ui_context.mouse))
 	{
 		state->state = 0;
 	}

@@ -672,7 +672,7 @@ vec2 platform_get_window_size(platform_window *window)
 	return res;
 }
 
-platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h)
+platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	bool has_max_size = max_w || max_h;
 	

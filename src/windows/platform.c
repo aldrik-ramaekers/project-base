@@ -4,10 +4,10 @@
 *  All rights reserved.
 */
 
-//#include <wininet.h>
 #include <locale.h>
 #include <windows.h>
 #include <GL/gl.h>
+#include <GL/glcorearb.h>
 #include <stdbool.h>
 #include <sysinfoapi.h>
 #include <wingdi.h>
@@ -26,6 +26,7 @@ struct t_platform_window
 	HDC hdc;
 	HGLRC gl_context;
 	WNDCLASS window_class;
+	s32 flags;
 	
     s32 min_width;
 	s32 min_height;
@@ -372,11 +373,16 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	}
 	else if (message == WM_KILLFOCUS)
 	{
-		current_mouse_to_handle->x = MOUSE_OFFSCREEN;
-		current_mouse_to_handle->y = MOUSE_OFFSCREEN;
+		if (current_mouse_to_handle)
+		{
+			current_mouse_to_handle->x = MOUSE_OFFSCREEN;
+			current_mouse_to_handle->y = MOUSE_OFFSCREEN;
+		}
 		
 		current_window_to_handle->has_focus = false;
-		memset(current_keyboard_to_handle->keys, 0, MAX_KEYCODE);
+		
+		if (current_keyboard_to_handle)
+			memset(current_keyboard_to_handle->keys, 0, MAX_KEYCODE);
 	}
 	else if (message == WM_SETFOCUS)
 	{
@@ -524,7 +530,7 @@ void platform_get_focus(platform_window *window)
 	SetFocus(window->window_handle);
 }
 
-platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h)
+platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	debug_print_elapsed_title("window creation");
 	debug_print_elapsed_indent();
@@ -563,23 +569,46 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 		debug_print_elapsed(startup_stamp, "register class");
 		
 		int style = WS_VISIBLE|WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
+		int ex_style = 0;
 		
 		if (min_w != max_w && min_h != max_h)
 			style |= WS_SIZEBOX;
 		else
 			style |= WS_THICKFRAME;
 		
-		window.window_handle = CreateWindow(window.window_class.lpszClassName,
-											name,
-											style,
-											CW_USEDEFAULT,
-											CW_USEDEFAULT,
-											width,
-											height,
-											0,
-											0,
-											instance,
-											0);
+		if (flags & FLAGS_BORDERLESS)
+		{
+			style = WS_VISIBLE|WS_POPUP;
+		}
+		if (flags & FLAGS_TOPMOST)
+		{
+			ex_style = WS_EX_TOPMOST;
+		}
+		if (flags & FLAGS_HIDDEN)
+		{
+			style &= ~WS_VISIBLE;
+		}
+		
+		window.window_handle = CreateWindowEx(ex_style,
+											  window.window_class.lpszClassName,
+											  name,
+											  style,
+											  CW_USEDEFAULT,
+											  CW_USEDEFAULT,
+											  width,
+											  height,
+											  0,
+											  0,
+											  instance,
+											  0);
+		
+		if (flags & FLAGS_BORDERLESS)
+		{
+			ShowScrollBar(window.window_handle, SB_VERT, FALSE);
+			ShowScrollBar(window.window_handle, SB_HORZ, FALSE);
+		}
+		
+		window.flags = flags;
 		
 		debug_print_elapsed(startup_stamp, "create window");
 		
@@ -594,6 +623,7 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
 			format.cColorBits = 24;
 			format.cAlphaBits = 8;
+			//format.cDepthBits = 16;
 			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
 			s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format); // SLOW AF??
 			
@@ -620,32 +650,36 @@ platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_
 			wglMakeCurrent(window.hdc, window.gl_context);
 			
 			ShowWindow(window.window_handle, cmd_show);
-			//BringWindowToTop(window.window_handle);
+			if (flags & FLAGS_HIDDEN)
+				ShowWindow(window.window_handle, SW_HIDE);
+			else
+				ShowWindow(window.window_handle, SW_SHOW);
 			
-			//AllowSetForegroundWindow(ASFW_ANY);
-			//SetForegroundWindow(window.window_handle);
 			
-			// blending
-			glEnable(GL_DEPTH_TEST);
-			//glDepthMask(true);
-			//glClearDepth(50);
+			////// GL SETUP
+			glDepthMask(GL_TRUE);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 			glDepthFunc(GL_LEQUAL);
-			
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-			// setup multisampling
-#if 0
+			glEnable(GL_DEPTH_TEST);
+			glAlphaFunc(GL_GREATER, 0.0f);
 			glEnable(GL_ALPHA_TEST);
 			glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 			glEnable(GL_SAMPLE_ALPHA_TO_ONE);
 			glEnable(GL_MULTISAMPLE);
-			glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-#endif
+			glEnable(GL_TEXTURE_2D);
+			glEnable(GL_SCISSOR_TEST);
+			glEnable(GL_BLEND);
+			//glEnable(GL_FRAMEBUFFER_SRGB);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_MULTISAMPLE_ARB);
 			
 			window.is_open = true;
 			
+			glMatrixMode(GL_TEXTURE);
+			glLoadIdentity();
+			
 			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
 			
 			debug_print_elapsed(startup_stamp, "gl setup");
 			
@@ -721,6 +755,7 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 	current_keyboard_to_handle = keyboard;
 	current_mouse_to_handle = mouse;
 	
+#ifndef MODE_TEST
 	mouse->left_state &= ~MOUSE_CLICK;
 	mouse->right_state &= ~MOUSE_CLICK;
 	mouse->left_state &= ~MOUSE_DOUBLE_CLICK;
@@ -732,11 +767,13 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 	mouse->move_y = 0;
 	mouse->scroll_state = 0;
 	keyboard->text_changed = false;
+#endif
 	
 	// mouse position (including outside of window)
 	current_window_to_handle->has_focus = GetFocus() == current_window_to_handle->window_handle;
 	
-	if (current_window_to_handle->has_focus)
+#ifndef MODE_TEST
+	if (current_window_to_handle->has_focus || current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
 	{
 		if((GetKeyState(VK_LBUTTON) & 0x100) == 0)
 		{
@@ -748,9 +785,15 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 		POINT p;
 		GetCursorPos(&p);
 		mouse->x = p.x - rec.left - GetSystemMetrics(SM_CYSIZEFRAME);
-		mouse->y = p.y - rec.top - GetSystemMetrics(SM_CYSIZE) - GetSystemMetrics(SM_CYFRAME);
+		
+		if (current_window_to_handle->flags & FLAGS_BORDERLESS)
+			mouse->y = p.y - rec.top;
+		else
+			mouse->y = p.y - rec.top - GetSystemMetrics(SM_CYSIZE) - GetSystemMetrics(SM_CYFRAME);
+		
 		//printf("%d %d\n",GetSystemMetrics(SM_CYSIZE), GetSystemMetrics(SM_CYFRAME));
 	}
+#endif
 	
 	MSG message;
 	while(PeekMessageA(&message, window->window_handle, 0, 0, TRUE))
@@ -1315,15 +1358,15 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 	
 	char* szHeaders = "Content-Type: application/json";
 	char szReq[1024] = "";
-    if(!HttpSendRequest(hHttpRequest, szHeaders, strlen(szHeaders), szReq, strlen(szReq))) {
+	if(!HttpSendRequest(hHttpRequest, szHeaders, strlen(szHeaders), szReq, strlen(szReq))) {
 		goto failure;
 	}
 	
-    DWORD dwRead=0;
-    while(InternetReadFile(hHttpRequest, response_buffer, MAX_INPUT_LENGTH-1, &dwRead) && dwRead) {
+	DWORD dwRead=0;
+	while(InternetReadFile(hHttpRequest, response_buffer, MAX_INPUT_LENGTH-1, &dwRead) && dwRead) {
 		response_buffer[dwRead] = 0;
 		dwRead=0;
-    }
+	}
 	
 	goto done;
 	
@@ -1342,9 +1385,9 @@ bool platform_send_http_request(char *url, char *params, char *response_buffer)
 bool platform_get_mac_address(char *buffer, s32 buf_size)
 {
 	PIP_ADAPTER_INFO pAdapterInfo;
-    PIP_ADAPTER_INFO pAdapter = NULL;
-    DWORD dwRetVal = 0;
-    UINT i;
+	PIP_ADAPTER_INFO pAdapter = NULL;
+	DWORD dwRetVal = 0;
+	UINT i;
 	
 	ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
 	pAdapterInfo = mem_alloc(sizeof(IP_ADAPTER_INFO));
@@ -1352,21 +1395,21 @@ bool platform_get_mac_address(char *buffer, s32 buf_size)
 	if (!pAdapterInfo) return false;
 	
 	if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
-        mem_free(pAdapterInfo);
-        pAdapterInfo = mem_alloc(ulOutBufLen);
-        if (!pAdapterInfo) return false;
-    }
+		mem_free(pAdapterInfo);
+		pAdapterInfo = mem_alloc(ulOutBufLen);
+		if (!pAdapterInfo) return false;
+	}
 	
 	if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
 		pAdapter = pAdapterInfo;
 		
 		if (pAdapter) {
 			for (i = 0; i < pAdapter->AddressLength; i++) {
-                if (i == (pAdapter->AddressLength - 1))
-                    buffer += sprintf(buffer, "%.2X", (int)pAdapter->Address[i]);
-                else
-                    buffer += sprintf(buffer, "%.2X-", (int)pAdapter->Address[i]);
-            }
+				if (i == (pAdapter->AddressLength - 1))
+					buffer += sprintf(buffer, "%.2X", (int)pAdapter->Address[i]);
+				else
+					buffer += sprintf(buffer, "%.2X-", (int)pAdapter->Address[i]);
+			}
 			
 			if (pAdapterInfo) mem_free(pAdapterInfo);
 			return true;

@@ -160,11 +160,24 @@ typedef struct t_vec2
 	s32 y;
 } vec2;
 
+// NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
+typedef enum t_window_flags
+{
+	FLAGS_NONE = 0,
+	FLAGS_BORDERLESS = 1,
+	FLAGS_TOPMOST = 2,
+	FLAGS_GLOBAL_MOUSE = 4,
+	FLAGS_HIDDEN = 8,
+} window_flags;
+// NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
+
 platform_window *main_window = 0;
 platform_window *settings_window = 0;
 
 bool platform_window_is_valid(platform_window *window);
-platform_window platform_open_window(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h);
+
+#define platform_open_window(name, width, height, max_w, max_h, min_w, min_h) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0)
+platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags);
 void platform_get_focus(platform_window *window);
 bool platform_set_clipboard(platform_window *window, char *buffer);
 bool platform_get_clipboard(platform_window *window, char *buffer);
