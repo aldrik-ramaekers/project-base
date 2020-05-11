@@ -171,6 +171,7 @@ typedef struct t_mouse_input
 	s8 left_state;
 	s8 right_state;
 	s8 scroll_state;
+	bool last_state_released;
 } mouse_input;
 
 typedef enum t_keyboard_input_mode

@@ -16,6 +16,7 @@
 #include <objbase.h>
 #include <shellapi.h>
 #include <gdiplus.h>
+#include <winreg.h>
 #include <shlobj.h>
 //#include <iphlpapi.h>
 #include "../external/LooplessSizeMove.c"
@@ -373,7 +374,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	}
 	else if (message == WM_KILLFOCUS)
 	{
-		if (current_mouse_to_handle)
+		if (current_mouse_to_handle && !(current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE))
 		{
 			current_mouse_to_handle->x = MOUSE_OFFSCREEN;
 			current_mouse_to_handle->y = MOUSE_OFFSCREEN;
@@ -415,7 +416,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		bool is_middle_down = wparam & MK_MBUTTON;
 		
 		u64 ev_time = platform_get_time(TIME_FULL, TIME_MILI_S);
-		static u64  last_ev_time = 0;
+		static u64 last_ev_time = 0;
 		
 		if (message == WM_MOUSEWHEEL)
 		{
@@ -427,20 +428,24 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 				current_mouse_to_handle->scroll_state = SCROLL_UP;
 		}
 		
-		if (is_left_down)
+		if (!(current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE))
 		{
-			if (ev_time - last_ev_time < 200)
+			if (is_left_down)
 			{
-				current_mouse_to_handle->left_state |= MOUSE_DOUBLE_CLICK;
+				if (ev_time - last_ev_time < 200)
+				{
+					current_mouse_to_handle->left_state |= MOUSE_DOUBLE_CLICK;
+				}
+				
+				current_mouse_to_handle->left_state |= MOUSE_DOWN;
+				current_mouse_to_handle->left_state |= MOUSE_CLICK;
+				
+				current_mouse_to_handle->total_move_x = 0;
+				current_mouse_to_handle->total_move_y = 0;
+				last_ev_time = ev_time;
 			}
-			
-			current_mouse_to_handle->left_state |= MOUSE_DOWN;
-			current_mouse_to_handle->left_state |= MOUSE_CLICK;
-			
-			current_mouse_to_handle->total_move_x = 0;
-			current_mouse_to_handle->total_move_y = 0;
-			last_ev_time = ev_time;
 		}
+		
 		if (is_right_down)
 		{
 			current_mouse_to_handle->right_state |= MOUSE_DOWN;
@@ -530,6 +535,16 @@ void platform_get_focus(platform_window *window)
 	SetFocus(window->window_handle);
 }
 
+void platform_show_window(platform_window *window)
+{
+	ShowWindow(window->window_handle, SW_SHOW);
+}
+
+void platform_hide_window(platform_window *window)
+{
+	ShowWindow(window->window_handle, SW_HIDE);
+}
+
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	debug_print_elapsed_title("window creation");
@@ -587,6 +602,10 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		if (flags & FLAGS_HIDDEN)
 		{
 			style &= ~WS_VISIBLE;
+		}
+		if (flags & FLAGS_NO_TASKBAR)
+		{
+			ex_style |= WS_EX_TOOLWINDOW;
 		}
 		
 		window.window_handle = CreateWindowEx(ex_style,
@@ -775,16 +794,34 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 #ifndef MODE_TEST
 	if (current_window_to_handle->has_focus || current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
 	{
-		if((GetKeyState(VK_LBUTTON) & 0x100) == 0)
+		if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0)
 		{
-			current_mouse_to_handle->left_state = MOUSE_RELEASE;
+			if (!current_mouse_to_handle->last_state_released)
+			{
+				current_mouse_to_handle->left_state = MOUSE_RELEASE;
+				current_mouse_to_handle->last_state_released = true;
+			}
+		}
+		else
+		{
+			current_mouse_to_handle->left_state |= MOUSE_DOWN;
+			
+			if (current_mouse_to_handle->last_state_released)
+			{
+				current_mouse_to_handle->left_state |= MOUSE_CLICK;
+				current_mouse_to_handle->last_state_released = false;
+			}
 		}
 		
 		RECT rec;
 		GetWindowRect(window->window_handle, &rec);
 		POINT p;
 		GetCursorPos(&p);
-		mouse->x = p.x - rec.left - GetSystemMetrics(SM_CYSIZEFRAME);
+		
+		if (current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
+			mouse->x = p.x - rec.left;
+		else
+			mouse->x = p.x - rec.left - GetSystemMetrics(SM_CYSIZEFRAME);
 		
 		if (current_window_to_handle->flags & FLAGS_BORDERLESS)
 			mouse->y = p.y - rec.top;
