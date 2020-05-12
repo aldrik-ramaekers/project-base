@@ -39,6 +39,7 @@ struct t_platform_window
 	XEvent event;
 	char *clipboard_str;
 	s32 clipboard_strlen;
+	bool do_draw;
 	
 	Atom xdnd_req;
 	Atom xdnd_source;
@@ -682,6 +683,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.next_cursor_type = CURSOR_DEFAULT;
 	window.clipboard_str = 0;
 	window.clipboard_strlen = 0;
+	window.do_draw = true;
 	
 	static int att[] =
 	{
@@ -979,6 +981,7 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 	mouse->move_y = 0;
 	mouse->scroll_state = 0;
 	keyboard->text_changed = false;
+	window->do_draw = true;
 	
 	XClientMessageEvent m;
 	

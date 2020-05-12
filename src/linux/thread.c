@@ -48,7 +48,7 @@ inline void thread_join(thread *thread)
 	}
 }
 
-bool thread_tryjoin(thread *thread)
+inline bool thread_tryjoin(thread *thread)
 {
 	if (thread->valid)
 	{
@@ -57,6 +57,11 @@ bool thread_tryjoin(thread *thread)
 		return thread_joined;
 	}
 	return false;
+}
+
+inline void thread_exit()
+{
+	pthread_exit(0);
 }
 
 inline void thread_stop(thread *thread)

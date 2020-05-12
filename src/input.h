@@ -157,7 +157,7 @@
 
 #ifdef OS_WIN
 #define MAX_INPUT_LENGTH 4096+1
-#define MAX_PATH_LENGTH 259+1
+#define MAX_PATH_LENGTH MAX_PATH+1
 #endif
 
 typedef struct t_mouse_input

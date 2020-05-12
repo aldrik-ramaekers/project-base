@@ -30,6 +30,8 @@ void update_render_notifications()
 	
 	for (s32 i = 0; i < global_notifications.length; i++)
 	{
+		main_window->do_draw = true;
+		
 		notification *n = array_at(&global_notifications, i);
 		float32 duration_ms = (float32)n->duration/TARGET_FRAMERATE;
 		s32 y = 0;

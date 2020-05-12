@@ -1476,6 +1476,7 @@ stbi_inline static stbi_uc stbi__get8(stbi__context *s)
    return 0;
 }
 
+#ifndef STBI_ONLY_PNG
 stbi_inline static int stbi__at_eof(stbi__context *s)
 {
    if (s->io.read) {
@@ -1487,6 +1488,7 @@ stbi_inline static int stbi__at_eof(stbi__context *s)
 
    return s->img_buffer >= s->img_buffer_end;
 }
+#endif
 
 static void stbi__skip(stbi__context *s, int n)
 {

@@ -88,7 +88,7 @@ assets global_asset_collection;
 void assets_create();
 void assets_destroy();
 
-void assets_do_post_process();
+bool assets_do_post_process();
 void *assets_queue_worker();
 
 image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory);

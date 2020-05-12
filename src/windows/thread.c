@@ -58,6 +58,11 @@ u32 thread_get_id()
 	return GetCurrentThreadId();
 }
 
+void thread_exit()
+{
+	ExitThread(0);
+}
+
 void thread_sleep(u64 microseconds)
 {
 	Sleep(microseconds/1000);

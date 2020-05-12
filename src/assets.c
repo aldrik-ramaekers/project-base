@@ -33,11 +33,12 @@ inline static bool is_big_endian()
     return !((*((uint8_t*)(&i))) == 0x67);
 }
 
-void assets_do_post_process()
+bool assets_do_post_process()
 {
+	bool result = false;
 #if 0
 	static PFNGLTEXIMAGE2DMULTISAMPLEPROC glTexImage2DMultisample = NULL;
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 	if (!glTexImage2DMultisample)
 		glTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLEPROC)wglGetProcAddress("glTexImage2DMultisample");
 #endif
@@ -64,7 +65,14 @@ void assets_do_post_process()
 				
 #if 0
 				if (glTexImage2DMultisample)
-					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA8, task->image->width, task->image->height, TRUE);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, task->image->width, task->image->height, FALSE);
+#endif
+				
+#if 0
+				s32 fbo;
+				glGenFramebuffers(1, &fbo);
+				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, task->image->textureID, 0);
 #endif
 				
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -102,10 +110,14 @@ void assets_do_post_process()
 			}
 		}
 		
+		result = true;
+		
 		array_remove_at(&global_asset_collection.post_process_queue, i);
 	}
 	
 	mutex_unlock(&asset_mutex);
+	
+	return result;
 }
 
 bool assets_queue_worker_load_bitmap(image *image)
@@ -230,6 +242,8 @@ void *assets_queue_worker()
 		
 		thread_sleep(1000);
 	}
+	
+	thread_exit();
 	
 	return 0;
 }

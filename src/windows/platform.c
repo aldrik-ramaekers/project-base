@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glcorearb.h>
+#include <GL/wglext.h>
 #include <stdbool.h>
 #include <sysinfoapi.h>
 #include <wingdi.h>
@@ -28,6 +29,7 @@ struct t_platform_window
 	HGLRC gl_context;
 	WNDCLASS window_class;
 	s32 flags;
+	bool do_draw;
 	
     s32 min_width;
 	s32 min_height;
@@ -512,6 +514,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		result = LSMProc(window, message, wparam, lparam);
 	}
 	
+	current_window_to_handle->do_draw = true;
 	return result;
 }
 
@@ -566,6 +569,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.max_height = max_h;
 	window.curr_cursor_type = -1;
 	window.next_cursor_type = CURSOR_DEFAULT;
+	window.do_draw = true;
 	
 	current_window_to_handle = &window;
 	
@@ -635,20 +639,23 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		{
 			window.hdc = GetDC(window.window_handle);
 			
-			PIXELFORMATDESCRIPTOR format;
-			memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
-			format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-			format.nVersion = 1;
-			format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
-			format.cColorBits = 24;
-			format.cAlphaBits = 8;
-			//format.cDepthBits = 16;
-			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
-			s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format); // SLOW AF??
-			
 			PIXELFORMATDESCRIPTOR actual_format;
-			DescribePixelFormat(window.hdc, suggested_format_index, sizeof(actual_format), &actual_format);
-			SetPixelFormat(window.hdc, suggested_format_index, &actual_format);
+			// old pixel format selection
+			{
+				PIXELFORMATDESCRIPTOR format;
+				memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
+				format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+				format.nVersion = 1;
+				format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
+				format.cColorBits = 24;
+				format.cAlphaBits = 8;
+				format.cDepthBits = 16;
+				format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
+				s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format); // SLOW AF??
+				
+				DescribePixelFormat(window.hdc, suggested_format_index, sizeof(actual_format), &actual_format);
+				SetPixelFormat(window.hdc, suggested_format_index, &actual_format);
+			}
 			
 			debug_print_elapsed(startup_stamp, "pixel format");
 			
@@ -667,6 +674,46 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 			}
 			
 			wglMakeCurrent(window.hdc, window.gl_context);
+			
+			// new pixel format selection
+#if 0
+			{
+				PFNWGLGETPIXELFORMATATTRIBIVARBPROC wglGetPixelFormatAttribivARB = (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribivARB");
+				
+				PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+				
+				if (wglGetPixelFormatAttribivARB && wglChoosePixelFormatARB)
+				{
+					float pfAttribFList[] = { 0, 0 };
+					s32 maxFormats = 50;
+					s32 piFormats[maxFormats];
+					u32 nNumFormatsFound;
+					const int pixel_format_attrib_list[] =
+					{
+						WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+						WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+						WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+						WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+						WGL_COLOR_BITS_ARB, 24,
+						WGL_ALPHA_BITS_ARB, 8,
+						WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+						WGL_SAMPLES_ARB, 4,
+						0, 0,
+					};
+					
+					bool result = wglChoosePixelFormatARB(window.hdc, pixel_format_attrib_list, pfAttribFList, maxFormats, piFormats, &nNumFormatsFound);
+					
+					printf("result: %d, count: %d\n", result, nNumFormatsFound);
+					
+					for (s32 i = 0; i < nNumFormatsFound; i++)
+					{
+						printf("format: %d\n", piFormats[i]);
+					}
+					
+					SetPixelFormat(window.hdc, piFormats[0], &actual_format);
+				}
+			}
+#endif
 			
 			ShowWindow(window.window_handle, cmd_show);
 			if (flags & FLAGS_HIDDEN)
@@ -1230,7 +1277,7 @@ void platform_init(int argc, char **argv)
 	
 	platform_create_config_directory();
 	
-	char buf[MAX_INPUT_LENGTH];
+	char buf[MAX_PATH_LENGTH];
 	get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
 	
