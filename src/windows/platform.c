@@ -4,6 +4,7 @@
 *  All rights reserved.
 */
 
+#include <tchar.h>
 #include <locale.h>
 #include <windows.h>
 #include <GL/gl.h>
@@ -520,7 +521,14 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 
 void platform_window_set_title(platform_window *window, char *name)
 {
-	SetWindowText(window->window_handle, name);
+	s32 len = strlen(name)+1;
+	wchar_t wc[len];
+	mbstowcs(wc, name, len);
+	
+	LONG_PTR originalWndProc = GetWindowLongPtrW(window->window_handle, GWLP_WNDPROC);
+	SetWindowLongPtrW(window->window_handle, GWLP_WNDPROC, (LONG_PTR) DefWindowProcW);
+	SetWindowTextW(window->window_handle, wc);
+	SetWindowLongPtrW(window->window_handle, GWLP_WNDPROC, originalWndProc);
 }
 
 vec2 platform_get_window_size(platform_window *window)
