@@ -1408,7 +1408,7 @@ void *platform_open_file_dialog_block(void *arg)
 	return 0;
 }
 
-void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled)
+void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled, search_info *info)
 {
 	assert(list);
 	
@@ -1467,17 +1467,21 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 				
 				if (recursive)
 				{
+					if (info) info->dir_count++;
+					
 					string_copyn(subdirname_buf, start_dir, MAX_INPUT_LENGTH);
 					string_appendn(subdirname_buf, dir->d_name, MAX_INPUT_LENGTH);
 					string_appendn(subdirname_buf, "/", MAX_INPUT_LENGTH);
 					
 					// do recursive search
-					platform_list_files_block(list, subdirname_buf, filters, recursive, bucket, include_directories, is_cancelled);
+					platform_list_files_block(list, subdirname_buf, filters, recursive, bucket, include_directories, is_cancelled, info);
 				}
 			}
 			// we handle DT_UNKNOWN for file systems that do not support type lookup.
 			else if (dir->d_type == DT_REG || dir->d_type == DT_UNKNOWN)
 			{
+				if (info) info->file_count++;
+				
 				// check if name matches pattern
 				if ((len = filter_matches(&filters, dir->d_name, 
 										  &matched_filter)) && len != -1)

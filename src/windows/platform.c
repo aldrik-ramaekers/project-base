@@ -16,7 +16,7 @@
 #include <errno.h>
 #include <shlwapi.h>
 #include <objbase.h>
-#include <shellapi.h>
+//#include <shellapi.h>
 #include <gdiplus.h>
 #include <winreg.h>
 #include <shlobj.h>
@@ -158,7 +158,15 @@ inline void platform_set_cursor(platform_window *window, cursor_type type)
 
 bool platform_directory_exists(char *path)
 {
-	return PathFileExistsA(path) == TRUE;
+	WIN32_FIND_DATA FindFileData;
+	HANDLE handle = FindFirstFile(path, &FindFileData) ;
+	int found = handle != INVALID_HANDLE_VALUE;
+	if(found) 
+	{
+		//FindClose(&handle); this will crash
+		FindClose(handle);
+	}
+	return found;
 }
 
 static void create_key_tables()
@@ -1038,7 +1046,7 @@ bool set_active_directory(char *path)
 	return SetCurrentDirectory(path);
 }
 
-void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket,  bool include_directories, bool *is_cancelled)
+void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket,  bool include_directories, bool *is_cancelled, search_info *info)
 {
 	assert(list);
 	s32 len = 0;
@@ -1121,12 +1129,14 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 			
 			if (recursive)
 			{
+				if (info) info->dir_count++;
+				
 				string_copyn(subdirname_buf, start_dir_clean, MAX_INPUT_LENGTH);
 				string_appendn(subdirname_buf, name, MAX_INPUT_LENGTH);
 				string_appendn(subdirname_buf, "\\", MAX_INPUT_LENGTH);
 				
 				// is directory
-				platform_list_files_block(list, subdirname_buf, filters, recursive, bucket, include_directories, is_cancelled);
+				platform_list_files_block(list, subdirname_buf, filters, recursive, bucket, include_directories, is_cancelled, info);
 			}
 		}
 		else if ((file_info.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED) ||
@@ -1136,6 +1146,8 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 				 (file_info.dwFileAttributes & FILE_ATTRIBUTE_READONLY) ||
 				 (file_info.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE))
 		{
+			if (info) info->file_count++;
+			
 			if ((len = filter_matches(&filters, name, 
 									  &matched_filter)) && len != -1)
 			{
@@ -1274,7 +1286,6 @@ void platform_init(int argc, char **argv)
 	setlocale(LC_ALL, "en_US.UTF-8");
 	
 	QueryPerformanceFrequency(&perf_frequency);
-	CoInitialize(NULL);
 	create_key_tables();
 	
 	instance = GetModuleHandle(NULL);

@@ -32,6 +32,12 @@ typedef struct t_file_match
 	char *line_info; // will be null when no match is found
 } file_match;
 
+typedef struct t_search_info
+{
+	u64 file_count;
+	u64 dir_count;
+} search_info;
+
 typedef struct t_search_result
 {
 	array work_queue;
@@ -55,7 +61,7 @@ typedef struct t_search_result
 	memory_bucket mem_bucket;
 	bool is_command_line_search;
 	bool threads_closed;
-	
+	search_info search_info;
 	char *export_path;
 	char *file_filter;
 	char *directory_to_search;
@@ -146,6 +152,7 @@ typedef struct t_list_file_args
 	bool *state;
 	bool *is_cancelled;
 	memory_bucket *bucket;
+	search_info *info;
 } list_file_args;
 
 typedef enum t_cursor_type
@@ -199,8 +206,8 @@ bool get_active_directory(char *buffer);
 bool set_active_directory(char *path);
 void platform_show_message(platform_window *window, char *message, char *title);
 array get_filters(char *filter);
-void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled);
-void platform_list_files(array *list, char *start_dir, char *filter, bool recursive, memory_bucket *bucket, bool *is_cancelled, bool *state);
+void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled, search_info *info);
+void platform_list_files(array *list, char *start_dir, char *filter, bool recursive, memory_bucket *bucket, bool *is_cancelled, bool *state, search_info *info);
 void platform_open_file_dialog(file_dialog_type type, char *buffer, char *file_filter, char *start_path);
 bool platform_get_mac_address(char *buffer, s32 buf_size);
 bool is_platform_in_darkmode();
