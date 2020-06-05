@@ -1610,8 +1610,8 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 	if (global_ui_context.layout.block_height < h)
 		global_ui_context.layout.block_height = h;
 	
-	int icon_w = 1;
-	int icon_h = 1;
+	int icon_w = 14;
+	int icon_h = 14;
 	if (img->loaded)
 	{
 		float max_icon_size = BUTTON_HEIGHT - (BUTTON_IMAGE_PADDING*2);
@@ -1630,9 +1630,8 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 			icon_h = img->height / scale;
 			icon_w = icon_h;
 		}
-		
-		total_w += icon_w + (BUTTON_IMAGE_SPACING*2);
 	}
+	total_w += icon_w + (BUTTON_IMAGE_SPACING*2);
 	
 	s32 virt_top = y;
 	s32 virt_bottom = y + h;
@@ -1693,7 +1692,11 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
 	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, border_color);
 	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
-	render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+	
+	if (img && img->loaded)
+		render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+	else
+		render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -1728,8 +1731,8 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	if (global_ui_context.layout.block_height < h)
 		global_ui_context.layout.block_height = h;
 	
-	int icon_w = 1;
-	int icon_h = 1;
+	int icon_w = 14;
+	int icon_h = 14;
 	if (img->loaded)
 	{
 		float max_icon_size = BUTTON_HEIGHT - (BUTTON_IMAGE_PADDING*2);
@@ -1748,9 +1751,8 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 			icon_h = img->height / scale;
 			icon_w = icon_h;
 		}
-		
-		total_w += icon_w + (BUTTON_IMAGE_SPACING*2);
 	}
+	total_w += icon_w + (BUTTON_IMAGE_SPACING*2);
 	
 	s32 virt_top = y;
 	s32 virt_bottom = y + h;
@@ -1790,7 +1792,11 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
 	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
 	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
-	render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+	
+	if (img && img->loaded)
+		render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+	else
+		render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
