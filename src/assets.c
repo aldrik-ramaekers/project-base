@@ -60,8 +60,12 @@ bool assets_do_post_process()
 				s32 flag = is_big_endian() ? GL_UNSIGNED_INT_8_8_8_8 : 
 				GL_UNSIGNED_INT_8_8_8_8_REV;
 				
-				glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
-							 task->image->height, 0,  GL_RGBA, flag, task->image->data);
+				if (task->type == ASSET_IMAGE)
+					glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
+								 task->image->height, 0,  GL_RGBA, flag, task->image->data);
+				else
+					glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
+								 task->image->height, 0,  GL_BGRA, flag, task->image->data);
 				
 #if 0
 				if (glTexImage2DMultisample)
@@ -80,7 +84,7 @@ bool assets_do_post_process()
 				task->image->loaded = true;
 				glBindTexture(GL_TEXTURE_2D, 0);
 				
-				if (!task->image->keep_in_memory)
+				if (!task->image->keep_in_memory && task->type == ASSET_IMAGE)
 					stbi_image_free(task->image->data);
 			}
 		}
@@ -126,11 +130,37 @@ bool assets_queue_worker_load_bitmap(image *image)
 	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
 #endif
 	
-	image->data = image->start_addr;
+#pragma pack(push, 1)
+	typedef struct {
+		unsigned short type;                 /* Magic identifier            */
+		unsigned int size;                       /* File size in bytes          */
+		unsigned int reserved;
+		unsigned int offset;                     /* Offset to image data, bytes */
+	} HEADER;
+	typedef struct {
+		unsigned int size;               /* Header size in bytes      */
+		int width,height;                /* Width and height of image */
+		unsigned short planes;       /* Number of colour planes   */
+		unsigned short bits;         /* Bits per pixel            */
+		unsigned int compression;        /* Compression type          */
+		unsigned int imagesize;          /* Image size in bytes       */
+		int xresolution,yresolution;     /* Pixels per meter          */
+		unsigned int ncolours;           /* Number of colours         */
+		unsigned int importantcolours;   /* Important colours         */
+	} INFOHEADER;
+#pragma pack(pop)
 	
-	debug_print_elapsed(stamp, "loaded image in");
+	HEADER* header = (HEADER*)image->start_addr;
+	INFOHEADER* info = (INFOHEADER*)(image->start_addr+sizeof(HEADER));
 	
-	return !(image->data == 0);
+	image->data = image->start_addr+header->offset;
+	image->width = info->width;
+	image->height = info->height;
+	image->channels = info->bits/8;
+	
+	debug_print_elapsed(stamp, "loaded bitmap in");
+	
+	return image->data != 0;
 }
 
 bool assets_queue_worker_load_image(image *image)
@@ -138,8 +168,6 @@ bool assets_queue_worker_load_image(image *image)
 #ifdef MODE_DEVELOPER
 	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
 #endif
-	
-	set_active_directory(binary_path);
 	
 	image->data = stbi_load_from_memory(image->start_addr,
 										image->end_addr - image->start_addr,
@@ -150,7 +178,7 @@ bool assets_queue_worker_load_image(image *image)
 	
 	debug_print_elapsed(stamp, "loaded image in");
 	
-	return !(image->data == 0);
+	return image->data != 0;
 }
 
 bool assets_queue_worker_load_font(font *font)
@@ -373,8 +401,7 @@ void assets_destroy()
 	mutex_destroy(&asset_mutex);
 }
 
-
-image *assets_load_bitmap(u8 *start_addr, s32 width, s32 height, s32 channels)
+image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 {
 	// check if image is already loaded or loading
 	for (int i = 0; i < global_asset_collection.images.length; i++)
@@ -392,12 +419,9 @@ image *assets_load_bitmap(u8 *start_addr, s32 width, s32 height, s32 channels)
 	image new_image;
 	new_image.loaded = false;
 	new_image.start_addr = start_addr;
-	new_image.end_addr = 0;
+	new_image.end_addr = end_addr;
 	new_image.references = 1;
 	new_image.keep_in_memory = false;
-	new_image.channels = channels;
-	new_image.width = width;
-	new_image.height = height;
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.

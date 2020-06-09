@@ -94,10 +94,14 @@ void *assets_queue_worker();
 image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory);
 void assets_destroy_image(image *image);
 
-image *assets_load_bitmap(u8 *start_addr, s32 width, s32 height, s32 channels);
+image *assets_load_bitmap(u8 *start_addr, u8 *end_addr);
 void assets_destroy_bitmap(image *image);
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 void assets_destroy_font(font *font);
+
+#define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end, _inmem)
+#define load_font(_name, _inmem) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _inmem)
+#define load_bitmap(_name) assets_load_bitmap(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
 
 #endif

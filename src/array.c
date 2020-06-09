@@ -96,9 +96,13 @@ void array_reserve(array *array, u32 reserve_count)
 		array->reserved_length += reserve_count;
 		
 		if (array->data)
+		{
 			array->data = mem_realloc(array->data, (array->reserved_length*array->entry_size));
+		}
 		else
+		{
 			array->data = mem_alloc(array->reserved_length*array->entry_size);
+		}
 	}
 	mutex_unlock(&array->mutex);
 }

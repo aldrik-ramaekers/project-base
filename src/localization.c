@@ -18,7 +18,7 @@ mo_file load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *
 		mo.locale_full = mem_alloc(strlen(locale_name)+1);
 		string_copyn(mo.locale_full, locale_name, strlen(locale_name)+1);
 		
-		mo.icon = assets_load_image(img_start, img_end, false);
+		mo.icon = assets_load_bitmap(img_start, img_end);
 		
 		char *buffer = (char*)start_addr;
 		mo_entry *identifiers = (mo_entry*)(buffer + mo.header.identifier_table_offset);
@@ -35,7 +35,6 @@ mo_file load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *
 			translation.translation = buffer+trans->offset;
 			
 			array_push(&mo.translations, &translation);
-			//printf("%s=%s\n", translation.identifier, translation.translation);
 		}
 	}
 	
@@ -118,14 +117,14 @@ void load_available_localizations()
 	
 	mo_file en = load_localization_file(_binary____data_translations_en_English_mo_start,
 										_binary____data_translations_en_English_mo_end,
-										_binary____data_imgs_en_png_start,
-										_binary____data_imgs_en_png_end,
+										_binary____data_imgs_en_bmp_start,
+										_binary____data_imgs_en_bmp_end,
 										"en", "English");
 	
 	mo_file nl = load_localization_file(_binary____data_translations_nl_Dutch_mo_start,
 										_binary____data_translations_nl_Dutch_mo_end,
-										_binary____data_imgs_nl_png_start,
-										_binary____data_imgs_nl_png_end,
+										_binary____data_imgs_nl_bmp_start,
+										_binary____data_imgs_nl_bmp_end,
 										"nl", "Dutch");
 	
 	array_push(&global_localization.mo_files, &en);

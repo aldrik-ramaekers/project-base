@@ -378,11 +378,19 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 				keyboard_handle_input_string(current_window_to_handle, current_keyboard_to_handle, ch);
 		}
 	}
-	else if (message == WM_MOUSELEAVE)
+#if 0
+	else if (message == WM_PAINT)
 	{
-		//current_mouse_to_handle->x = MOUSE_OFFSCREEN;
-		//current_mouse_to_handle->y = MOUSE_OFFSCREEN;
+		PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(current_window_to_handle->window_handle, &ps);
+		
+		SetDCPenColor(hdc, RGB(255, 0, 0));    // red
+		Rectangle(hdc, 100, 100, 200, 300);
+		
+		EndPaint(current_window_to_handle->window_handle, &ps);
+        return 0;
 	}
+#endif
 	else if (message == WM_KILLFOCUS)
 	{
 		if (current_mouse_to_handle && !(current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE))
@@ -603,7 +611,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	{
 		debug_print_elapsed(startup_stamp, "register class");
 		
-		int style = WS_VISIBLE|WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
+		int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
 		int ex_style = 0;
 		
 		if (min_w != max_w && min_h != max_h)
@@ -618,10 +626,6 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		if (flags & FLAGS_TOPMOST)
 		{
 			ex_style = WS_EX_TOPMOST;
-		}
-		if (flags & FLAGS_HIDDEN)
-		{
-			style &= ~WS_VISIBLE;
 		}
 		if (flags & FLAGS_NO_TASKBAR)
 		{
@@ -736,7 +740,6 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 				ShowWindow(window.window_handle, SW_HIDE);
 			else
 				ShowWindow(window.window_handle, SW_SHOW);
-			
 			
 			////// GL SETUP
 			glDepthMask(GL_TRUE);
@@ -1305,6 +1308,8 @@ void platform_init(int argc, char **argv)
 
 void platform_set_icon(platform_window *window, image *img)
 {
+	// NOTE only works with bmps currently; remove #if 0 to enable png again..
+	// we should probably change png color alignment so png and bmp data is the same in memory
 	BYTE *bmp;
 	s32 data_len = img->width * img->height * 4;
 	s32 total_len = data_len + 40 * 4;
@@ -1326,6 +1331,7 @@ void platform_set_icon(platform_window *window, image *img)
 		{
 			s32 img_pixel = *(((s32*)img->data+(x+(y*img->width))));
 			
+#if 0
 			// 0xAABBGGRR
 			s32 a = (img_pixel>>24) & 0x000000FF;
 			s32 b = (img_pixel>>16) & 0x000000FF;
@@ -1334,6 +1340,8 @@ void platform_set_icon(platform_window *window, image *img)
 			
 			//s32 c = (r << 24) | (g << 16) | (b << 8) | (a << 0);
 			s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+#endif
+			s32 c = img_pixel;
 			memcpy(bmp+40+(index*4), &c, 4);
 			
 			++index;
