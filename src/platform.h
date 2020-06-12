@@ -178,7 +178,6 @@ typedef struct t_backbuffer
 {
 	s32 width;
 	s32 height;
-	u8 *pixels; // 5bytes color
 	u8 *buffer; // 4bytes color + 1byte depth
 	BITMAPINFO bitmapInfo;
 } backbuffer;

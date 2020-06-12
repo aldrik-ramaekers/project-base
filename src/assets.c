@@ -83,9 +83,6 @@ bool assets_do_post_process()
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				task->image->loaded = true;
 				glBindTexture(GL_TEXTURE_2D, 0);
-				
-				if (!task->image->keep_in_memory && task->type == ASSET_IMAGE)
-					stbi_image_free(task->image->data);
 			}
 		}
 		else if (task->type == ASSET_FONT)
@@ -106,8 +103,6 @@ bool assets_do_post_process()
 					glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 					glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, g->width,g->height,
 								 0, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap );
-					
-					mem_free(g->bitmap);
 				}
 				
 				task->font->loaded = true;
@@ -276,7 +271,7 @@ void *assets_queue_worker()
 	return 0;
 }
 
-image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory)
+image *assets_load_image(u8 *start_addr, u8 *end_addr)
 {
 	// check if image is already loaded or loading
 	for (int i = 0; i < global_asset_collection.images.length; i++)
@@ -296,7 +291,6 @@ image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory)
 	new_image.start_addr = start_addr;
 	new_image.end_addr = end_addr;
 	new_image.references = 1;
-	new_image.keep_in_memory = keep_in_memory;
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
@@ -319,11 +313,12 @@ void assets_destroy_image(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDeleteTextures(1, &image_to_destroy->textureID);
-		
-		if (image_to_destroy->keep_in_memory)
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &image_to_destroy->textureID);
 			stbi_image_free(image_to_destroy->data);
+		}
 		
 		//array_remove(&global_asset_collection.images, image_at);
 	}
@@ -421,7 +416,6 @@ image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 	new_image.start_addr = start_addr;
 	new_image.end_addr = end_addr;
 	new_image.references = 1;
-	new_image.keep_in_memory = false;
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
@@ -444,9 +438,11 @@ void assets_destroy_bitmap(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDeleteTextures(1, &image_to_destroy->textureID);
-		
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &image_to_destroy->textureID);
+		}
 		//array_remove(&global_asset_collection.images, image_at);
 	}
 	else

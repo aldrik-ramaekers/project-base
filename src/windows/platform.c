@@ -321,7 +321,6 @@ void platform_show_message(platform_window *window, char *message, char *title)
 
 static void _allocate_backbuffer(platform_window *window)
 {
-	if (window->backbuffer.pixels) mem_free(window->backbuffer.pixels);
 	if (window->backbuffer.buffer) mem_free(window->backbuffer.buffer);
 	
 	BITMAPINFO info;
@@ -337,9 +336,7 @@ static void _allocate_backbuffer(platform_window *window)
 	window->backbuffer.height = window->height;
 	
 	s32 bufferMemorySize = (window->width*window->height)*5;
-	s32 pixelsMemorySize = (window->width*window->height)*4;
 	window->backbuffer.buffer = mem_alloc(bufferMemorySize);
-	window->backbuffer.pixels = mem_alloc(pixelsMemorySize);
 }
 
 LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
@@ -591,7 +588,6 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.max_height = max_h;
 	window.curr_cursor_type = -1;
 	window.next_cursor_type = CURSOR_DEFAULT;
-	window.backbuffer.pixels = 0;
 	window.backbuffer.buffer = 0;
 	window.do_draw = true;
 	
@@ -904,13 +900,13 @@ void platform_window_swap_buffers(platform_window *window)
 		for (s32 i = 0; i < pixel_count; i++)
 		{
 			u8 *buffer_entry = window->backbuffer.buffer + (i*5);
-			memcpy(window->backbuffer.pixels + (i*4), buffer_entry, 4);
+			memcpy(window->backbuffer.buffer + (i*4), buffer_entry, 4);
 		}
 		
 		StretchDIBits(window->hdc,0,0,window->width,window->height,
 					  0,window->backbuffer.height,window->backbuffer.width,
 					  -window->backbuffer.height,
-					  window->backbuffer.pixels, &window->backbuffer.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+					  window->backbuffer.buffer, &window->backbuffer.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
 	}
 	else
 	{

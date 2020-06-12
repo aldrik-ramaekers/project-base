@@ -64,19 +64,59 @@ inline void set_render_depth(s32 depth)
 void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 {
 	assert(image);
-	if (image->loaded)
+	
+	if (global_use_gpu)
 	{
-		glBindTexture(GL_TEXTURE_2D, image->textureID);
-		glEnable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
-		glColor4f(1., 1., 1., 1.);
-		glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
-		glEnd();
-		
-		glDisable(GL_TEXTURE_2D);
+		if (image->loaded)
+		{
+			glBindTexture(GL_TEXTURE_2D, image->textureID);
+			glEnable(GL_TEXTURE_2D);
+			glBegin(GL_QUADS);
+			glColor4f(1., 1., 1., 1.);
+			glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
+			glEnd();
+			
+			glDisable(GL_TEXTURE_2D);
+		}
+	}
+	else
+	{
+		if (image->loaded)
+		{
+			vec4 rec = _get_actual_rect(x, y, image->width, image->height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * (image->width) * 4) + _x * 4;
+					u8 *color = image->data+image_offset;
+					
+					float32 alpha = color[3] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 b = ((color[0] * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((color[1] * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 r = ((color[2] * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[3];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 	}
 }
 
@@ -85,17 +125,24 @@ void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color 
 	assert(image);
 	if (image->loaded)
 	{
-		glBindTexture(GL_TEXTURE_2D, image->textureID);
-		glEnable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-		glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
-		glEnd();
-		
-		glDisable(GL_TEXTURE_2D);
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, image->textureID);
+			glEnable(GL_TEXTURE_2D);
+			glBegin(GL_QUADS);
+			glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+			glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
+			glEnd();
+			
+			glDisable(GL_TEXTURE_2D);
+		}
+		else
+		{
+			assert(0 && "not implemented");
+		}
 	}
 }
 
@@ -104,8 +151,11 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 	if (!font->loaded)
 		return 0;
 	
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	if (global_use_gpu)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	}
 	
 	char *ellipse = "...";
 	bool in_ellipse = false;
@@ -129,20 +179,56 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		
 		glyph g = font->glyphs[ch];
 		
-		glBindTexture(GL_TEXTURE_2D, g.textureID);
-		glBegin(GL_QUADS);
-		
-		s32 width = g.width;
-		
 		s32 y_ = y + font->px_h + g.yoff;
 		s32 x_to_render = x_ + (g.lsb);
 		
-		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
-		
-		glEnd();
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, g.textureID);
+			glBegin(GL_QUADS);
+			
+			s32 width = g.width;
+			
+			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			
+			glEnd();
+		}
+		else
+		{
+			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * g.width) + _x;
+					u8 *color = g.bitmap+image_offset;
+					
+					float32 alpha = color[0] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[0];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -155,7 +241,8 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		}
 	}
 	
-	glDisable(GL_TEXTURE_2D);
+	if (global_use_gpu)
+		glDisable(GL_TEXTURE_2D);
 	
 	return maxw;
 }
@@ -165,8 +252,11 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 	if (!font->loaded)
 		return 0;
 	
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	if (global_use_gpu)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	}
 	
 	s32 x_ = x;
 	utf8_int32_t ch;
@@ -186,20 +276,56 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		
 		glyph g = font->glyphs[ch];
 		
-		glBindTexture(GL_TEXTURE_2D, g.textureID);
-		glBegin(GL_QUADS);
-		
-		s32 width = g.width;
-		
 		s32 y_ = y + font->px_h + g.yoff;
 		s32 x_to_render = x_ + (g.lsb);
 		
-		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
-		
-		glEnd();
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, g.textureID);
+			glBegin(GL_QUADS);
+			
+			s32 width = g.width;
+			
+			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			
+			glEnd();
+		}
+		else
+		{
+			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * g.width) + _x;
+					u8 *color = g.bitmap+image_offset;
+					
+					float32 alpha = color[0] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[0];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -216,7 +342,8 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		}
 	}
 	
-	glDisable(GL_TEXTURE_2D);
+	if (global_use_gpu)
+		glDisable(GL_TEXTURE_2D);
 	
 	render_rectangle(selection_start_x, y-3, selection_end_x-selection_start_x, TEXTBOX_HEIGHT - 10, rgba(66, 134, 244, 120));
 	
@@ -228,8 +355,11 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 	if (!font->loaded)
 		return 0;
 	
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	if (global_use_gpu)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	}
 	
 	float x_ = x;
 	utf8_int32_t ch;
@@ -248,18 +378,54 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 		
 		glyph g = font->glyphs[ch];
 		
-		glBindTexture(GL_TEXTURE_2D, g.textureID);
-		glBegin(GL_QUADS);
-		
 		s32 y_ = y + font->px_h + g.yoff;
 		s32 x_to_render = x_ + (g.lsb);
 		
-		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
-		
-		glEnd();
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, g.textureID);
+			glBegin(GL_QUADS);
+			
+			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			
+			glEnd();
+		}
+		else
+		{
+			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * g.width) + _x;
+					u8 *color = g.bitmap+image_offset;
+					
+					float32 alpha = color[0] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[0];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -271,7 +437,9 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 			cursor_x = x_;
 		}
 	}
-	glDisable(GL_TEXTURE_2D);
+	
+	if (global_use_gpu)
+		glDisable(GL_TEXTURE_2D);
 	
 	render_rectangle(cursor_x, y-3, 2, TEXTBOX_HEIGHT - 10, global_ui_context.style.textbox_foreground);
 	
@@ -283,8 +451,11 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 	if (!font->loaded)
 		return 0;
 	
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	if (global_use_gpu)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	}
 	
 	s32 x_ = x;
 	utf8_int32_t ch;
@@ -302,25 +473,64 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		
 		glyph g = font->glyphs[ch];
 		
-		glBindTexture(GL_TEXTURE_2D, g.textureID);
-		glBegin(GL_QUADS);
-		
 		s32 y_ = y + font->px_h + g.yoff;
 		s32 x_to_render = x_ + (g.lsb);
 		
-		glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
-		
-		glEnd();
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, g.textureID);
+			glBegin(GL_QUADS);
+			
+			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			
+			glEnd();
+		}
+		else
+		{
+			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * g.width) + _x;
+					u8 *color = g.bitmap+image_offset;
+					
+					if (color[0] == 0) continue;
+					
+					float32 alpha = color[0] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[0];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
 		x_ += (g.advance);
 	}
 	
-	glDisable(GL_TEXTURE_2D);
+	if (global_use_gpu)
+		glDisable(GL_TEXTURE_2D);
 	
 	return x_ - x;
 }
@@ -330,8 +540,11 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 	if (!font->loaded)
 		return 0;
 	
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	if (global_use_gpu)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	}
 	
 	s32 x_ = x;
 	s32 y_ = y;
@@ -368,18 +581,54 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		
 		glyph g = font->glyphs[ch];
 		
-		glBindTexture(GL_TEXTURE_2D, g.textureID);
-		glBegin(GL_QUADS);
-		
 		s32 y__ = y_ + font->px_h + g.yoff;
 		s32 x_to_render = x_ + (g.lsb);
 		
-		glTexCoord2i(0, 0); glVertex3i(x_to_render,y__, render_depth);
-		glTexCoord2i(0, 1); glVertex3i(x_to_render,y__+g.height, render_depth);
-		glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y__+g.height, render_depth);
-		glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y__, render_depth);
-		
-		glEnd();
+		if (global_use_gpu)
+		{
+			glBindTexture(GL_TEXTURE_2D, g.textureID);
+			glBegin(GL_QUADS);
+			
+			glTexCoord2i(0, 0); glVertex3i(x_to_render,y__, render_depth);
+			glTexCoord2i(0, 1); glVertex3i(x_to_render,y__+g.height, render_depth);
+			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y__+g.height, render_depth);
+			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y__, render_depth);
+			
+			glEnd();
+		}
+		else
+		{
+			vec4 rec = _get_actual_rect(x_to_render, y__, g.width, g.height);
+			
+			for (s32 x = rec.x; x < rec.w; x++)
+			{
+				for (s32 y = rec.y; y < rec.h; y++)
+				{
+					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+					
+					if (buffer_entry[4] > render_depth) continue;
+					buffer_entry[4] = render_depth;
+					
+					s32 _x = x - rec.x;
+					s32 _y = y - rec.y;
+					s32 image_offset = (_y * g.width) + _x;
+					u8 *color = g.bitmap+image_offset;
+					
+					float32 alpha = color[0] / 255.0f;
+					float32 oneminusalpha = 1 - alpha;
+					
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 a = color[0];
+					
+					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+					
+					memcpy(buffer_entry, &c, 4);
+				}
+			}
+		}
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -393,7 +642,8 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		}
 	}
 	
-	glDisable(GL_TEXTURE_2D);
+	if (global_use_gpu)
+		glDisable(GL_TEXTURE_2D);
 	
 	return (y_ - y) + font->size;
 	
@@ -594,7 +844,18 @@ void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 				
 				if (buffer_entry[4] > render_depth) continue;
 				buffer_entry[4] = render_depth;
-				memcpy(buffer_entry, &tint, 4);
+				
+				float32 alpha = tint.a / 255.0f;
+				float32 oneminusalpha = 1 - alpha;
+				
+				u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+				u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+				u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+				u8 a = tint.a;
+				
+				s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+				
+				memcpy(buffer_entry, &c, 4);
 			}
 		}
 	}
@@ -621,7 +882,7 @@ void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 	}
 	else
 	{
-		current_scissor = (vec4){x,y,w,h};
+		current_scissor = (vec4){x,y,w+1,h+1};
 	}
 }
 
@@ -651,6 +912,6 @@ void render_reset_scissor()
 	}
 	else
 	{
-		current_scissor = (vec4){0,0,drawing_window->width,drawing_window->height};
+		current_scissor = (vec4){0,0,drawing_window->width+1,drawing_window->height+1};
 	}
 }

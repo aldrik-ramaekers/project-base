@@ -141,7 +141,7 @@ void destroy_available_localizations()
 		mem_free(file->locale_full);
 		
 		if (file->icon)
-			assets_destroy_image(file->icon);
+			assets_destroy_bitmap(file->icon);
 	}
 	array_destroy(&global_localization.mo_files);
 }

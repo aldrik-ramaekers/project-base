@@ -11,7 +11,6 @@ typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;
 	bool loaded;
-	bool keep_in_memory;
 	bool is_bitmap;
 	s32 width;
 	s32 height;
@@ -91,7 +90,7 @@ void assets_destroy();
 bool assets_do_post_process();
 void *assets_queue_worker();
 
-image *assets_load_image(u8 *start_addr, u8 *end_addr, bool keep_in_memory);
+image *assets_load_image(u8 *start_addr, u8 *end_addr);
 void assets_destroy_image(image *image);
 
 image *assets_load_bitmap(u8 *start_addr, u8 *end_addr);
@@ -100,8 +99,8 @@ void assets_destroy_bitmap(image *image);
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 void assets_destroy_font(font *font);
 
-#define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end, _inmem)
-#define load_font(_name, _inmem) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _inmem)
+#define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
+#define load_font(_name, _size) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _size)
 #define load_bitmap(_name) assets_load_bitmap(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
 
 #endif
