@@ -4,10 +4,51 @@
 *  All rights reserved.
 */
 
-inline void render_clear()
+static platform_window *drawing_window = 0;
+
+// returns topleft and bottomright corners. not width + height
+static vec4 _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
 {
-	glClearColor(255/255.0, 255/255.0, 255/255.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+	s32 start_x = x;
+	s32 start_y = y;
+	s32 end_x = start_x + width;
+	s32 end_y = start_y + height;
+	if (end_x > drawing_window->backbuffer.width)
+		end_x = drawing_window->backbuffer.width;
+	if (end_y > drawing_window->backbuffer.height)
+		end_y = drawing_window->backbuffer.height;
+	
+	if (start_x < current_scissor.x) start_x = current_scissor.x;
+	if (start_y < current_scissor.y) start_y = current_scissor.y;
+	if (end_x > current_scissor.x+current_scissor.w) 
+		end_x = current_scissor.x+current_scissor.w;
+	if (end_y > current_scissor.y+current_scissor.h) 
+		end_y = current_scissor.y+current_scissor.h;
+	
+	return (vec4){start_x,start_y,end_x,end_y};
+}
+
+inline void render_clear(platform_window *window)
+{
+	if (global_use_gpu)
+	{
+		glClearColor(255/255.0, 255/255.0, 255/255.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	else
+	{
+		drawing_window = window;
+		render_reset_scissor();
+		
+		render_depth = 1;
+		
+		u8 pixel[5] = { 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+		s32 pixel_count = window->backbuffer.width*window->backbuffer.height;
+		for (s32 i = 0; i < pixel_count; i++)
+			memcpy(window->backbuffer.buffer+(i*5), pixel, 5);
+	}
 }
 
 inline void render_set_rotation(float32 rotation, float32 x, float32 y, s32 depth)
@@ -530,27 +571,33 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 
 void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
-	glBegin(GL_QUADS);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-	glVertex3i(x, y, render_depth);
-	glVertex3i(x, y+height, render_depth);
-	glVertex3i(x+width, y+height, render_depth);
-	glVertex3i(x+width, y, render_depth);
-	glEnd();
-}
-
-void render_rectangle_tint(s32 x, s32 y, s32 width, s32 height, color tint[4])
-{
-	glBegin(GL_QUADS);
-	glColor4f(tint[0].r/255.0f, tint[0].g/255.0f, tint[0].b/255.0f, tint[0].a/255.0f);
-	glVertex3i(x, y, render_depth);
-	glColor4f(tint[1].r/255.0f, tint[1].g/255.0f, tint[1].b/255.0f, tint[1].a/255.0f);
-	glVertex3i(x, y+height, render_depth);
-	glColor4f(tint[2].r/255.0f, tint[2].g/255.0f, tint[2].b/255.0f, tint[2].a/255.0f); 
-	glVertex3i(x+width, y+height, render_depth);
-	glColor4f(tint[3].r/255.0f, tint[3].g/255.0f, tint[3].b/255.0f, tint[3].a/255.0f);
-	glVertex3i(x+width, y, render_depth);
-	glEnd();
+	if (global_use_gpu)
+	{
+		glBegin(GL_QUADS);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		glVertex3i(x, y, render_depth);
+		glVertex3i(x, y+height, render_depth);
+		glVertex3i(x+width, y+height, render_depth);
+		glVertex3i(x+width, y, render_depth);
+		glEnd();
+	}
+	else
+	{
+		vec4 rec = _get_actual_rect(x,y,width,height);
+		
+		for (s32 x = rec.x; x < rec.w; x++)
+		{
+			for (s32 y = rec.y; y < rec.h; y++)
+			{
+				s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+				u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+				
+				if (buffer_entry[4] > render_depth) continue;
+				buffer_entry[4] = render_depth;
+				memcpy(buffer_entry, &tint, 4);
+			}
+		}
+	}
 }
 
 void render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16 outline_w, color tint)
@@ -567,22 +614,43 @@ void render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16 outline_w
 
 void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 {
-	glEnable(GL_SCISSOR_TEST);
-	glScissor(x-1, window->height-h-y-1, w+1, h+1);
+	if (global_use_gpu)
+	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(x-1, window->height-h-y-1, w+1, h+1);
+	}
+	else
+	{
+		current_scissor = (vec4){x,y,w,h};
+	}
 }
 
 vec4 render_get_scissor(platform_window *window)
 {
-	vec4 vec;
-	glGetIntegerv(GL_SCISSOR_BOX, (GLint*)(&vec));
-	vec.x += 1;
-	vec.w -= 1;
-	vec.h -= 1;
-	vec.y += 1;
-	return vec;
+	if (global_use_gpu)
+	{
+		vec4 vec;
+		glGetIntegerv(GL_SCISSOR_BOX, (GLint*)(&vec));
+		vec.x += 1;
+		vec.w -= 1;
+		vec.h -= 1;
+		vec.y += 1;
+		return vec;
+	}
+	else
+	{
+		return current_scissor;
+	}
 }
 
 void render_reset_scissor()
 {
-	glDisable(GL_SCISSOR_TEST);
+	if (global_use_gpu)
+	{
+		glDisable(GL_SCISSOR_TEST);
+	}
+	else
+	{
+		current_scissor = (vec4){0,0,drawing_window->width,drawing_window->height};
+	}
 }

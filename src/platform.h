@@ -43,6 +43,7 @@ typedef struct t_search_result
 	array work_queue;
 	array files;
 	array matches;
+	s32 match_count;
 	u64 find_duration_us;
 	array errors;
 	bool show_error_message; // error occured
@@ -166,6 +167,21 @@ typedef struct t_vec2
 	s32 x;
 	s32 y;
 } vec2;
+
+typedef struct t_backbuffer_pixel
+{
+	s32 color;
+	u8 depth; 
+} backbuffer_pixel;
+
+typedef struct t_backbuffer
+{
+	s32 width;
+	s32 height;
+	u8 *pixels; // 5bytes color
+	u8 *buffer; // 4bytes color + 1byte depth
+	BITMAPINFO bitmapInfo;
+} backbuffer;
 
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 typedef enum t_window_flags
