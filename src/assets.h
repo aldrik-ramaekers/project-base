@@ -19,6 +19,11 @@
 #define ASSET_QUEUE_COUNT 20
 #endif
 
+#ifdef MODE_DEVELOPER
+s32 __frames_drawn_with_missing_assets = 0;
+#endif
+
+
 typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;

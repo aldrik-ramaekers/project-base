@@ -58,6 +58,7 @@ struct t_platform_window
 	Atom _NET_WM_STATE;
 	
 	// shared window properties
+	bool icon_loaded;
 	bool do_draw;
 	backbuffer backbuffer;
 	s32 width;
@@ -676,6 +677,15 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	bool has_max_size = max_w || max_h;
 	
 	platform_window window;
+	window.width = width;
+	window.height = height;
+	window.min_width = min_w;
+	window.min_height = min_h;
+	window.max_width = max_w;
+	window.max_height = max_h;
+	window.backbuffer.buffer = 0;
+	window.gl_context = 0;
+	window.icon_loaded = false;
 	window.has_focus = true;
 	window.curr_cursor_type = CURSOR_DEFAULT;
 	window.next_cursor_type = CURSOR_DEFAULT;
@@ -1587,6 +1597,12 @@ inline void platform_run_command(char *command)
 
 void platform_set_icon(platform_window *window, image *img)
 {
+	if (!img->loaded) return;
+	if (!window->icon_loaded)
+		window->icon_loaded = true;
+	else
+		return;
+	
 	s32 w = img->width;
 	s32 h = img->height;
 	

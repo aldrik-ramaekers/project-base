@@ -33,8 +33,38 @@ inline static bool is_big_endian()
     return !((*((uint8_t*)(&i))) == 0x67);
 }
 
+void assets_stop_if_done()
+{
+	if (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets)
+	{
+		global_asset_collection.done_loading_assets = true;
+		
+#ifdef MODE_TIMESTARTUP
+		abort();
+#endif
+		
+#if defined(MODE_DEBUGMEM) && !defined(MODE_TEST)
+		printf("allocated at startup: %dkb\n", __total_allocated/1000);
+		printf("reallocated at startup: %dkb\n", __total_reallocated/1000);
+#endif
+		
+#if defined(MODE_DEVELOPER) && !defined(MODE_TEST)
+		printf("frames drawn with missing assets: %d\n", __frames_drawn_with_missing_assets);
+#endif
+	}
+	
+#ifdef MODE_DEVELOPER
+	if (global_asset_collection.queue.queue.length != 0 && !global_asset_collection.done_loading_assets)
+	{
+		__frames_drawn_with_missing_assets++;
+	}
+#endif
+}
+
 bool assets_do_post_process()
 {
+	assets_stop_if_done();
+	
 	bool result = false;
 	
 	mutex_lock(&asset_mutex);

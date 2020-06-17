@@ -27,6 +27,7 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	bool icon_loaded;
 	bool do_draw;
 	backbuffer backbuffer;
 	s32 width;
@@ -673,6 +674,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.backbuffer.buffer = 0;
 	window.do_draw = true;
 	window.gl_context = 0;
+	window.icon_loaded = false;
 	
 	current_window_to_handle = &window;
 	
@@ -741,14 +743,14 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 			platform_setup_backbuffer(&window);
 			debug_print_elapsed(startup_stamp, "backbuffer");
 			
+			platform_setup_renderer();
+			debug_print_elapsed(startup_stamp, "renderer");
+			
 			ShowWindow(window.window_handle, cmd_show);
 			if (flags & FLAGS_HIDDEN)
 				ShowWindow(window.window_handle, SW_HIDE);
 			else
 				ShowWindow(window.window_handle, SW_SHOW);
-			
-			platform_setup_renderer();
-			debug_print_elapsed(startup_stamp, "renderer");
 			
 			window.is_open = true;
 			
@@ -1320,6 +1322,12 @@ void platform_init(int argc, char **argv)
 
 void platform_set_icon(platform_window *window, image *img)
 {
+	if (!img->loaded) return;
+	if (!window->icon_loaded)
+		window->icon_loaded = true;
+	else
+		return;
+	
 	// NOTE only works with bmps currently; remove #if 0 to enable png again..
 	// we should probably change png color alignment so png and bmp data is the same in memory
 	BYTE *bmp;
