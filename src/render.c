@@ -106,9 +106,9 @@ void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 					float32 alpha = color[3] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 b = ((color[0] * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 b = ((color[0] * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((color[1] * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 r = ((color[2] * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 r = ((color[2] * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[3];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -218,9 +218,9 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 					float32 alpha = color[0] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[0];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -315,9 +315,9 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 					float32 alpha = color[0] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[0];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -415,9 +415,9 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 					float32 alpha = color[0] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[0];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -512,9 +512,9 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 					float32 alpha = color[0] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[0];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -618,9 +618,9 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 					float32 alpha = color[0] / 255.0f;
 					float32 oneminusalpha = 1 - alpha;
 					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 					u8 a = color[0];
 					
 					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -848,9 +848,9 @@ void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 				float32 alpha = tint.a / 255.0f;
 				float32 oneminusalpha = 1 - alpha;
 				
-				u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[0]));
+				u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
 				u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-				u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[2]));
+				u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
 				u8 a = tint.a;
 				
 				s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);

@@ -7,11 +7,22 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
+#ifndef ASSET_IMAGE_COUNT
+#define ASSET_IMAGE_COUNT 10
+#endif
+
+#ifndef ASSET_FONT_COUNT
+#define ASSET_FONT_COUNT 10
+#endif
+
+#ifndef ASSET_QUEUE_COUNT
+#define ASSET_QUEUE_COUNT 20
+#endif
+
 typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;
 	bool loaded;
-	bool is_bitmap;
 	s32 width;
 	s32 height;
 	s32 channels;
@@ -98,6 +109,8 @@ void assets_destroy_bitmap(image *image);
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 void assets_destroy_font(font *font);
+
+void assets_switch_render_method();
 
 #define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
 #define load_font(_name, _size) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _size)

@@ -36,13 +36,6 @@ inline static bool is_big_endian()
 bool assets_do_post_process()
 {
 	bool result = false;
-#if 0
-	static PFNGLTEXIMAGE2DMULTISAMPLEPROC glTexImage2DMultisample = NULL;
-#ifdef OS_WIN
-	if (!glTexImage2DMultisample)
-		glTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLEPROC)wglGetProcAddress("glTexImage2DMultisample");
-#endif
-#endif
 	
 	mutex_lock(&asset_mutex);
 	
@@ -54,6 +47,8 @@ bool assets_do_post_process()
 		{
 			if (task->image->data && task->valid)
 			{
+				if (!global_use_gpu) { task->image->loaded = true; goto done; }
+				
 				glGenTextures(1, &task->image->textureID);
 				glBindTexture(GL_TEXTURE_2D, task->image->textureID);
 				
@@ -67,18 +62,6 @@ bool assets_do_post_process()
 					glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_BGRA, flag, task->image->data);
 				
-#if 0
-				if (glTexImage2DMultisample)
-					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, task->image->width, task->image->height, FALSE);
-#endif
-				
-#if 0
-				s32 fbo;
-				glGenFramebuffers(1, &fbo);
-				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, task->image->textureID, 0);
-#endif
-				
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				task->image->loaded = true;
@@ -89,6 +72,8 @@ bool assets_do_post_process()
 		{
 			if (task->valid)
 			{
+				if (!global_use_gpu) { task->font->loaded = true; goto done; }
+				
 				for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 				{
 					glyph *g = &task->font->glyphs[i];
@@ -109,8 +94,8 @@ bool assets_do_post_process()
 			}
 		}
 		
+		done:
 		result = true;
-		
 		array_remove_at(&global_asset_collection.post_process_queue, i);
 	}
 	
@@ -278,7 +263,7 @@ image *assets_load_image(u8 *start_addr, u8 *end_addr)
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if (start_addr == img_at->start_addr)
+		if (start_addr == img_at->start_addr && img_at->references > 0)
 		{
 			// image is already loaded/loading
 			img_at->references++;
@@ -317,10 +302,9 @@ void assets_destroy_image(image *image_to_destroy)
 		{
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glDeleteTextures(1, &image_to_destroy->textureID);
-			stbi_image_free(image_to_destroy->data);
 		}
 		
-		//array_remove(&global_asset_collection.images, image_at);
+		image_to_destroy->references = 0;
 	}
 	else
 	{
@@ -335,7 +319,7 @@ font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 	{
 		font *font_at = array_at(&global_asset_collection.fonts, i);
 		
-		if (start_addr == font_at->start_addr && font_at->size == size)
+		if (start_addr == font_at->start_addr && font_at->size == size && font_at->references > 0)
 		{
 			// font is already loaded/loading
 			font_at->references++;
@@ -371,8 +355,17 @@ void assets_destroy_font(font *font_to_destroy)
 {
 	if (font_to_destroy->references == 1)
 	{
-		//glBindTexture(GL_TEXTURE_2D, 0);
-		//glDeleteTextures(1, font_to_destroy->textureIDs);
+		if (global_use_gpu)
+		{
+			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
+			{
+				glyph g = font_to_destroy->glyphs[i];
+				glBindTexture(GL_TEXTURE_2D, 0);
+				glDeleteTextures(1, &g.textureID);
+			}
+		}
+		
+		font_to_destroy->references = 0;
 	}
 	else
 	{
@@ -403,7 +396,7 @@ image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if (start_addr == img_at->start_addr)
+		if (start_addr == img_at->start_addr && img_at->references > 0)
 		{
 			// image is already loaded/loading
 			img_at->references++;
@@ -443,10 +436,58 @@ void assets_destroy_bitmap(image *image_to_destroy)
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glDeleteTextures(1, &image_to_destroy->textureID);
 		}
-		//array_remove(&global_asset_collection.images, image_at);
+		
+		image_to_destroy->references = 0;
 	}
 	else
 	{
 		image_to_destroy->references--;
+	}
+}
+
+void assets_switch_render_method()
+{
+	for (int i = 0; i < global_asset_collection.images.length; i++)
+	{
+		image *img_at = array_at(&global_asset_collection.images, i);
+		
+		if (global_use_gpu)
+		{
+			asset_task task;
+			task.type = ASSET_IMAGE;
+			task.image = img_at;
+			task.valid = true;
+			
+			array_push(&global_asset_collection.post_process_queue, &task);
+		}
+		else
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &img_at->textureID);
+		}
+	}
+	
+	for (int i = 0; i < global_asset_collection.fonts.length; i++)
+	{
+		font *font_at = array_at(&global_asset_collection.fonts, i);
+		
+		if (global_use_gpu)
+		{
+			asset_task task;
+			task.type = ASSET_FONT;
+			task.font = font_at;
+			task.valid = true;
+			
+			array_push(&global_asset_collection.post_process_queue, &task);
+		}
+		else
+		{
+			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
+			{
+				glyph g = font_at->glyphs[i];
+				glBindTexture(GL_TEXTURE_2D, 0);
+				glDeleteTextures(1, &g.textureID);
+			}
+		}
 	}
 }

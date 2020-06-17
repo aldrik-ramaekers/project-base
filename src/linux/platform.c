@@ -21,9 +21,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
-//#include <curl/curl.h>
-//#include <ifaddrs.h>
-//#include <netpacket/packet.h>
 
 #define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
 
@@ -39,7 +36,6 @@ struct t_platform_window
 	XEvent event;
 	char *clipboard_str;
 	s32 clipboard_strlen;
-	bool do_draw;
 	
 	Atom xdnd_req;
 	Atom xdnd_source;
@@ -62,6 +58,8 @@ struct t_platform_window
 	Atom _NET_WM_STATE;
 	
 	// shared window properties
+	bool do_draw;
+	backbuffer backbuffer;
 	s32 width;
 	s32 height;
 	bool is_open;

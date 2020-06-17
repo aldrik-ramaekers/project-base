@@ -179,7 +179,9 @@ typedef struct t_backbuffer
 	s32 width;
 	s32 height;
 	u8 *buffer; // 4bytes color + 1byte depth
+#ifdef OS_WIN
 	BITMAPINFO bitmapInfo;
+#endif
 } backbuffer;
 
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
@@ -234,6 +236,8 @@ void platform_run_command(char *command);
 void platform_window_make_current(platform_window *window);
 void platform_init(int argc, char **argv);
 void platform_destroy();
+void platform_setup_backbuffer(platform_window *window);
+void platform_setup_renderer();
 void platform_set_icon(platform_window *window, image *img);
 void platform_autocomplete_path(char *buffer, bool want_dir);
 bool platform_directory_exists(char *path);

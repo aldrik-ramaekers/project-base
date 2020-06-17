@@ -7,6 +7,7 @@
 #ifndef INCLUDE_UI
 #define INCLUDE_UI
 
+#define SCROLL_SPEED 20
 #define BLOCK_HEIGHT 25
 #define MENU_BAR_HEIGHT 25
 #define MENU_HORIZONTAL_PADDING 10

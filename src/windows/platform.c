@@ -20,9 +20,6 @@ struct t_platform_window
 	HGLRC gl_context;
 	WNDCLASS window_class;
 	s32 flags;
-	bool do_draw;
-	
-	backbuffer backbuffer;
 	
     s32 min_width;
 	s32 min_height;
@@ -30,6 +27,8 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	bool do_draw;
+	backbuffer backbuffer;
 	s32 width;
 	s32 height;
 	bool is_open;
@@ -321,7 +320,7 @@ void platform_show_message(platform_window *window, char *message, char *title)
 
 static void _allocate_backbuffer(platform_window *window)
 {
-	if (window->backbuffer.buffer) mem_free(window->backbuffer.buffer);
+	if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 	
 	BITMAPINFO info;
 	info.bmiHeader.biSize = sizeof(BITMAPINFO);
@@ -567,6 +566,89 @@ void platform_hide_window(platform_window *window)
 	ShowWindow(window->window_handle, SW_HIDE);
 }
 
+void platform_setup_backbuffer(platform_window *window)
+{
+	static HGLRC share_list = 0;
+	if (global_use_gpu)
+	{
+		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+		
+		PIXELFORMATDESCRIPTOR actual_format;
+		// old pixel format selection
+		{
+			PIXELFORMATDESCRIPTOR format;
+			memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
+			format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+			format.nVersion = 1;
+			format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
+			format.cColorBits = 24;
+			format.cAlphaBits = 8;
+			format.cDepthBits = 16;
+			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
+			s32 suggested_format_index = ChoosePixelFormat(window->hdc, &format); // SLOW AF??
+			
+			DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
+			SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
+		}
+		
+		//debug_print_elapsed(startup_stamp, "pixel format");
+		
+		window->gl_context = wglCreateContext(window->hdc);
+		
+		//debug_print_elapsed(startup_stamp, "gl context");
+		
+		if (share_list == 0)
+		{
+			share_list = window->gl_context;
+		}
+		else
+		{
+			wglShareLists(share_list, window->gl_context);
+		}
+		
+		wglMakeCurrent(window->hdc, window->gl_context);
+	}
+	else
+	{
+		share_list = 0;
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(window->gl_context);
+		window->gl_context = 0;
+		
+		_allocate_backbuffer(window);
+		//debug_print_elapsed(startup_stamp, "backbuffer");
+	}
+}
+
+void platform_setup_renderer()
+{
+	if (global_use_gpu)
+	{
+		////// GL SETUP
+		glDepthMask(GL_TRUE);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_DEPTH_TEST);
+		glAlphaFunc(GL_GREATER, 0.0f);
+		glEnable(GL_ALPHA_TEST);
+		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+		glEnable(GL_MULTISAMPLE);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_SCISSOR_TEST);
+		glEnable(GL_BLEND);
+		//glEnable(GL_FRAMEBUFFER_SRGB);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_MULTISAMPLE_ARB);
+		
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	}
+}
+
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	debug_print_elapsed_title("window creation");
@@ -590,6 +672,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.next_cursor_type = CURSOR_DEFAULT;
 	window.backbuffer.buffer = 0;
 	window.do_draw = true;
+	window.gl_context = 0;
 	
 	current_window_to_handle = &window;
 	
@@ -655,48 +738,8 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		{
 			window.hdc = GetDC(window.window_handle);
 			
-			if (global_use_gpu)
-			{
-				PIXELFORMATDESCRIPTOR actual_format;
-				// old pixel format selection
-				{
-					PIXELFORMATDESCRIPTOR format;
-					memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
-					format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-					format.nVersion = 1;
-					format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
-					format.cColorBits = 24;
-					format.cAlphaBits = 8;
-					format.cDepthBits = 16;
-					format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
-					s32 suggested_format_index = ChoosePixelFormat(window.hdc, &format); // SLOW AF??
-					
-					DescribePixelFormat(window.hdc, suggested_format_index, sizeof(actual_format), &actual_format);
-					SetPixelFormat(window.hdc, suggested_format_index, &actual_format);
-				}
-				
-				debug_print_elapsed(startup_stamp, "pixel format");
-				
-				window.gl_context = wglCreateContext(window.hdc);
-				
-				debug_print_elapsed(startup_stamp, "gl context");
-				
-				static HGLRC share_list = 0;
-				if (share_list == 0)
-				{
-					share_list = window.gl_context;
-				}
-				else
-				{
-					wglShareLists(share_list, window.gl_context);
-				}
-				
-				wglMakeCurrent(window.hdc, window.gl_context);
-			}
-			else
-			{
-				_allocate_backbuffer(&window);
-			}
+			platform_setup_backbuffer(&window);
+			debug_print_elapsed(startup_stamp, "backbuffer");
 			
 			ShowWindow(window.window_handle, cmd_show);
 			if (flags & FLAGS_HIDDEN)
@@ -704,33 +747,8 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 			else
 				ShowWindow(window.window_handle, SW_SHOW);
 			
-			if (global_use_gpu)
-			{
-				////// GL SETUP
-				glDepthMask(GL_TRUE);
-				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				glDepthFunc(GL_LEQUAL);
-				glEnable(GL_DEPTH_TEST);
-				glAlphaFunc(GL_GREATER, 0.0f);
-				glEnable(GL_ALPHA_TEST);
-				glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-				glEnable(GL_SAMPLE_ALPHA_TO_ONE);
-				glEnable(GL_MULTISAMPLE);
-				glEnable(GL_TEXTURE_2D);
-				glEnable(GL_SCISSOR_TEST);
-				glEnable(GL_BLEND);
-				//glEnable(GL_FRAMEBUFFER_SRGB);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				glEnable(GL_MULTISAMPLE_ARB);
-			}
-			
-			glMatrixMode(GL_TEXTURE);
-			glLoadIdentity();
-			
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
-			
-			debug_print_elapsed(startup_stamp, "gl setup");
+			platform_setup_renderer();
+			debug_print_elapsed(startup_stamp, "renderer");
 			
 			window.is_open = true;
 			
@@ -740,7 +758,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 			track.hwndTrack = window.window_handle;
 			TrackMouseEvent(&track);
 			
-			debug_print_elapsed(startup_stamp, "track mouse");
+			debug_print_elapsed(startup_stamp, "windows nonsense");
 		}
 		else
 		{
@@ -792,14 +810,22 @@ bool platform_window_is_valid(platform_window *window)
 
 void platform_destroy_window(platform_window *window)
 {
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(window->gl_context);
+	if (global_use_gpu)
+	{
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(window->gl_context);
+	}
+	else
+	{
+		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+	}
 	
 	ReleaseDC(window->window_handle, window->hdc);
 	CloseWindow(window->window_handle);
 	DestroyWindow(window->window_handle);
 	UnregisterClassA(window->window_class.lpszClassName, instance);
 	window->hdc = 0;
+	window->gl_context = 0;
 	window->window_handle = 0;
 }
 
@@ -873,7 +899,8 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 		DispatchMessage(&message); 
 	}
 	
-	glViewport(0, 0, window->width, window->height);
+	if (global_use_gpu)
+		glViewport(0, 0, window->width, window->height);
 }
 
 void platform_window_swap_buffers(platform_window *window)
@@ -1265,7 +1292,8 @@ void platform_run_command(char *command)
 
 void platform_window_make_current(platform_window *window)
 {
-	wglMakeCurrent(window->hdc, window->gl_context);
+	if (global_use_gpu)
+		wglMakeCurrent(window->hdc, window->gl_context);
 }
 
 void platform_init(int argc, char **argv)

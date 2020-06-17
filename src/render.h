@@ -30,7 +30,7 @@ typedef enum t_triangle_direction
 	TRIANGLE_RIGHT,
 } triangle_direction;
 
-s32 global_use_gpu = 0;
+s32 global_use_gpu = 1;
 u8 render_depth = 1;
 
 vec4 current_scissor;
@@ -50,7 +50,6 @@ void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color 
 s32 render_text(font *font, s32 x, s32 y, char *text, color tint);
 s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color tint);
 s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cutoff_width);
-s32 render_text_vertical(font *font, s32 x, s32 y, char *text, color tint);
 s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s32 cursor_pos);
 s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint, s32 selection_start, s32 selection_length);
 
