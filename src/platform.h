@@ -182,6 +182,9 @@ typedef struct t_backbuffer
 #ifdef OS_WIN
 	BITMAPINFO bitmapInfo;
 #endif
+#ifdef OS_LINUX
+	XImage * s_image;
+#endif
 } backbuffer;
 
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE

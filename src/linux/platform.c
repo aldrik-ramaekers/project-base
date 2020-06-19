@@ -35,6 +35,7 @@ struct t_platform_window
 	XWindowAttributes window_attributes;
 	XEvent event;
 	char *clipboard_str;
+	GC gc;
 	s32 clipboard_strlen;
 	
 	Atom xdnd_req;
@@ -186,7 +187,6 @@ bool set_active_directory(char *path)
 {
 	return !chdir(path);
 }
-
 
 void platform_delete_file(char *path)
 {
@@ -650,12 +650,33 @@ inline void platform_destroy()
 
 inline void platform_window_make_current(platform_window *window)
 {
-	glXMakeCurrent(window->display, window->window, window->gl_context);
+	if (global_use_gpu)
+		glXMakeCurrent(window->display, window->window, window->gl_context);
+}
+
+static void _allocate_backbuffer(platform_window *window)
+{
+	if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+	
+	window->backbuffer.width = window->width;
+	window->backbuffer.height = window->height;
+	
+	s32 bufferMemorySize = (window->width*window->height)*5;
+	window->backbuffer.buffer = mem_alloc(bufferMemorySize);
+	window->backbuffer.s_image = XCreateImage(
+		window->display, 
+		DefaultVisual(window->display, DefaultScreen(window->display)),
+		DefaultDepth(window->display, DefaultScreen(window->display)), 
+		ZPixmap, 0, (char*)window->backbuffer.buffer, 
+		window->width, window->height, 32, 0);
 }
 
 void platform_window_set_size(platform_window *window, u16 width, u16 height)
 {
 	XResizeWindow(window->display, window->window, width, height);
+	
+	if (!global_use_gpu)
+		_allocate_backbuffer(window);
 }
 
 void platform_window_set_position(platform_window *window, u16 x, u16 y)
@@ -672,6 +693,63 @@ vec2 platform_get_window_size(platform_window *window)
 	return res;
 }
 
+void platform_setup_backbuffer(platform_window *window)
+{
+	if (global_use_gpu)
+	{
+		static GLXContext share_list = 0;
+		
+		// get opengl context
+		window->gl_context = glXCreateContext(window->display, window->visual_info, 
+											  share_list, GL_TRUE);
+		
+		if (share_list == 0)
+			share_list = window->gl_context;
+		glXMakeCurrent(window->display, window->window, window->gl_context);
+		
+	}
+	else
+	{
+		_allocate_backbuffer(window);
+	}
+}
+
+void platform_setup_renderer()
+{
+	if (global_use_gpu)
+	{
+		////// GL SETUP
+		glDepthMask(GL_TRUE);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_DEPTH_TEST);
+		glAlphaFunc(GL_GREATER, 0.0f);
+		glEnable(GL_ALPHA_TEST);
+		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+		glEnable(GL_MULTISAMPLE);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_SCISSOR_TEST);
+		glEnable(GL_BLEND);
+		//glEnable(GL_FRAMEBUFFER_SRGB);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_MULTISAMPLE_ARB);
+		
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		//glOrtho(0, width, height, 0, -1, 1);
+		
+		glMatrixMode(GL_MODELVIEW);
+		
+	}
+}
+
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	bool has_max_size = max_w || max_h;
@@ -679,10 +757,6 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	platform_window window;
 	window.width = width;
 	window.height = height;
-	window.min_width = min_w;
-	window.min_height = min_h;
-	window.max_width = max_w;
-	window.max_height = max_h;
 	window.backbuffer.buffer = 0;
 	window.gl_context = 0;
 	window.icon_loaded = false;
@@ -692,6 +766,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	window.clipboard_str = 0;
 	window.clipboard_strlen = 0;
 	window.do_draw = true;
+	window.backbuffer.s_image = 0;
 	
 	static int att[] =
 	{
@@ -771,6 +846,9 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	
 	window.window = XCreateWindow(window.display, window.parent, center_x, center_y, width, height, 0, window.visual_info->depth, InputOutput, window.visual_info->visual, CWColormap | CWEventMask | CWBorderPixel, &window_attributes);
 	
+	XGCValues values;
+	window.gc = XCreateGC(window.display, window.window, 0, &values);
+	
 	XMapWindow(window.display, window.window);
 	XFlush(window.display);
 	
@@ -845,43 +923,12 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		XFree(win_hints);
 	}
 	
-	static GLXContext share_list = 0;
-	
-	// get opengl context
-	window.gl_context = glXCreateContext(window.display, window.visual_info, 
-										 share_list, GL_TRUE);
-	
-	if (share_list == 0)
-		share_list = window.gl_context;
-	glXMakeCurrent(window.display, window.window, window.gl_context);
-	
-	// blending
-	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(true);
-	//glClearDepth(50);
-	glDepthFunc(GL_LEQUAL);
-	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	// setup multisampling
-#if 0
-	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-	glEnable(GL_SAMPLE_ALPHA_TO_ONE);
-	glEnable(GL_MULTISAMPLE);
-	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-#endif
+	platform_setup_backbuffer(&window);
+	platform_setup_renderer();
 	
 	window.is_open = true;
 	window.width = width;
 	window.height = height;
-	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, -1, 1);
-	
-	glMatrixMode(GL_MODELVIEW);
 	
 	create_key_tables(window);
 	
@@ -946,8 +993,16 @@ inline bool platform_window_is_valid(platform_window *window)
 
 void platform_destroy_window(platform_window *window)
 {
-	glXMakeCurrent(window->display, None, NULL);
-	glXDestroyContext(window->display, window->gl_context);
+	if (global_use_gpu)
+	{
+		glXMakeCurrent(window->display, None, NULL);
+		glXDestroyContext(window->display, window->gl_context);
+	}
+	else
+	{
+		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+	}
+	
 	XDestroyWindow(window->display, window->window);
 	XCloseDisplay(window->display);
 	XFree(window->visual_info);
@@ -1040,7 +1095,11 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 			XConfigureEvent xce = window->event.xconfigure;
 			window->width = xce.width;
 			window->height = xce.height;
-			glViewport(0, 0, window->width, window->height);
+			
+			if (!global_use_gpu)
+				_allocate_backbuffer(window);
+			else
+				glViewport(0, 0, window->width, window->height);
 		}
 		else if (window->event.type == FocusIn)
 		{
@@ -1272,7 +1331,22 @@ inline void platform_window_swap_buffers(platform_window *window)
 		window->curr_cursor_type = window->next_cursor_type;
 	}
 	
-	glXSwapBuffers(window->display, window->window);
+	if (!global_use_gpu)
+	{
+		s32 pixel_count = window->backbuffer.width * window->backbuffer.height;
+		for (s32 i = 0; i < pixel_count; i++)
+		{
+			u8 *buffer_entry = window->backbuffer.buffer + (i*5);
+			memcpy(window->backbuffer.buffer + (i*4), buffer_entry, 4);
+		}
+		
+		XPutImage(window->display, window->window, window->gc, window->backbuffer.s_image, 0, 0, 0, 0, window->backbuffer.width, window->backbuffer.height);
+		XFlush(window->display);
+	}
+	else
+	{
+		glXSwapBuffers(window->display, window->window);
+	}
 }
 
 u64 platform_get_time(time_type time_type, time_precision precision)
@@ -1621,6 +1695,7 @@ void platform_set_icon(platform_window *window, image *img)
 			
 			s32 img_pixel = *(((s32*)img->data+(x+(y*w))));
 			
+#if 0
 			// 0xAABBGGRR
 			s32 a = (img_pixel>>24) & 0x000000FF;
 			s32 b = (img_pixel>>16) & 0x000000FF;
@@ -1629,6 +1704,8 @@ void platform_set_icon(platform_window *window, image *img)
 			
 			//s32 c = (r << 24) | (g << 16) | (b << 8) | (a << 0);
 			s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+#endif
+			s32 c = img_pixel;
 			*pixel = c;
 		}
 	}

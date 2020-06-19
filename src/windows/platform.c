@@ -150,8 +150,18 @@ inline void platform_set_cursor(platform_window *window, cursor_type type)
 
 bool platform_directory_exists(char *path)
 {
+	char tmp[MAX_INPUT_LENGTH];
+	string_copyn(tmp, path, MAX_INPUT_LENGTH);
+	
+	s32 len = strlen(tmp);
+	if (tmp[len-1] == '\\')
+	{
+		tmp[len-1] = 0;
+	}
+	
+	
 	WIN32_FIND_DATA FindFileData;
-	HANDLE handle = FindFirstFile(path, &FindFileData) ;
+	HANDLE handle = FindFirstFile(tmp, &FindFileData) ;
 	int found = handle != INVALID_HANDLE_VALUE;
 	if(found) 
 	{
