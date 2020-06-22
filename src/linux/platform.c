@@ -750,6 +750,15 @@ void platform_setup_renderer()
 	}
 }
 
+int _x11_error_handler(Display *display, XErrorEvent *event)
+{
+	char tmp[2000];
+	XGetErrorText(display, event->error_code, tmp, 2000);
+	printf("X11 ERROR: %s\n", tmp);
+	
+	return 0;
+}
+
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	bool has_max_size = max_w || max_h;
@@ -787,6 +796,8 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	};
 	
 	window.display = XOpenDisplay(NULL);
+	
+	XSetErrorHandler(_x11_error_handler);
 	
 	if(window.display == NULL) {
 		return window;
@@ -845,6 +856,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | FocusChangeMask | LeaveWindowMask;
 	
 	window.window = XCreateWindow(window.display, window.parent, center_x, center_y, width, height, 0, window.visual_info->depth, InputOutput, window.visual_info->visual, CWColormap | CWEventMask | CWBorderPixel, &window_attributes);
+	
 	
 	XGCValues values;
 	window.gc = XCreateGC(window.display, window.window, 0, &values);

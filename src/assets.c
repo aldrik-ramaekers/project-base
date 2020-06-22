@@ -179,6 +179,7 @@ bool assets_queue_worker_load_image(image *image)
 	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
 #endif
 	
+	//stbi_convert_iphone_png_to_rgb(0);
 	image->data = stbi_load_from_memory(image->start_addr,
 										image->end_addr - image->start_addr,
 										&image->width,
