@@ -86,7 +86,6 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 	s32 word_match_len_val = 0;
 	char* line_start_ptr = text_to_search;
 	
-	//printf("%s %s\n", text_to_search, text_to_find);
 	s32 index = 0;
 	while((text_to_search = utf8codepoint(text_to_search, &text_to_search_ch)) 
 		  && text_to_search_ch)
