@@ -888,9 +888,15 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 		
 		RECT rec;
 		GetWindowRect(window->window_handle, &rec);
+		
 		POINT p;
 		GetCursorPos(&p);
+		ScreenToClient(current_window_to_handle->window_handle, &p);
 		
+		mouse->y = p.y;
+		mouse->x = p.x;
+		
+#if 0
 		if (current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
 			mouse->x = p.x - rec.left;
 		else
@@ -900,6 +906,7 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 			mouse->y = p.y - rec.top;
 		else
 			mouse->y = p.y - rec.top - GetSystemMetrics(SM_CYSIZE) - GetSystemMetrics(SM_CYFRAME);
+#endif
 	}
 #endif
 	
