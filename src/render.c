@@ -6,6 +6,79 @@
 
 static platform_window *drawing_window = 0;
 
+static void _copy_image_pixel(s32 x, s32 y, image *image, vec4 rec)
+{
+	s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+	u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+	
+	if (buffer_entry[4] > render_depth) return;
+	buffer_entry[4] = render_depth;
+	
+	s32 _x = x - rec.x;
+	s32 _y = y - rec.y;
+	s32 image_offset = (_y * (image->width) * 4) + _x * 4;
+	u8 *color = image->data+image_offset;
+	
+	float32 alpha = color[3] / 255.0f;
+	float32 oneminusalpha = 1 - alpha;
+	
+	u8 b = ((color[0] * alpha) + (oneminusalpha * buffer_entry[0]));
+	u8 g = ((color[1] * alpha) + (oneminusalpha * buffer_entry[1]));
+	u8 r = ((color[2] * alpha) + (oneminusalpha * buffer_entry[2]));
+	u8 a = color[3];
+	
+	s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+	
+	memcpy(buffer_entry, &c, 4);
+}
+
+static void _copy_glyph_pixel(s32 x, s32 y, glyph *gl, vec4 rec, color tint)
+{
+	s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+	u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+	
+	if (buffer_entry[4] > render_depth) return;
+	buffer_entry[4] = render_depth;
+	
+	s32 _x = x - rec.x;
+	s32 _y = y - rec.y;
+	s32 image_offset = (_y * gl->width) + _x;
+	u8 *color = gl->bitmap+image_offset;
+	
+	float32 alpha = color[0] / 255.0f;
+	float32 oneminusalpha = 1 - alpha;
+	
+	u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
+	u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+	u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
+	u8 a = color[0];
+	
+	s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+	
+	memcpy(buffer_entry, &c, 4);
+}
+
+static void _set_pixel(s32 x, s32 y, color tint)
+{
+	s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+	u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
+	
+	if (buffer_entry[4] > render_depth) return;
+	buffer_entry[4] = render_depth;
+	
+	float32 alpha = tint.a / 255.0f;
+	float32 oneminusalpha = 1 - alpha;
+	
+	u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
+	u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+	u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
+	u8 a = tint.a;
+	
+	s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+	
+	memcpy(buffer_entry, &c, 4);
+}
+
 // returns topleft and bottomright corners. not width + height
 static vec4 _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
 {
@@ -15,10 +88,6 @@ static vec4 _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
 	s32 start_y = y;
 	s32 end_x = start_x + width;
 	s32 end_y = start_y + height;
-	if (end_x > drawing_window->backbuffer.width)
-		end_x = drawing_window->backbuffer.width;
-	if (end_y > drawing_window->backbuffer.height)
-		end_y = drawing_window->backbuffer.height;
 	
 	if (start_x < current_scissor.x) start_x = current_scissor.x;
 	if (start_y < current_scissor.y) start_y = current_scissor.y;
@@ -26,6 +95,11 @@ static vec4 _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
 		end_x = current_scissor.x+current_scissor.w;
 	if (end_y > current_scissor.y+current_scissor.h) 
 		end_y = current_scissor.y+current_scissor.h;
+	
+	if (end_x > drawing_window->backbuffer.width)
+		end_x = drawing_window->backbuffer.width;
+	if (end_y > drawing_window->backbuffer.height)
+		end_y = drawing_window->backbuffer.height;
 	
 	return (vec4){start_x,start_y,end_x,end_y};
 }
@@ -88,32 +162,11 @@ void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 		{
 			vec4 rec = _get_actual_rect(x, y, image->width, image->height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * (image->width) * 4) + _x * 4;
-					u8 *color = image->data+image_offset;
-					
-					float32 alpha = color[3] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 b = ((color[0] * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((color[1] * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 r = ((color[2] * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[3];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_image_pixel(x, y, image, rec);
 				}
 			}
 		}
@@ -200,32 +253,11 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		{
 			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * g.width) + _x;
-					u8 *color = g.bitmap+image_offset;
-					
-					float32 alpha = color[0] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[0];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_glyph_pixel(x, y, &g, rec, tint);
 				}
 			}
 		}
@@ -297,32 +329,11 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		{
 			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * g.width) + _x;
-					u8 *color = g.bitmap+image_offset;
-					
-					float32 alpha = color[0] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[0];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_glyph_pixel(x, y, &g, rec, tint);
 				}
 			}
 		}
@@ -397,32 +408,11 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 		{
 			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * g.width) + _x;
-					u8 *color = g.bitmap+image_offset;
-					
-					float32 alpha = color[0] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[0];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_glyph_pixel(x, y, &g, rec, tint);
 				}
 			}
 		}
@@ -492,34 +482,11 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		{
 			vec4 rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * g.width) + _x;
-					u8 *color = g.bitmap+image_offset;
-					
-					if (color[0] == 0) continue;
-					
-					float32 alpha = color[0] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[0];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_glyph_pixel(x, y, &g, rec, tint);
 				}
 			}
 		}
@@ -600,32 +567,11 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		{
 			vec4 rec = _get_actual_rect(x_to_render, y__, g.width, g.height);
 			
-			for (s32 x = rec.x; x < rec.w; x++)
+			for (s32 y = rec.y; y < rec.h; y++)
 			{
-				for (s32 y = rec.y; y < rec.h; y++)
+				for (s32 x = rec.x; x < rec.w; x++)
 				{
-					s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-					u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-					
-					if (buffer_entry[4] > render_depth) continue;
-					buffer_entry[4] = render_depth;
-					
-					s32 _x = x - rec.x;
-					s32 _y = y - rec.y;
-					s32 image_offset = (_y * g.width) + _x;
-					u8 *color = g.bitmap+image_offset;
-					
-					float32 alpha = color[0] / 255.0f;
-					float32 oneminusalpha = 1 - alpha;
-					
-					u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-					u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-					u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-					u8 a = color[0];
-					
-					s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-					
-					memcpy(buffer_entry, &c, 4);
+					_copy_glyph_pixel(x, y, &g, rec, tint);
 				}
 			}
 		}
@@ -790,33 +736,100 @@ s32 calculate_text_width(font *font, char *text)
 
 void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction dir)
 {
-	glBegin(GL_TRIANGLES);
-	glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-	
-	if (dir == TRIANGLE_DOWN)
+	if (global_use_gpu)
 	{
-		glVertex3i(x+(w/2), y+h, render_depth);
-		glVertex3i(x, y, render_depth);
-		glVertex3i(x+w, y, render_depth);
+		glBegin(GL_TRIANGLES);
+		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		
+		if (dir == TRIANGLE_DOWN)
+		{
+			glVertex3i(x+(w/2), y+h, render_depth);
+			glVertex3i(x, y, render_depth);
+			glVertex3i(x+w, y, render_depth);
+		}
+		else if (dir == TRIANGLE_UP)
+		{
+			glVertex3i(x+(w/2), y, render_depth);
+			glVertex3i(x+w, y+h, render_depth);
+			glVertex3i(x, y+h, render_depth);
+		}
+		else if (dir == TRIANGLE_LEFT)
+		{
+			glVertex3i(x, y+(w/2), render_depth);
+			glVertex3i(x+h, y, render_depth);
+			glVertex3i(x+h, y+w, render_depth);
+		}
+		else if (dir == TRIANGLE_RIGHT)
+		{
+			assert(0 && "not implemented"); // TODO(Aldrik): implement
+		}
+		
+		glEnd();
 	}
-	else if (dir == TRIANGLE_UP)
+	else
 	{
-		glVertex3i(x+(w/2), y, render_depth);
-		glVertex3i(x+w, y+h, render_depth);
-		glVertex3i(x, y+h, render_depth);
+		vec4 rec = _get_actual_rect(x,y,w,h);
+		
+		s32 ac_w = rec.w - rec.x;
+		
+		if (dir == TRIANGLE_DOWN)
+		{
+			for (s32 y = rec.y; y < rec.h; y++)
+			{
+				s32 _y = y-rec.y;
+				
+				for (s32 x = rec.x; x < rec.w; x++)
+				{
+					s32 _x = x-rec.x;
+					if (_x < _y / 2 || _x >= ac_w-(_y/2)-1) continue;
+					
+					_set_pixel(x, y, tint);
+				}
+			}
+		}
+		else if (dir == TRIANGLE_UP)
+		{
+			s32 ac_h = rec.h - rec.y;
+			
+			for (s32 y = rec.y; y < rec.h; y++)
+			{
+				s32 _y = (y-rec.y);
+				_y = ac_h - _y;
+				
+				for (s32 x = rec.x; x < rec.w; x++)
+				{
+					s32 _x = x-rec.x;
+					if (_x < _y / 2 || _x >= ac_w-(_y/2)) continue;
+					
+					_set_pixel(x, y, tint);
+				}
+			}
+		}
+		else if (dir == TRIANGLE_LEFT)
+		{
+			s32 ac_h = rec.h - rec.y;
+			
+			for (s32 y = rec.y; y < rec.h; y++)
+			{
+				s32 _y = (y-rec.y);
+				_y = ac_h - _y;
+				
+				for (s32 x = rec.x; x < rec.w; x++)
+				{
+					s32 _x = x-rec.x;
+					_x = ac_w - _x;
+					if (_x / 2 > _y-1 || _x / 2 >= ac_w-(_y)) continue;
+					
+					_set_pixel(x, y, tint);
+				}
+			}
+		}
+		else if (dir == TRIANGLE_RIGHT)
+		{
+			assert(0 && "not implemented"); // TODO(Aldrik): implement
+		}
+		
 	}
-	else if (dir == TRIANGLE_LEFT)
-	{
-		glVertex3i(x, y+(w/2), render_depth);
-		glVertex3i(x+h, y, render_depth);
-		glVertex3i(x+h, y+w, render_depth);
-	}
-	else if (dir == TRIANGLE_RIGHT)
-	{
-		// TODO(Aldrik): implement
-	}
-	
-	glEnd();
 }
 
 void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
@@ -835,27 +848,11 @@ void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 	{
 		vec4 rec = _get_actual_rect(x,y,width,height);
 		
-		for (s32 x = rec.x; x < rec.w; x++)
+		for (s32 y = rec.y; y < rec.h; y++)
 		{
-			for (s32 y = rec.y; y < rec.h; y++)
+			for (s32 x = rec.x; x < rec.w; x++)
 			{
-				s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
-				u8 *buffer_entry = drawing_window->backbuffer.buffer+offset;
-				
-				if (buffer_entry[4] > render_depth) continue;
-				buffer_entry[4] = render_depth;
-				
-				float32 alpha = tint.a / 255.0f;
-				float32 oneminusalpha = 1 - alpha;
-				
-				u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
-				u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
-				u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
-				u8 a = tint.a;
-				
-				s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
-				
-				memcpy(buffer_entry, &c, 4);
+				_set_pixel(x, y, tint);
 			}
 		}
 	}

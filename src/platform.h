@@ -160,6 +160,8 @@ typedef enum t_cursor_type
 {
 	CURSOR_DEFAULT,
 	CURSOR_POINTER,
+	CURSOR_TEXT,
+	CURSOR_DRAG,
 } cursor_type;
 
 typedef struct t_vec2
@@ -268,5 +270,8 @@ s64 string_to_s64(char *str);
 s32 string_to_s32(char *str);
 s16 string_to_s16(char *str);
 s8 string_to_s8(char *str);
+
+s8 string_to_f32(char *str);
+s8 string_to_f64(char *str);
 
 #endif

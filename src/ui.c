@@ -626,6 +626,8 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	bool clicked_to_set_cursor = false;
 	if (mouse_x >= x && mouse_x < x + TEXTBOX_WIDTH && mouse_y >= virt_top && mouse_y < virt_bottom)
 	{
+		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_TEXT);
+		
 		if (is_left_double_clicked(global_ui_context.mouse) && has_text)
 		{
 			ui_set_active_textbox(state);
@@ -1327,7 +1329,7 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 	if (result) state->open = false;
 }
 
-void ui_end_menu_submenu()
+void ui_end_menu_submenu(char* empty_placeholder)
 {
 	set_render_depth(30);
 	
@@ -1356,8 +1358,7 @@ void ui_end_menu_submenu()
 			render_rectangle(state->x, state->y, w, total_h, global_ui_context.style.widget_background);
 			render_rectangle_outline(state->x, state->y, w, total_h, 1, global_ui_context.style.border);
 			
-			// TODO(Aldrik): localize
-			render_text(global_ui_context.font_small, text_x, text_y, "No recent projects.", global_ui_context.style.foreground);
+			render_text(global_ui_context.font_small, text_x, text_y, empty_placeholder, global_ui_context.style.foreground);
 		}
 		else
 		{
@@ -1961,13 +1962,13 @@ void ui_push_tooltip(char *text)
 				x = global_ui_context.tooltip.x + global_ui_context.tooltip.w + WIDGET_PADDING+3;
 				y = global_ui_context.tooltip.y;
 				
-				render_triangle(x-6, y+(TEXTBOX_HEIGHT/2)-9,triangle_s,9, rgb(40,40,40), TRIANGLE_LEFT);
+				render_triangle(x-9, y+(TEXTBOX_HEIGHT/2)-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_LEFT);
 			}
 			// align left
 			else if (global_ui_context.tooltip.x > 
 					 global_ui_context.layout.active_window->width-(total_w/2))
 			{
-				// TODO(Aldrik): implement
+				assert(0 && "not implemented"); // TODO(Aldrik): implement
 			}
 			// align bottom
 			else
@@ -1976,7 +1977,7 @@ void ui_push_tooltip(char *text)
 				y = global_ui_context.tooltip.y + global_ui_context.tooltip.h + 
 					WIDGET_PADDING+3;
 				
-				render_triangle(x+(total_w/2)-(triangle_s/2), y-6,triangle_s,9, rgb(40,40,40), TRIANGLE_UP);
+				render_triangle(x+(total_w/2)-(triangle_s/2), y-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_UP);
 			}
 			
 			render_rectangle(x, y,total_w,TEXTBOX_HEIGHT, rgb(40,40,40));

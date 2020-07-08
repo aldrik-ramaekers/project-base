@@ -7,6 +7,8 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
+#define PROJECT_BASE_VERSION "2"
+
 #ifdef _WIN32
 #define OS_WIN
 #include <windows.h>
@@ -45,6 +47,9 @@
 
 #define float32 float
 #define float64 double
+
+#define f32 float
+#define f64 double
 
 #ifdef OS_LINUX
 #define bool uint8_t

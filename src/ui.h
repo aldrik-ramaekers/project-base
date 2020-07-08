@@ -215,7 +215,7 @@ void ui_begin_menu_bar();
 bool ui_push_menu(char *title);
 bool ui_push_menu_item(char *title, char *shortcut);
 void ui_begin_menu_submenu(submenu_state *state, char *title);
-void ui_end_menu_submenu();
+void ui_end_menu_submenu(char *empty_placeholder);
 void ui_push_menu_item_separator();
 void ui_end_menu_bar();
 bool ui_push_dropdown(dropdown_state *state, char *title);

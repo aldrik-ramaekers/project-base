@@ -346,8 +346,6 @@ inline void platform_destroy_file_content(file_content *content)
 	mem_free(content->content);
 }
 
-// Translate an X11 key code to a GLFW key code.
-//
 static s32 translate_keycode(platform_window *window, s32 scancode)
 {
     s32 keySym;
@@ -539,10 +537,6 @@ static void create_key_tables(platform_window window)
 		memcpy(name, desc->names->keys[scancode].name, XkbKeyNameLength);
 		name[XkbKeyNameLength] = '\0';
 		
-		// Map the key name to a GLFW key code. Note: We only map printable
-		// keys here, and we use the US keyboard layout. The rest of the
-		// keys (function keys) are mapped using traditional KeySym
-		// translations.
 		if (strcmp(name, "TLDE") == 0) key = KEY_GRAVE_ACCENT;
 		else if (strcmp(name, "AE01") == 0) key = KEY_1;
 		else if (strcmp(name, "AE02") == 0) key = KEY_2;
@@ -1337,6 +1331,8 @@ inline void platform_window_swap_buffers(platform_window *window)
 		{
 			case CURSOR_DEFAULT: cursor_shape = XC_arrow; break;
 			case CURSOR_POINTER: cursor_shape = XC_hand1; break;
+			case CURSOR_DRAG: cursor_shape = XC_sb_h_double_arrow; break;
+			case CURSOR_TEXT: cursor_shape = XC_xterm; break;
 		}
 		Cursor cursor = XCreateFontCursor(window->display, cursor_shape);
 		XDefineCursor(window->display, window->window, cursor);
@@ -1667,6 +1663,16 @@ inline s16 string_to_s16(char *str)
 inline s8 string_to_s8(char *str)
 {
 	return (s8)strtol(str, 0, 10);
+}
+
+inline s8 string_to_f32(char *str)
+{
+	return (f32)atof(str);
+}
+
+inline s8 string_to_f64(char *str)
+{
+	return (f64)strtod(str, NULL);
 }
 
 inline void platform_open_url(char *url)

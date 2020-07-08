@@ -345,7 +345,7 @@ static void _allocate_backbuffer(platform_window *window)
 	window->backbuffer.width = window->width;
 	window->backbuffer.height = window->height;
 	
-	s32 bufferMemorySize = (window->width*window->height)*5;
+	s32 bufferMemorySize = (window->backbuffer.width*window->backbuffer.height)*5;
 	window->backbuffer.buffer = mem_alloc(bufferMemorySize);
 }
 
@@ -887,7 +887,17 @@ void platform_handle_events(platform_window *window, mouse_input *mouse, keyboar
 		}
 		
 		RECT rec;
-		GetWindowRect(window->window_handle, &rec);
+		GetClientRect(window->window_handle, &rec);
+		
+#if 0
+		if ((window->width != rec.right-rec.left || window->height != rec.bottom-rec.top) 
+			&& !global_use_gpu)
+		{
+			window->width = rec.right-rec.left;
+			window->height = rec.bottom-rec.top;
+			_allocate_backbuffer(current_window_to_handle);
+		}
+#endif
 		
 		POINT p;
 		GetCursorPos(&p);
@@ -932,6 +942,8 @@ void platform_window_swap_buffers(platform_window *window)
 		{
 			case CURSOR_DEFAULT: cursor_shape = IDC_ARROW; break;
 			case CURSOR_POINTER: cursor_shape = IDC_HAND; break;
+			case CURSOR_DRAG: cursor_shape = IDC_SIZEWE; break;
+			case CURSOR_TEXT: cursor_shape = IDC_IBEAM; break;
 		}
 		
 		HCURSOR cursor = LoadCursorA(NULL, cursor_shape);
@@ -949,7 +961,7 @@ void platform_window_swap_buffers(platform_window *window)
 			memcpy(window->backbuffer.buffer + (i*4), buffer_entry, 4);
 		}
 		
-		StretchDIBits(window->hdc,0,0,window->width,window->height,
+		StretchDIBits(window->hdc,0,1,window->width,window->height,
 					  0,window->backbuffer.height,window->backbuffer.width,
 					  -window->backbuffer.height,
 					  window->backbuffer.buffer, &window->backbuffer.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
@@ -1479,6 +1491,16 @@ s16 string_to_s16(char *str)
 s8 string_to_s8(char *str)
 {
 	return (s8)strtoul(str, 0, 10);
+}
+
+s8 string_to_f32(char *str)
+{
+	return (f32)atof(str);
+}
+
+s8 string_to_f64(char *str)
+{
+	return (f64)strtod(str, NULL);
 }
 
 #if 0
