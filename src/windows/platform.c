@@ -343,7 +343,7 @@ static void _allocate_backbuffer(platform_window *window)
 	window->backbuffer.bitmapInfo = info;
 	
 	window->backbuffer.width = window->width;
-	window->backbuffer.height = window->height;
+	window->backbuffer.height = window->height+1;
 	
 	s32 bufferMemorySize = (window->backbuffer.width*window->backbuffer.height)*5;
 	window->backbuffer.buffer = mem_alloc(bufferMemorySize);
@@ -961,7 +961,7 @@ void platform_window_swap_buffers(platform_window *window)
 			memcpy(window->backbuffer.buffer + (i*4), buffer_entry, 4);
 		}
 		
-		StretchDIBits(window->hdc,0,1,window->width,window->height,
+		StretchDIBits(window->hdc,0,0,window->width,window->height+1,
 					  0,window->backbuffer.height,window->backbuffer.width,
 					  -window->backbuffer.height,
 					  window->backbuffer.buffer, &window->backbuffer.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);

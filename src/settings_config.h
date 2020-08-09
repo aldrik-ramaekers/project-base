@@ -31,6 +31,7 @@ void settings_config_destroy(settings_config *config);
 config_setting* settings_config_get_setting(settings_config *config, char *name);
 char* settings_config_get_string(settings_config *config, char *name);
 s64 settings_config_get_number(settings_config *config, char *name);
+s64 settings_config_get_number_or_default(settings_config *config, char *name, s64 def);
 
 void settings_config_set_string(settings_config *config, char *name, char *value);
 void settings_config_set_number(settings_config *config, char *name, s64 value);

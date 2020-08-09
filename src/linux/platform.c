@@ -653,16 +653,16 @@ static void _allocate_backbuffer(platform_window *window)
 	if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 	
 	window->backbuffer.width = window->width;
-	window->backbuffer.height = window->height;
+	window->backbuffer.height = window->height+1;
 	
-	s32 bufferMemorySize = (window->width*window->height)*5;
+	s32 bufferMemorySize = (window->backbuffer.width*window->backbuffer.height)*5;
 	window->backbuffer.buffer = mem_alloc(bufferMemorySize);
 	window->backbuffer.s_image = XCreateImage(
 		window->display, 
 		DefaultVisual(window->display, DefaultScreen(window->display)),
 		DefaultDepth(window->display, DefaultScreen(window->display)), 
 		ZPixmap, 0, (char*)window->backbuffer.buffer, 
-		window->width, window->height, 32, 0);
+		window->backbuffer.width, window->backbuffer.height, 32, 0);
 }
 
 void platform_window_set_size(platform_window *window, u16 width, u16 height)

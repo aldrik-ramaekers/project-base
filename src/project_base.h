@@ -7,6 +7,8 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
+// TODO(Aldrik): scrolling images and text cuts off top because of scissor rec
+
 #define PROJECT_BASE_VERSION "2"
 
 #ifdef _WIN32

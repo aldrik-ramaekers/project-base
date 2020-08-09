@@ -164,6 +164,15 @@ s64 settings_config_get_number(settings_config *config, char *name)
 		return 0;
 }
 
+s64 settings_config_get_number_or_default(settings_config *config, char *name, s64 def)
+{
+	config_setting* setting = settings_config_get_setting(config, name);
+	if (setting && setting->value)
+		return string_to_u64(setting->value);
+	else
+		return def;
+}
+
 void settings_config_set_string(settings_config *config, char *name, char *value)
 {
 	config_setting* setting = settings_config_get_setting(config, name);
