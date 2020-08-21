@@ -151,7 +151,7 @@ typedef struct t_submenu_state
 typedef struct t_submenus
 {
 	s32 count;
-	submenu_state *submenu_stack[5];
+	submenu_state *submenu_stack[10];
 } submenus;
 
 typedef struct t_ui_tooltip
@@ -171,7 +171,7 @@ typedef struct t_ui_context
 	mouse_input *mouse;
 	camera *camera;
 	font *font_small;
-	array active_menus;
+	s32 active_menu_id;
 	u32 next_id;
 	s32 menu_item_count;
 	dropdown_state *active_dropdown;

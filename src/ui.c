@@ -212,8 +212,8 @@ inline void ui_create(platform_window *window, keyboard_input *keyboard, mouse_i
 	global_ui_context.mouse = mouse;
 	global_ui_context.camera = camera;
 	global_ui_context.font_small = font_small;
-	global_ui_context.active_menus = array_create(sizeof(s32));
 	global_ui_context.menu_item_count = 0;
+	global_ui_context.active_menu_id = -1;
 	
 	global_ui_context.active_dropdown = 0;
 	global_ui_context.confirming_button_id = -1;
@@ -222,8 +222,6 @@ inline void ui_create(platform_window *window, keyboard_input *keyboard, mouse_i
 	global_ui_context.item_hovered = false;
 	global_ui_context.item_hovered_id = -1;
 	global_ui_context.item_hovered_duration = 0;
-	
-	array_reserve(&global_ui_context.active_menus, 100);
 }
 
 static void ui_pop_scissor()
@@ -285,12 +283,7 @@ inline void ui_begin_menu_bar()
 
 inline bool ui_is_menu_active(u32 id)
 {
-	for (int i = 0; i < global_ui_context.active_menus.length; i++)
-	{
-		s32 *iid = array_at(&global_ui_context.active_menus, i);
-		if (*iid == id) return true;
-	}
-	return false;
+	return id == global_ui_context.active_menu_id;
 }
 
 inline u32 ui_get_id()
@@ -540,13 +533,18 @@ bool ui_push_menu(char *title)
 		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
+			printf("---------------------------------\n");
+			printf("id %d, open: %d\n", id, is_open);
+			
 			if (is_open)
-				array_remove_by(&global_ui_context.active_menus, &id);
+				global_ui_context.active_menu_id = -1;
 			else
-				array_push(&global_ui_context.active_menus, &id);
+				global_ui_context.active_menu_id = id;
 			
 			result = !is_open;
 			is_open = result;
+			
+			printf("id %d, open: %d\n", id, is_open);
 		}
 		
 		bg_color = global_ui_context.style.menu_hover_background;
@@ -554,12 +552,12 @@ bool ui_push_menu(char *title)
 	else if (is_left_down(global_ui_context.mouse))
 	{
 		if (is_open)
-			array_remove_by(&global_ui_context.active_menus, &id);
+			global_ui_context.active_menu_id = -1;
 		is_open = false;
 	}
 	if (!global_ui_context.layout.active_window->has_focus && is_open)
 	{
-		array_remove_by(&global_ui_context.active_menus, &id);
+		global_ui_context.active_menu_id = -1;
 		is_open = false;
 	}
 	
@@ -1308,7 +1306,6 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 {
 	bool result = ui_push_menu_item(title, "");
 	
-	u32 id = ui_get_id();
 	s32 w = state->w;
 	s32 h = MENU_BAR_HEIGHT;
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
@@ -1386,7 +1383,6 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	
 	set_render_depth(30);
 	
-	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
 	s32 w = MENU_ITEM_WIDTH;
 	s32 text_h = global_ui_context.font_small->px_h;
@@ -1435,8 +1431,6 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	{
 		ui_set_cursor(CURSOR_POINTER);
 		bg_color = global_ui_context.style.menu_hover_background;
-		
-		ui_set_hovered(id, x,y,w,h);
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
 		{
@@ -1830,7 +1824,6 @@ inline void ui_end_menu_bar()
 
 inline void ui_destroy()
 {
-	array_destroy(&global_ui_context.active_menus);
 }
 
 void ui_scroll_begin(scroll_state *state)
