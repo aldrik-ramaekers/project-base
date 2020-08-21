@@ -1,5 +1,9 @@
-2
+3
+- fix issue where text and images were being cut off on scroll
 - fix cursor being overwritten by underlying ui element
+- refactor ui menu bar
+- added shadow to dropdown menu item
+2
 - fix image blending issue with background colors
 - triangle rendering on cpu
 - refactor submenu for localization

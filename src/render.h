@@ -22,6 +22,17 @@ typedef struct t_vec4
 	s32 h;
 } vec4;
 
+typedef struct t_render_target
+{
+	s32 x;
+	s32 y;
+	s32 w;
+	s32 h;
+	
+	s32 offset_x;
+	s32 offset_y;
+} render_target;
+
 typedef enum t_triangle_direction
 {
 	TRIANGLE_DOWN,
