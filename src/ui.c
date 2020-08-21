@@ -30,10 +30,18 @@ inline void ui_begin(s32 id)
 	global_ui_context.layout.height = global_ui_context.layout.active_window->height;
 	global_ui_context.layout.active_dropdown_state = 0;
 	global_ui_context.submenus.count = 0;
+	global_ui_context.cursor_to_set = CURSOR_DEFAULT;
+}
+
+static void ui_set_cursor(cursor_type type)
+{
+	if (global_ui_context.cursor_to_set == CURSOR_DEFAULT)
+		global_ui_context.cursor_to_set = type;
 }
 
 inline void ui_end()
 {
+	platform_set_cursor(global_ui_context.layout.active_window, global_ui_context.cursor_to_set);
 	if (!global_ui_context.item_hovered) global_ui_context.item_hovered_duration = 0;
 }
 
@@ -359,7 +367,7 @@ bool ui_push_color_button(char *text, bool selected, color c)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		bg_color.r-=20;
 		bg_color.g-=20;
 		bg_color.b-=20;
@@ -414,7 +422,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	{
 		ui_set_hovered(id, x,y,total_w,h);
 		
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
 			global_ui_context.layout.active_dropdown_state->selected_index = index;
@@ -473,7 +481,7 @@ bool ui_push_dropdown(dropdown_state *state, char *title)
 	{
 		ui_set_hovered(id, x,y,total_w,h);
 		
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
 			state->state = !state->state;
@@ -529,7 +537,7 @@ bool ui_push_menu(char *title)
 	
 	if (mouse_x >= x && mouse_x < x + w && mouse_y >= y && mouse_y < y + h)
 	{
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
 			if (is_open)
@@ -626,7 +634,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	bool clicked_to_set_cursor = false;
 	if (mouse_x >= x && mouse_x < x + TEXTBOX_WIDTH && mouse_y >= virt_top && mouse_y < virt_bottom)
 	{
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_TEXT);
+		ui_set_cursor(CURSOR_TEXT);
 		
 		if (is_left_double_clicked(global_ui_context.mouse) && has_text)
 		{
@@ -1206,7 +1214,7 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 		if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 		{
 			hovered = true;
-			platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+			ui_set_cursor(CURSOR_POINTER);
 			if (is_left_clicked(global_ui_context.mouse))
 			{
 				result = true;
@@ -1266,7 +1274,7 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	{
 		ui_set_hovered(id, x,y,total_w,CHECKBOX_SIZE);
 		
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
 			state->state = !state->state;
@@ -1425,7 +1433,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	
 	if ((mouse_x >= x && mouse_x < x + w && mouse_y >= y && mouse_y < y + h))
 	{
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		bg_color = global_ui_context.style.menu_hover_background;
 		
 		ui_set_hovered(id, x,y,w,h);
@@ -1445,6 +1453,10 @@ bool ui_push_menu_item(char *title, char *shortcut)
 	render_rectangle(x, y, w, 1,  bg_color);
 	render_rectangle(x, y, 1, MENU_BAR_HEIGHT, global_ui_context.style.border);
 	render_rectangle(x+w, y, 1, MENU_BAR_HEIGHT+1, global_ui_context.style.border);
+	
+	// shadow
+	render_rectangle(x+w, y, 3, MENU_BAR_HEIGHT, rgba(0,0,0,100));
+	render_rectangle(x+3, y+h, w, 3, rgba(0,0,0,100));
 	
 	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	render_text(global_ui_context.font_small, text_2_x, text_y, shortcut, global_ui_context.style.foreground);
@@ -1484,7 +1496,7 @@ bool ui_push_image(image *img, s32 w, s32 h, s32 outline, color tint)
 	
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
 		{
@@ -1542,7 +1554,7 @@ bool ui_push_button(button_state *state, char *title)
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
 		ui_set_hovered(id, x,y,total_w,h);
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		bg_color = global_ui_context.style.widget_hover_background;
 		
 		if (is_left_clicked(global_ui_context.mouse)) 
@@ -1649,7 +1661,7 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 	if (mouse_x >= x && mouse_x < x + total_w && mouse_y >= virt_top && mouse_y < virt_bottom && !global_ui_context.item_hovered)
 	{
 		ui_set_hovered(id, x,y,total_w,h);
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		
 		if (confirming)
 			bg_color = global_ui_context.style.widget_confirm_hover_background;
@@ -1771,7 +1783,7 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	{
 		ui_set_hovered(id, x,y,total_w,h);
 		
-		platform_set_cursor(global_ui_context.layout.active_window, CURSOR_POINTER);
+		ui_set_cursor(CURSOR_POINTER);
 		bg_color = global_ui_context.style.widget_hover_background;
 		
 		if (is_left_clicked(global_ui_context.mouse)) 

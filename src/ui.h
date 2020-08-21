@@ -164,6 +164,7 @@ typedef struct t_ui_tooltip
 
 typedef struct t_ui_context
 {
+	cursor_type cursor_to_set;
 	ui_style style;
 	ui_layout layout;
 	keyboard_input *keyboard;

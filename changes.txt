@@ -1,4 +1,5 @@
 2
+- fix cursor being overwritten by underlying ui element
 - fix image blending issue with background colors
 - triangle rendering on cpu
 - refactor submenu for localization
