@@ -443,8 +443,8 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 			 message == WM_MOUSEWHEEL)
 	{
 		bool is_left_down = wparam & MK_LBUTTON;
+		// bool is_middle_down = wparam & MK_MBUTTON;
 		bool is_right_down = wparam & MK_RBUTTON;
-		bool is_middle_down = wparam & MK_MBUTTON;
 		
 		u64 ev_time = platform_get_time(TIME_FULL, TIME_MILI_S);
 		static u64 last_ev_time = 0;
@@ -489,7 +489,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	{
 		bool is_left_up = message == WM_LBUTTONUP;
 		bool is_right_up = message == WM_RBUTTONUP;
-		bool is_middle_up = message == WM_MBUTTONUP;
+		// bool is_middle_up = message == WM_MBUTTONUP;
 		
 		if (is_left_up)
 		{

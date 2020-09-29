@@ -249,8 +249,6 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 			glBindTexture(GL_TEXTURE_2D, g.textureID);
 			glBegin(GL_QUADS);
 			
-			s32 width = g.width;
-			
 			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
 			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
 			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
@@ -324,8 +322,6 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		{
 			glBindTexture(GL_TEXTURE_2D, g.textureID);
 			glBegin(GL_QUADS);
-			
-			s32 width = g.width;
 			
 			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
 			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
@@ -624,11 +620,8 @@ s32 calculate_cursor_position(font *font, char *text, s32 click_x)
 		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
-		
-		s32 width = g.width;
 		s32 width_next = font->glyphs[ch_next].width;
-		
-		
+				
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
 		x += (g.advance);
@@ -665,8 +658,7 @@ s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index)
 		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
-		s32 width = g.width;
-		
+
 		if (i >= from)
 		{
 			/* add kerning */
@@ -702,7 +694,6 @@ s32 calculate_text_width_upto(font *font, char *text, s32 index)
 		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
-		s32 width = g.width;
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -733,7 +724,6 @@ s32 calculate_text_width(font *font, char *text)
 		if (ch == '\n') ch = 0xB6;
 		
 		glyph g = font->glyphs[ch];
-		s32 width = g.width;
 		
 		/* add kerning */
 		//kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);

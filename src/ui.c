@@ -243,7 +243,6 @@ static void ui_pop_scissor()
 
 inline void ui_block_begin(layout_direction direction)
 {
-	u32 id = ui_get_id();
 	global_ui_context.layout.layout_direction = direction;
 	global_ui_context.layout.block_height = 0;
 	global_ui_context.layout.start_offset_y = global_ui_context.layout.offset_y;
@@ -269,8 +268,6 @@ inline void ui_set_active_window(platform_window *window)
 inline void ui_begin_menu_bar()
 {
 	s32 w = global_ui_context.layout.width;
-	s32 h = global_ui_context.layout.active_window->height;
-	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y;
 	
 	global_ui_context.layout.offset_x = 0;
@@ -303,7 +300,6 @@ inline void ui_push_separator()
 
 void ui_push_vertical_dragbar()
 {
-	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x + global_ui_context.layout.width;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 	s32 h = global_ui_context.layout.height;
@@ -330,11 +326,8 @@ bool ui_push_color_button(char *text, bool selected, color c)
 {
 	bool result = false;
 	
-	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
-	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
-	s32 text_y = y + (BUTTON_HEIGHT/2) - (global_ui_context.font_small->px_h/2);
 	s32 total_w =
 		BUTTON_HORIZONTAL_TEXT_PADDING + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
@@ -597,7 +590,6 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (!global_ui_context.layout.active_window->has_focus)
 		state->state = false;
 	
-	u32 id = ui_get_id();
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + 5;
@@ -780,9 +772,6 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	
 	if (state->state)
 	{
-		s32 len = utf8len(global_ui_context.keyboard->input_text);
-		s32 old_len = utf8len(state->buffer);
-		
 		// check if text changes, add to history if true
 		bool is_lctrl_down = global_ui_context.keyboard->keys[KEY_LEFT_CONTROL];
 		
@@ -1029,7 +1018,6 @@ bool ui_push_hypertext_link(char *text)
 {
 	bool result = false;
 	
-	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1074,7 +1062,6 @@ bool ui_push_hypertext_link(char *text)
 
 void ui_push_textf(font *f, char *text)
 {
-	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1097,7 +1084,6 @@ void ui_push_textf(font *f, char *text)
 
 void ui_push_textf_width(font *f, char *text, s32 maxw)
 {
-	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1120,7 +1106,6 @@ void ui_push_textf_width(font *f, char *text, s32 maxw)
 
 void ui_push_text(char *text)
 {
-	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1142,8 +1127,6 @@ void ui_push_text(char *text)
 
 void ui_push_rect(s32 w, color c)
 {
-	u32 id = ui_get_id();
-	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 total_w = w +
@@ -1179,7 +1162,6 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 {
 	bool result = false;
 	
-	u32 id = ui_get_id();
 	s32 spacing_y = (BLOCK_HEIGHT - CHECKBOX_SIZE)/2;
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
@@ -1306,7 +1288,6 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 {
 	bool result = ui_push_menu_item(title, "");
 	
-	s32 w = state->w;
 	s32 h = MENU_BAR_HEIGHT;
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + (global_ui_context.menu_item_count * h)+1 +
@@ -1465,8 +1446,7 @@ bool ui_push_image(image *img, s32 w, s32 h, s32 outline, color tint)
 	bool result = false;
 	
 	if (!img->loaded) return result;
-	
-	u32 id = ui_get_id();
+
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 total_w = w;

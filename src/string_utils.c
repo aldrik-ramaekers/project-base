@@ -79,7 +79,6 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 	
 	utf8_int32_t text_to_search_ch = 0;
 	utf8_int32_t text_to_find_ch = 0;
-	size_t text_to_find_char_len = utf8len(text_to_find);
 	
 	s32 line_nr_val = 1;
 	s32 word_offset_val = 0;

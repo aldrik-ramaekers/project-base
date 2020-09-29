@@ -28,8 +28,11 @@ def do_windows_build():
 
 # remove old files
 def do_setup():
-    os.remove(lib_dir)
-    shutil.rmtree(include_dir)
+    if os.path.isfile(lib_dir):
+        os.remove(lib_dir)
+    
+    if (os.path.isdir(include_dir)):
+        shutil.rmtree(include_dir)
     shutil.copytree("src", include_dir)
 
 # install static lib and header files
@@ -39,7 +42,8 @@ def do_install():
         shutil.copy(file, include_dir + file[4:0])
 
 def do_cleanup():
-    os.remove(obj_output_file)
+    if os.path.isfile(obj_output_file):
+        os.remove(obj_output_file)
 
 if os_name == "Windows":
     do_windows_build()

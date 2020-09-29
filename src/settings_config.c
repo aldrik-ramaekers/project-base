@@ -35,7 +35,6 @@ static void get_config_from_string(settings_config *config, char *string)
 	
 	s32 len = 0;
 	bool in_literal = false;
-	char *original_string = string;
 	
 	while(*string)
 	{

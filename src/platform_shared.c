@@ -160,15 +160,9 @@ void *platform_list_files_thread(void *args)
 	list_file_args *info = args;
 	
 	array filters = get_filters(info->pattern);
-	
-	array *list = info->list;
-	char *start_dir = info->start_dir;
-	bool recursive = info->recursive;
-	
 	platform_list_files_block(info->list, info->start_dir, filters, info->recursive, info->bucket, info->include_directories, info->is_cancelled, info->info);
 	
 	mutex_lock(&info->list->mutex);
-	//if (!(*info->is_cancelled))
 	*(info->state) = true;
 	mutex_unlock(&info->list->mutex);
 	
