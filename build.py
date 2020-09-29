@@ -1,20 +1,24 @@
 import subprocess
 import platform
 import shutil
+import glob
 import os
 
-os = platform.system()
+os_name = platform.system()
 main_file = "src/project_base.h"
 compiler = "gcc"
 linker = "ar"
-install_dir = "C:\\mingw\\mingw64\\x86_64-w64-mingw32\\"
+install_dir = "C:/mingw/mingw64/x86_64-w64-mingw32/"
 obj_output_file = "libprojectbase.o"
 lib_output_file = "libprojectbase.a"
+
+include_dir = install_dir + "include/projectbase"
+lib_dir = install_dir + "lib/" + lib_output_file
 
 def do_windows_build():
     # make object file
     libs = "-lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp"
-    flags = "-m64 -c -Wall -O3 -Wno-unused-label -Wno-unused-variable"
+    flags = "-m64 -c -s -Wall -O3"
     command = compiler + " " + flags + " " + main_file + " " + "-o " + obj_output_file + " " + libs
     subprocess.call(command)
 
@@ -22,17 +26,24 @@ def do_windows_build():
     command = linker + " rcs " + lib_output_file + " " + obj_output_file
     subprocess.call(command)
 
+# remove old files
+def do_setup():
+    os.remove(lib_dir)
+    shutil.rmtree(include_dir)
+    shutil.copytree("src", include_dir)
+
+# install static lib and header files
 def do_install():
-    shutil.move(obj_output_file, install_dir + "lib\\" + obj_output_file)
-    shutil.copytree("src", install_dir + "lib\\projectbase", symlink=False, ignore=None, copy_function=copy2, ignore_dangling_symlins=False)
+    shutil.move(lib_output_file, lib_dir)
+    for file in glob.glob("src/**/*.h", recursive=True):
+        shutil.copy(file, include_dir + file[4:0])
 
 def do_cleanup():
     os.remove(obj_output_file)
 
-
-
-if os == "Windows":
+if os_name == "Windows":
     do_windows_build()
 
+do_setup()
 do_install()
 do_cleanup()
