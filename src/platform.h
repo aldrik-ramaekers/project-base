@@ -38,6 +38,7 @@ typedef struct t_search_info
 	u64 dir_count;
 } search_info;
 
+// :Cleanup: move to text_search.c.. what is this doing here?
 typedef struct t_search_result
 {
 	array work_queue;
@@ -201,6 +202,8 @@ typedef enum t_window_flags
 } window_flags;
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 
+
+// :Cleanup: get rid of these
 platform_window *main_window = 0;
 platform_window *settings_window = 0;
 
@@ -249,7 +252,7 @@ bool platform_directory_exists(char *path);
 void platform_create_directory(char *path);
 bool platform_file_exists(char *path);
 void platform_show_alert(char *title, char *message);
-char *get_config_save_location(char *buffer);
+char *get_config_save_location(char *buffer, char *directory);
 char *get_file_extension(char *path);
 void get_name_from_path(char *buffer, char *path);
 void get_directory_from_path(char *buffer, char *path);

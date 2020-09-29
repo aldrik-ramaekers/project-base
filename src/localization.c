@@ -4,7 +4,7 @@
 *  All rights reserved.
 */
 
-mo_file load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
+void load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 							   char *locale_id, char *locale_name)
 {
 	mo_file mo;
@@ -37,12 +37,14 @@ mo_file load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *
 			array_push(&mo.translations, &translation);
 		}
 	}
-	
-	return mo;
+
+	array_push(&global_localization.mo_files, &mo);
 }
 
 char* locale_get_name()
 {
+	assert(global_localization.loaded);
+
 	if (!global_localization.active_localization)
 	{
 		return "[NO LOCALE]";
@@ -53,6 +55,8 @@ char* locale_get_name()
 
 char* locale_get_id()
 {
+	assert(global_localization.loaded);
+	
 	if (!global_localization.active_localization)
 	{
 		return "[NO LOCALE]";
@@ -63,6 +67,8 @@ char* locale_get_id()
 
 bool set_locale(char *country_id)
 {
+	assert(global_localization.loaded);
+
 	if (country_id == 0 && global_localization.mo_files.length)
 	{
 		global_localization.active_localization = array_at(&global_localization.mo_files, 0);
@@ -79,7 +85,7 @@ bool set_locale(char *country_id)
 		}
 	}
 	
-	// if localization is not found, default to first in list (english), return false to report error
+	// if localization is not found, default to first in list, return false to report error
 	if (global_localization.mo_files.length)
 		global_localization.active_localization = array_at(&global_localization.mo_files, 0);
 	else
@@ -90,6 +96,8 @@ bool set_locale(char *country_id)
 
 char* localize(const char *identifier)
 {
+	assert(global_localization.loaded);
+
 	if (!global_localization.active_localization)
 	{
 		//printf("NO LOCALE SELECTED.");
@@ -110,29 +118,18 @@ char* localize(const char *identifier)
 	return "MISSING";
 }
 
-void load_available_localizations()
+void localization_init()
 {
 	global_localization.mo_files = array_create(sizeof(mo_file));
 	array_reserve(&global_localization.mo_files, 10);
-	
-	mo_file en = load_localization_file(_binary____data_translations_en_English_mo_start,
-										_binary____data_translations_en_English_mo_end,
-										_binary____data_imgs_en_bmp_start,
-										_binary____data_imgs_en_bmp_end,
-										"en", "English");
-	
-	mo_file nl = load_localization_file(_binary____data_translations_nl_Dutch_mo_start,
-										_binary____data_translations_nl_Dutch_mo_end,
-										_binary____data_imgs_nl_bmp_start,
-										_binary____data_imgs_nl_bmp_end,
-										"nl", "Dutch");
-	
-	array_push(&global_localization.mo_files, &en);
-	array_push(&global_localization.mo_files, &nl);
+
+	global_localization.loaded = true;
 }
 
 void destroy_available_localizations()
 {
+	assert(global_localization.loaded);
+
 	for (s32 i = 0; i < global_localization.mo_files.length; i++)
 	{
 		mo_file *file = array_at(&global_localization.mo_files, i);
@@ -145,3 +142,15 @@ void destroy_available_localizations()
 	}
 	array_destroy(&global_localization.mo_files);
 }
+
+	// mo_file en = load_localization_file(_binary____data_translations_en_English_mo_start,
+	// 									_binary____data_translations_en_English_mo_end,
+	// 									_binary____data_imgs_en_bmp_start,
+	// 									_binary____data_imgs_en_bmp_end,
+	// 									"en", "English");
+	
+	// mo_file nl = load_localization_file(_binary____data_translations_nl_Dutch_mo_start,
+	// 									_binary____data_translations_nl_Dutch_mo_end,
+	// 									_binary____data_imgs_nl_bmp_start,
+	// 									_binary____data_imgs_nl_bmp_end,
+	// 									"nl", "Dutch");

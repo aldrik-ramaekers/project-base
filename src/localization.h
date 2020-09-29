@@ -46,14 +46,15 @@ typedef struct t_localization
 {
 	array mo_files;
 	mo_file *active_localization;
+	bool loaded;
 } localization;
 
-localization global_localization;
+localization global_localization = {0};
 
 char* locale_get_id();
 char* locale_get_name();
 char* localize(const char *identifier);
 bool set_locale(char *country_id);
-void load_available_localizations();
+void localization_init();
 
 #endif

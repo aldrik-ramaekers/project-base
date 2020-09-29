@@ -1,3 +1,5 @@
+4
+- more customization
 3
 - fix issue where text and images were being cut off on scroll
 - fix cursor being overwritten by underlying ui element

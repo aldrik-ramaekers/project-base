@@ -4,24 +4,26 @@
 *  All rights reserved.
 */
 
-void settings_config_write_to_file(settings_config *config, char *path)
+static settings_config _settings_file = {0};
+
+void settings_config_write_to_file()
 {
 	// @hardcoded
 	s32 len = kilobytes(20);
 	char *buffer = mem_alloc(len);
 	buffer[0] = 0;
 	
-	for (s32 i = 0; i < config->settings.length; i++)
+	for (s32 i = 0; i < _settings_file.settings.length; i++)
 	{
-		config_setting *setting = array_at(&config->settings, i);
+		config_setting *setting = array_at(&_settings_file.settings, i);
 		
 		char entry_buf[MAX_INPUT_LENGTH];
 		snprintf(entry_buf, MAX_INPUT_LENGTH, "%s = \"%s\"\n", setting->name, setting->value);
-		string_appendn(buffer, entry_buf, MAX_INPUT_LENGTH);
+		string_appendn(buffer, entry_buf, len);
 	}
 	
 	set_active_directory(binary_path);
-	platform_write_file_content(path, "w+", buffer, strlen(buffer));
+	platform_write_file_content(_settings_file.path, "w+", buffer, strlen(buffer));
 	mem_free(buffer);
 }
 
@@ -92,14 +94,20 @@ static void convert_crlf_to_lf(char *buffer)
 	}
 }
 
-settings_config settings_config_load_from_file(char *path)
+settings_config settings_config_init(char *directory)
 {
 	settings_config config;
+	
+	platform_create_config_directory(directory);
+
+	config.path = mem_alloc(MAX_INPUT_LENGTH);
+	get_config_save_location(config.path, directory);
+
 	config.settings = array_create(sizeof(config_setting));
 	
 	set_active_directory(binary_path);
 	
-	file_content content = platform_read_file_content(path, "rb");
+	file_content content = platform_read_file_content(config.path, "rb");
 	
 	if (!content.content || content.file_error)
 	{
@@ -130,14 +138,17 @@ settings_config settings_config_load_from_file(char *path)
 	
 	platform_destroy_file_content(&content);
 	
-	return config;
+	config.loaded = true;
+	_settings_file = config;
 }
 
-config_setting* settings_config_get_setting(settings_config *config, char *name)
+config_setting* settings_config_get_setting(char *name)
 {
-	for (s32 i = 0; i < config->settings.length; i++)
+	assert(_settings_file.loaded);
+	
+	for (s32 i = 0; i < _settings_file.settings.length; i++)
 	{
-		config_setting *setting = array_at(&config->settings, i);
+		config_setting *setting = array_at(&_settings_file.settings, i);
 		if (setting && setting->name && name && strcmp(setting->name, name) == 0)
 		{
 			return setting;
@@ -146,36 +157,44 @@ config_setting* settings_config_get_setting(settings_config *config, char *name)
 	return 0;
 }
 
-char* settings_config_get_string(settings_config *config, char *name)
+char* settings_config_get_string(char *name)
 {
-	config_setting* setting = settings_config_get_setting(config, name);
+	assert(_settings_file.loaded);
+
+	config_setting* setting = settings_config_get_setting(name);
 	if (setting)
 		return setting->value;
 	else
 		return 0;
 }
 
-s64 settings_config_get_number(settings_config *config, char *name)
+s64 settings_config_get_number(char *name)
 {
-	config_setting* setting = settings_config_get_setting(config, name);
+	assert(_settings_file.loaded);
+
+	config_setting* setting = settings_config_get_setting(name);
 	if (setting && setting->value)
 		return string_to_u64(setting->value);
 	else
 		return 0;
 }
 
-s64 settings_config_get_number_or_default(settings_config *config, char *name, s64 def)
+s64 settings_config_get_number_or_default(char *name, s64 def)
 {
-	config_setting* setting = settings_config_get_setting(config, name);
+	assert(_settings_file.loaded);
+
+	config_setting* setting = settings_config_get_setting(name);
 	if (setting && setting->value)
 		return string_to_u64(setting->value);
 	else
 		return def;
 }
 
-void settings_config_set_string(settings_config *config, char *name, char *value)
+void settings_config_set_string(char *name, char *value)
 {
-	config_setting* setting = settings_config_get_setting(config, name);
+	assert(_settings_file.loaded);
+
+	config_setting* setting = settings_config_get_setting(name);
 	if (setting)
 	{
 		s32 len = strlen(value);
@@ -198,13 +217,15 @@ void settings_config_set_string(settings_config *config, char *name, char *value
 		new_entry.value = mem_alloc(len+1);
 		string_copyn(new_entry.value, value, len+1);
 		
-		array_push(&config->settings, &new_entry);
+		array_push(&_settings_file.settings, &new_entry);
 	}
 }
 
-void settings_config_set_number(settings_config *config, char *name, s64 value)
+void settings_config_set_number(char *name, s64 value)
 {
-	config_setting* setting = settings_config_get_setting(config, name);
+	assert(_settings_file.loaded);
+
+	config_setting* setting = settings_config_get_setting(name);
 	if (setting)
 	{
 		char num_buf[20];
@@ -231,19 +252,22 @@ void settings_config_set_number(settings_config *config, char *name, s64 value)
 		len = strlen(num_buf);
 		new_entry.value = mem_alloc(len+1);
 		string_copyn(new_entry.value, num_buf, len+1);
-		array_push(&config->settings, &new_entry);
+		array_push(&_settings_file.settings, &new_entry);
 	}
 }
 
-void settings_config_destroy(settings_config *config)
+void settings_config_destroy()
 {
-	for (s32 i = 0; i < config->settings.length; i++)
+	assert(_settings_file.loaded);
+
+	for (s32 i = 0; i < _settings_file.settings.length; i++)
 	{
-		config_setting *entry = array_at(&config->settings, i);
+		config_setting *entry = array_at(&_settings_file.settings, i);
 		
 		mem_free(entry->name);
 		mem_free(entry->value);
 	}
 	
-	array_destroy(&config->settings);
+	array_destroy(&_settings_file.settings);
+	mem_free(_settings_file.path);
 }

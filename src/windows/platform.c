@@ -297,14 +297,13 @@ bool platform_file_exists(char *path)
 			!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-void platform_create_config_directory()
+void platform_create_config_directory(char *directory)
 {
 	char tmp[PATH_MAX];
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, tmp)))
 	{
-		string_appendn(tmp, CONFIG_DIRECTORY_WINDOWS, PATH_MAX);
-	}
-	
+		string_appendn(tmp, directory, PATH_MAX);
+	}	
 	
 	if (!platform_directory_exists(tmp))
 	{
@@ -312,11 +311,12 @@ void platform_create_config_directory()
 	}
 }
 
-char* get_config_save_location(char *buffer)
+char* get_config_save_location(char *buffer, char *directory)
 {
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, buffer)))
 	{
-		string_appendn(buffer, CONFIG_DIRECTORY_WINDOWS"\\config.txt", MAX_INPUT_LENGTH);
+		string_appendn(buffer, directory, MAX_INPUT_LENGTH);
+		string_appendn(buffer, "\\config.txt", MAX_INPUT_LENGTH);
 		return buffer;
 	}
 	
@@ -1339,8 +1339,6 @@ void platform_init(int argc, char **argv)
 	
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
-	
-	platform_create_config_directory();
 	
 	char buf[MAX_PATH_LENGTH];
 	get_directory_from_path(buf, binary_path);

@@ -4,10 +4,33 @@
 *  All rights reserved.
 */
 
+/*
+- make global keyboard and mouse, these shouldn't be initialized in user code
+- make settings_config global, this shouldn't be initialized in user code
+- get rid of definitials like CONFIG_DIRECTORY_WINDOWS and make a function like config_set_path()
+    Or maybe we should make a function like system_configure([config_path, [icon_asset])
+- how are we going to deal with translations? we should probably move the localization loading to user code
+    I.E. load a localizartion with a single call to localization_load_file()
+- let the library handle asset workerer managemnt
+- let the library handle asset destroying
+- make settings pages use settings_config directly
+
+*/
+
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
-#define PROJECT_BASE_VERSION "3"
+#define PROJECT_BASE_VERSION "4"
+
+/*
+
+- Make settings_config static
+
+*/
+
+#ifndef TARGET_FRAMERATE
+#define TARGET_FRAMERATE (1000/24.0)
+#endif
 
 #ifdef _WIN32
 #define OS_WIN

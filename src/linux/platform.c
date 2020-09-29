@@ -140,11 +140,11 @@ bool platform_set_clipboard(platform_window *window, char *buffer)
 	return false;
 }
 
-void platform_create_config_directory()
+void platform_create_config_directory(char *directory)
 {
 	char *env = getenv("HOME");
 	char tmp[PATH_MAX];
-	snprintf(tmp, PATH_MAX, "%s%s", env, CONFIG_DIRECTORY_LINUX);
+	snprintf(tmp, PATH_MAX, "%s%s", env, directory);
 	
 	if (!platform_directory_exists(tmp))
 	{
@@ -152,10 +152,10 @@ void platform_create_config_directory()
 	}
 }
 
-char* get_config_save_location(char *buffer)
+char* get_config_save_location(char *buffer, char *directory)
 {
 	char *env = getenv("HOME");
-	snprintf(buffer, PATH_MAX, "%s%s", env, CONFIG_DIRECTORY_LINUX"/config.txt");
+	snprintf(buffer, PATH_MAX, "%s%s%s", env, directory, "/config.txt");
 	return buffer;
 }
 
@@ -619,8 +619,7 @@ inline void platform_init(int argc, char **argv)
 	
 	// get fullpath of the directory the binary is residing in
 	binary_path = platform_get_full_path(argv[0]);
-	
-	platform_create_config_directory();
+
 	
 	char buf[MAX_INPUT_LENGTH];
 	get_directory_from_path(buf, binary_path);
