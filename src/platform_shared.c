@@ -237,3 +237,20 @@ s32 filter_matches(array *filters, char *string, char **matched_filter)
 	}
 	return -1;
 }
+
+void platform_init_shared(int argc, char **argv)
+{
+	// get fullpath of the directory the exe is residing in
+	binary_path = platform_get_full_path(argv[0]);
+	
+	char buf[MAX_PATH_LENGTH];
+	get_directory_from_path(buf, binary_path);
+	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
+
+	assets_create();
+
+	for (s32 i = 0; i < ASSET_WORKER_COUNT; i++) {
+		thread asset_queue_worker_thread = thread_start(assets_queue_worker, NULL);
+		thread_detach(&asset_queue_worker_thread);
+	}
+}

@@ -2,10 +2,12 @@ import subprocess
 import platform
 import shutil
 import glob
+import sys
 import os
 
+# config
 os_name = platform.system()
-main_file = "src/project_base.h"
+main_file = "src/main.c"
 compiler = "gcc"
 linker = "ar"
 install_dir = "C:/mingw/mingw64/x86_64-w64-mingw32/"
@@ -18,7 +20,7 @@ lib_dir = install_dir + "lib/" + lib_output_file
 def do_windows_build():
     # make object file
     libs = "-lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp"
-    flags = "-m64 -c -s -Wall -O3"
+    flags = "-m64 -c -Wall -O3"
     command = compiler + " " + flags + " " + main_file + " " + "-o " + obj_output_file + " " + libs
     subprocess.call(command)
 
@@ -41,13 +43,31 @@ def do_install():
     for file in glob.glob("src/**/*.h", recursive=True):
         shutil.copy(file, include_dir + file[4:0])
 
+# cleanup rogue files
 def do_cleanup():
     if os.path.isfile(obj_output_file):
         os.remove(obj_output_file)
 
+    if os.path.isfile("data.o"):
+        os.remove("data.o")
+
+# ##################
+# Build library
+# ##################
 if os_name == "Windows":
     do_windows_build()
 
 do_setup()
 do_install()
+
+# ##################
+# Build examples
+# ##################
+subprocess.call("ld -r -b binary -o data.o examples/mono.ttf")
+
+for file in glob.glob("examples/*.c"):
+    subprocess.call(compiler + " -m64 -O3 " + file + " data.o -o " + file + ".exe -lprojectbase -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp")
+
 do_cleanup()
+
+subprocess.call("./examples/example_1.c.exe");

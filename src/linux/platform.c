@@ -144,7 +144,7 @@ void platform_create_config_directory(char *directory)
 {
 	char *env = getenv("HOME");
 	char tmp[PATH_MAX];
-	snprintf(tmp, PATH_MAX, "%s%s", env, directory);
+	snprintf(tmp, PATH_MAX, "%s/%s", env, directory);
 	
 	if (!platform_directory_exists(tmp))
 	{
@@ -155,7 +155,7 @@ void platform_create_config_directory(char *directory)
 char* get_config_save_location(char *buffer, char *directory)
 {
 	char *env = getenv("HOME");
-	snprintf(buffer, PATH_MAX, "%s%s%s", env, directory, "/config.txt");
+	snprintf(buffer, PATH_MAX, "%s/%s%s", env, directory, "/config.txt");
 	return buffer;
 }
 
@@ -604,7 +604,6 @@ static void create_key_tables(platform_window window)
 	XkbFreeKeyboard(desc, 0, True);
 }
 
-//CURL *curl;
 inline void platform_init(int argc, char **argv)
 {
 #if 0
@@ -617,17 +616,7 @@ inline void platform_init(int argc, char **argv)
 	
 	XInitThreads();
 	
-	// get fullpath of the directory the binary is residing in
-	binary_path = platform_get_full_path(argv[0]);
-
-	
-	char buf[MAX_INPUT_LENGTH];
-	get_directory_from_path(buf, binary_path);
-	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
-	
-	//curl = curl_easy_init();
-	
-	assets_create();
+	platform_init_shared(argc, argv);
 }
 
 inline void platform_destroy()
@@ -754,6 +743,8 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
+	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
+
 	bool has_max_size = max_w || max_h;
 	
 	platform_window window;

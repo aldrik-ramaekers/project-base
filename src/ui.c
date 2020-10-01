@@ -22,6 +22,7 @@ void ui_set_hovered(u32 id, s32 x, s32 y, s32 w, s32 h)
 
 inline void ui_begin(s32 id)
 {
+	render_reset_scissor();
 	global_ui_context.item_hovered = false;
 	global_ui_context.next_id = id * 100;
 	global_ui_context.layout.offset_x = 0;

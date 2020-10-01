@@ -299,10 +299,11 @@ bool platform_file_exists(char *path)
 
 void platform_create_config_directory(char *directory)
 {
-	char tmp[PATH_MAX];
+	char tmp[MAX_INPUT_LENGTH];
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, tmp)))
 	{
-		string_appendn(tmp, directory, PATH_MAX);
+		string_appendn(tmp, "/", MAX_INPUT_LENGTH);
+		string_appendn(tmp, directory, MAX_INPUT_LENGTH);
 	}	
 	
 	if (!platform_directory_exists(tmp))
@@ -315,6 +316,7 @@ char* get_config_save_location(char *buffer, char *directory)
 {
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, buffer)))
 	{
+		string_appendn(buffer, "/", MAX_INPUT_LENGTH);
 		string_appendn(buffer, directory, MAX_INPUT_LENGTH);
 		string_appendn(buffer, "\\config.txt", MAX_INPUT_LENGTH);
 		return buffer;
@@ -662,6 +664,8 @@ void platform_setup_renderer()
 
 platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
+	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
+
 	debug_print_elapsed_title("window creation");
 	debug_print_elapsed_indent();
 	
@@ -1337,14 +1341,7 @@ void platform_init(int argc, char **argv)
 	instance = GetModuleHandle(NULL);
 	cmd_show = argc;
 	
-	// get fullpath of the directory the exe is residing in
-	binary_path = platform_get_full_path(argv[0]);
-	
-	char buf[MAX_PATH_LENGTH];
-	get_directory_from_path(buf, binary_path);
-	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
-	
-	assets_create();
+	platform_init_shared(argc, argv);
 }
 
 void platform_set_icon(platform_window *window, image *img)

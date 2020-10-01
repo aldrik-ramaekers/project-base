@@ -4,7 +4,7 @@
 *  All rights reserved.
 */
 
-void load_localization_file(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
+void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 							   char *locale_id, char *locale_name)
 {
 	mo_file mo;
@@ -126,7 +126,7 @@ void localization_init()
 	global_localization.loaded = true;
 }
 
-void destroy_available_localizations()
+void localization_destroy()
 {
 	assert(global_localization.loaded);
 

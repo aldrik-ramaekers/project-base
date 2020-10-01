@@ -19,6 +19,10 @@
 #define ASSET_QUEUE_COUNT 20
 #endif
 
+#ifndef ASSET_WORKER_COUNT
+#define ASSET_WORKER_COUNT 2
+#endif
+
 #ifdef MODE_DEVELOPER
 s32 __frames_drawn_with_missing_assets = 0;
 #endif
