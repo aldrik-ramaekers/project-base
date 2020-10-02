@@ -202,6 +202,9 @@ typedef enum t_window_flags
 } window_flags;
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 
+keyboard_input _global_keyboard;
+mouse_input _global_mouse;
+camera _global_camera;
 
 // :Cleanup: get rid of these
 platform_window *main_window = 0;
@@ -219,7 +222,7 @@ bool platform_get_clipboard(platform_window *window, char *buffer);
 void platform_window_set_size(platform_window *window, u16 width, u16 height);
 void platform_window_set_position(platform_window *window, u16 x, u16 y);
 void platform_destroy_window(platform_window *window);
-void platform_handle_events(platform_window *window, mouse_input *mouse, keyboard_input *keyboard);
+void platform_handle_events(platform_window *window);
 void platform_window_swap_buffers(platform_window *window);
 void platform_set_cursor(platform_window *window, cursor_type type);
 void platform_window_set_title(platform_window *window, char *name);

@@ -621,9 +621,7 @@ inline void platform_init(int argc, char **argv)
 
 inline void platform_destroy()
 {
-	assets_destroy();
-	//curl_easy_cleanup(curl);
-	//curl_global_cleanup();
+	platform_destroy_shared();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();
@@ -1027,8 +1025,11 @@ void platform_hide_window_taskbar_icon(platform_window *window)
 	XFlush(window->display);
 }
 
-void platform_handle_events(platform_window *window, mouse_input *mouse, keyboard_input *keyboard)
+void platform_handle_events(platform_window *window)
 {
+	mouse_input *mouse = &_global_mouse;
+	keyboard_input *keyboard = &_global_keyboard;
+
 	mouse->left_state &= ~MOUSE_CLICK;
 	mouse->right_state &= ~MOUSE_CLICK;
 	mouse->left_state &= ~MOUSE_DOUBLE_CLICK;
@@ -1327,6 +1328,8 @@ inline void platform_window_swap_buffers(platform_window *window)
 		Cursor cursor = XCreateFontCursor(window->display, cursor_shape);
 		XDefineCursor(window->display, window->window, cursor);
 		window->curr_cursor_type = window->next_cursor_type;
+
+		window->do_draw = false;
 	}
 	
 	if (!global_use_gpu)

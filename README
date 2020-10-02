@@ -1,4 +1,5 @@
-4
+2.0
+   - make keyboard, mouse and camera global
    - let the library handle asset workerer managemnt
    - fix scissor not being reset at beginning of ui routine
    - make example programs
@@ -7,17 +8,17 @@
    - get rid of definitials like CONFIG_DIRECTORY_WINDOWS
    - move localization loading to user code
    - refactor settings_config
-3 [21-07-2020]
+1.2 [21-07-2020]
    - fix issue where text and images were being cut off on scroll
    - fix cursor being overwritten by underlying ui element
    - refactor ui menu bar
    - added shadow to dropdown menu item
-2 [08-07-2020]
+1.1 [08-07-2020]
    - fix image blending issue with background colors
    - triangle rendering on cpu
    - refactor submenu for localization
    - fix issue where last row of pixels is empty
    - cursor change when hovering textbox
    - new cursors
-1 [16-02-2020]
+1.0 [16-02-2020]
    - initial release

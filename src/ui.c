@@ -20,15 +20,20 @@ void ui_set_hovered(u32 id, s32 x, s32 y, s32 w, s32 h)
 	global_ui_context.item_hovered_id = id;
 }
 
-inline void ui_begin(s32 id)
+inline void ui_begin(s32 id, platform_window *window)
 {
+	platform_set_cursor(window, CURSOR_DEFAULT);
+	render_clear(window);
+	camera_apply_transformations(window, &_global_camera);
 	render_reset_scissor();
+
+	global_ui_context.active_window = window;
 	global_ui_context.item_hovered = false;
 	global_ui_context.next_id = id * 100;
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.offset_y = 0;
-	global_ui_context.layout.width = global_ui_context.layout.active_window->width;
-	global_ui_context.layout.height = global_ui_context.layout.active_window->height;
+	global_ui_context.layout.width = global_ui_context.active_window->width;
+	global_ui_context.layout.height = global_ui_context.active_window->height;
 	global_ui_context.layout.active_dropdown_state = 0;
 	global_ui_context.submenus.count = 0;
 	global_ui_context.cursor_to_set = CURSOR_DEFAULT;
@@ -42,7 +47,7 @@ static void ui_set_cursor(cursor_type type)
 
 inline void ui_end()
 {
-	platform_set_cursor(global_ui_context.layout.active_window, global_ui_context.cursor_to_set);
+	platform_set_cursor(global_ui_context.active_window, global_ui_context.cursor_to_set);
 	if (!global_ui_context.item_hovered) global_ui_context.item_hovered_duration = 0;
 }
 
@@ -197,21 +202,21 @@ void ui_set_style(u16 style)
 }
 
 static scroll_state empty_scroll;
-inline void ui_create(platform_window *window, keyboard_input *keyboard, mouse_input *mouse, camera *camera, font *font_small)
+inline void ui_create(platform_window *window, font *font_small)
 {
 	ui_set_style(UI_STYLE_LIGHT);
 	
 	global_ui_context.layout.layout_direction = LAYOUT_VERTICAL;
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.offset_y = 0;
-	global_ui_context.layout.active_window = window;
-	global_ui_context.layout.width = global_ui_context.layout.active_window->width;
+	global_ui_context.active_window = window;
+	global_ui_context.layout.width = global_ui_context.active_window->width;
 	empty_scroll = ui_create_scroll(1);
 	global_ui_context.layout.scroll = &empty_scroll;
 	
-	global_ui_context.keyboard = keyboard;
-	global_ui_context.mouse = mouse;
-	global_ui_context.camera = camera;
+	global_ui_context.keyboard = &_global_keyboard;
+	global_ui_context.mouse = &_global_mouse;
+	global_ui_context.camera = &_global_camera;
 	global_ui_context.font_small = font_small;
 	global_ui_context.menu_item_count = 0;
 	global_ui_context.active_menu_id = -1;
@@ -234,7 +239,7 @@ static void ui_pop_scissor()
 		s32 x = global_ui_context.layout.scroll->x;
 		s32 y = global_ui_context.layout.scroll->y;
 		
-		render_set_scissor(global_ui_context.layout.active_window, x,y,w,h);
+		render_set_scissor(global_ui_context.active_window, x,y,w,h);
 	}
 	else
 	{
@@ -263,7 +268,7 @@ inline void ui_block_end()
 
 inline void ui_set_active_window(platform_window *window)
 {
-	global_ui_context.layout.active_window = window;
+	global_ui_context.active_window = window;
 }
 
 inline void ui_begin_menu_bar()
@@ -549,7 +554,7 @@ bool ui_push_menu(char *title)
 			global_ui_context.active_menu_id = -1;
 		is_open = false;
 	}
-	if (!global_ui_context.layout.active_window->has_focus && is_open)
+	if (!global_ui_context.active_window->has_focus && is_open)
 	{
 		global_ui_context.active_menu_id = -1;
 		is_open = false;
@@ -588,7 +593,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	static u64 cursor_tick = 0;
 	static u64 last_cursor_pos = -1;
 	
-	if (!global_ui_context.layout.active_window->has_focus)
+	if (!global_ui_context.active_window->has_focus)
 		state->state = false;
 	
 	s32 x = global_ui_context.layout.offset_x + WIDGET_PADDING + global_ui_context.camera->x;
@@ -690,7 +695,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		keyboard_is_key_pressed(global_ui_context.keyboard, KEY_ENTER) &&
 		state->accept_newline)
 	{
-		keyboard_handle_input_string(global_ui_context.layout.active_window, global_ui_context.keyboard, "\n");
+		keyboard_handle_input_string(global_ui_context.active_window, global_ui_context.keyboard, "\n");
 	}
 	
 	// calculate scissor rectangle for background
@@ -701,7 +706,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
-		render_set_scissor(global_ui_context.layout.active_window, scissor_x,
+		render_set_scissor(global_ui_context.active_window, scissor_x,
 						   scissor_y, scissor_w, scissor_h);
 	}
 	else
@@ -711,7 +716,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH;
 		s32 scissor_h = TEXTBOX_HEIGHT;
 		
-		render_set_scissor(global_ui_context.layout.active_window, 
+		render_set_scissor(global_ui_context.active_window, 
 						   scissor_x, scissor_y, scissor_w, scissor_h);
 	}
 	
@@ -735,7 +740,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
-		render_set_scissor(global_ui_context.layout.active_window, scissor_x,
+		render_set_scissor(global_ui_context.active_window, scissor_x,
 						   scissor_y, scissor_w, scissor_h);
 	}
 	else
@@ -745,7 +750,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = TEXTBOX_HEIGHT;
 		
-		render_set_scissor(global_ui_context.layout.active_window, 
+		render_set_scissor(global_ui_context.active_window, 
 						   scissor_x, scissor_y, scissor_w, scissor_h);
 	}
 	
@@ -1829,7 +1834,7 @@ void ui_scroll_begin(scroll_state *state)
 	global_ui_context.layout.scroll->scroll_start_offset_y = global_ui_context.layout.offset_y;
 	
 	//render_rectangle_outline(x, y, w, h, 1, global_ui_context.style.border);
-	render_set_scissor(global_ui_context.layout.active_window, x, y, w, h);
+	render_set_scissor(global_ui_context.active_window, x, y, w, h);
 }
 
 void ui_scroll_end()
@@ -1952,7 +1957,7 @@ void ui_push_tooltip(char *text)
 			}
 			// align left
 			else if (global_ui_context.tooltip.x > 
-					 global_ui_context.layout.active_window->width-(total_w/2))
+					 global_ui_context.active_window->width-(total_w/2))
 			{
 				assert(0 && "not implemented"); // TODO(Aldrik): implement
 			}

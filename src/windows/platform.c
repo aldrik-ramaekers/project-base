@@ -114,7 +114,7 @@ inline void platform_show_alert(char *title, char *message)
 
 inline void platform_destroy()
 {
-	assets_destroy();
+	platform_destroy_shared();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();
@@ -845,8 +845,11 @@ void platform_destroy_window(platform_window *window)
 	window->window_handle = 0;
 }
 
-void platform_handle_events(platform_window *window, mouse_input *mouse, keyboard_input *keyboard)
+void platform_handle_events(platform_window *window)
 {
+	mouse_input *mouse = &_global_mouse;
+	keyboard_input *keyboard = &_global_keyboard;
+	
 	current_window_to_handle = window;
 	current_keyboard_to_handle = keyboard;
 	current_mouse_to_handle = mouse;
@@ -954,6 +957,8 @@ void platform_window_swap_buffers(platform_window *window)
 		
 		window->curr_cursor_type = window->next_cursor_type;
 		SetCursor(cursor);
+
+		window->do_draw = false;
 	}
 	
 	if (!global_use_gpu)

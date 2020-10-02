@@ -6,8 +6,8 @@
 
 /*
 
+- stop linking to libs and use LoadLibrary
 - init ui in platform_init
-- make global keyboard and mouse, these shouldn't be initialized in user code
 - let the library handle asset destroying
 - make settings pages use settings_config directly
 - include font in lib
@@ -17,7 +17,7 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
-#define PROJECT_BASE_VERSION "4"
+#define PROJECT_BASE_VERSION "2.0"
 
 #ifndef TARGET_FRAMERATE
 #define TARGET_FRAMERATE (1000/24.0)
@@ -92,9 +92,9 @@
 #include "timer.h"
 #include "assets.h"
 #include "memory_bucket.h"
+#include "camera.h"
 #include "platform.h"
 #include "render.h"
-#include "camera.h"
 #include "ui.h"
 #include "notification.h"
 #include "string_utils.h"

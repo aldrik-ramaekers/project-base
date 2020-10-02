@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 {
     platform_init(argc, argv);
     settings_init(CONFIG_DIRECTORY);
-    localization_init();
+    localization_init(); // move to platform_init
 
     // localization_load();
 
@@ -20,43 +20,28 @@ int main(int argc, char **argv)
                 settings_get_number("WINDOW_HEIGHT"), 0, 0, 800, 600);
     main_window = &window;
 
-    keyboard_input keyboard = keyboard_input_create();
-	mouse_input mouse = mouse_input_create();
-
-    camera camera;
-	camera.x = 0;
-	camera.y = 0;
-	camera.rotation = 0;
-
+    // do this in lib, include mono.ttf in lib
     main_font = assets_load_font(_binary_examples_mono_ttf_start, _binary_examples_mono_ttf_end, 16);
 
-    ui_create(&window, &keyboard, &mouse, &camera, main_font);
+    ui_create(&window, main_font);
 
     while(window.is_open) {
-        u64 last_stamp = platform_get_time(TIME_FULL, TIME_US);
-		platform_handle_events(&window, &mouse, &keyboard);
-		platform_set_cursor(&window, CURSOR_DEFAULT);
-		
-		platform_window_make_current(&window);
-		//platform_set_icon(&window, logo_small_img);
-		
-		global_ui_context.layout.active_window = &window;
-		global_ui_context.keyboard = &keyboard;
-		global_ui_context.mouse = &mouse;
+        u64 last_stamp = platform_get_time(TIME_FULL, TIME_US); // make macro for this
+
+		platform_handle_events(&window);		
+		platform_window_make_current(&window); // move to ui_begin
+
+		//platform_set_icon(&window, logo_small_img); // move to platform_open_window
 		
 		if (assets_do_post_process())
 			window.do_draw = true;
 		
-		if (window.has_focus)
+		if (window.has_focus) // move to handle_events()
 			window.do_draw = true;
 		
 		if (window.do_draw) {
 
-            window.do_draw = false;		
-			render_clear(&window);
-			camera_apply_transformations(&window, &camera);
-
-            ui_begin(1);
+            ui_begin(1, &window);
             {
                 ui_begin_menu_bar();
                 {
@@ -75,6 +60,7 @@ int main(int argc, char **argv)
 		    platform_window_swap_buffers(&window);
         }
 
+        // make macro for this
         u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
 		u64 diff = current_stamp - last_stamp;
 		float diff_ms = diff / 1000.0f;
@@ -92,7 +78,6 @@ int main(int argc, char **argv)
     platform_destroy_window(&window);
 
     ui_destroy();
-    keyboard_input_destroy(&keyboard);
 
     localization_destroy();
     settings_destroy();

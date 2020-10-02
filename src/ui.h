@@ -90,7 +90,6 @@ typedef struct t_ui_layout
 	s32 dropdown_x;
 	s32 offset_x;
 	s32 offset_y;
-	platform_window *active_window;
 	layout_direction layout_direction;
 	s32 prev_offset_x;
 	s32 width;
@@ -164,12 +163,14 @@ typedef struct t_ui_tooltip
 
 typedef struct t_ui_context
 {
-	cursor_type cursor_to_set;
-	ui_style style;
-	ui_layout layout;
+	platform_window *active_window;
 	keyboard_input *keyboard;
 	mouse_input *mouse;
 	camera *camera;
+
+	cursor_type cursor_to_set;
+	ui_style style;
+	ui_layout layout;
 	font *font_small;
 	s32 active_menu_id;
 	u32 next_id;
@@ -187,10 +188,10 @@ typedef struct t_ui_context
 ui_context global_ui_context;
 
 u32 ui_get_id();
-void ui_create(platform_window *window, keyboard_input *keyboard, mouse_input *mouse, camera *camera, font *font_small);
+void ui_create(platform_window *window, font *font_small);
 void ui_set_active_window(platform_window *window);
 void ui_destroy();
-void ui_begin();
+void ui_begin(s32 id, platform_window *window);
 void ui_end();
 bool ui_is_menu_active(u32 id);
 char* name_of_day(s32 day);

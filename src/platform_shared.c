@@ -238,8 +238,19 @@ s32 filter_matches(array *filters, char *string, char **matched_filter)
 	return -1;
 }
 
+void platform_destroy_shared()
+{
+	assets_destroy();
+
+	keyboard_input_destroy(&_global_keyboard);
+}
+
 void platform_init_shared(int argc, char **argv)
 {
+	_global_keyboard = keyboard_input_create();
+	_global_mouse = mouse_input_create();
+	_global_camera = (camera){0.0f,0.0f,0.0f};
+
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
 	
