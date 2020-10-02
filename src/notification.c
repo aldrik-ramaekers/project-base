@@ -30,18 +30,18 @@ void update_render_notifications()
 	
 	for (s32 i = 0; i < global_notifications.length; i++)
 	{
-		main_window->do_draw = true;
+		// global_ui_context.active_window->do_draw = true; // ??
 		
 		notification *n = array_at(&global_notifications, i);
 		float32 duration_ms = (float32)n->duration/TARGET_FRAMERATE;
 		s32 y = 0;
 		
 		if (duration_ms < fade_duration)
-			y = main_window->height - ((duration_ms/fade_duration)*(box_h + 30.0f));
+			y = global_ui_context.active_window->height - ((duration_ms/fade_duration)*(box_h + 30.0f));
 		else if (duration_ms > show_duration)
-			y = main_window->height - ((box_h + 30.0f) - ((duration_ms-show_duration)/fade_duration)*(box_h + 30.0f));
+			y = global_ui_context.active_window->height - ((box_h + 30.0f) - ((duration_ms-show_duration)/fade_duration)*(box_h + 30.0f));
 		else 
-			y = main_window->height - box_h - 30;
+			y = global_ui_context.active_window->height - box_h - 30;
 		
 		s32 w = calculate_text_width(global_ui_context.font_small, n->message) + (padding*2);
 		s32 x = 30;

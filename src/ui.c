@@ -48,6 +48,8 @@ static void ui_set_cursor(cursor_type type)
 
 inline void ui_end()
 {
+	update_render_notifications();		
+
 	platform_set_cursor(global_ui_context.active_window, global_ui_context.cursor_to_set);
 	if (!global_ui_context.item_hovered) global_ui_context.item_hovered_duration = 0;
 }

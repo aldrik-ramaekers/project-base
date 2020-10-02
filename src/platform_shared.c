@@ -268,3 +268,27 @@ void platform_init_shared(int argc, char **argv)
 	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
 	localization_init();
 }
+
+u64 __last_stamp = 0;
+bool platform_keep_running(platform_window *window)
+{
+   u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
+	u64 diff = current_stamp - __last_stamp;
+	float diff_ms = diff / 1000.0f;
+		
+	if (diff_ms < TARGET_FRAMERATE)
+	{
+		double time_to_wait = (TARGET_FRAMERATE) - diff_ms;
+		thread_sleep(time_to_wait*1000);
+	}
+
+	__last_stamp = platform_get_time(TIME_FULL, TIME_US);
+
+	if (assets_do_post_process())
+		window->do_draw = true;
+		
+	if (window->has_focus)
+		window->do_draw = true;
+
+	return window->is_open;
+}

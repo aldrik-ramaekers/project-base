@@ -206,10 +206,6 @@ keyboard_input _global_keyboard;
 mouse_input _global_mouse;
 camera _global_camera;
 
-// :Cleanup: get rid of these
-platform_window *main_window = 0;
-platform_window *settings_window = 0;
-
 bool platform_window_is_valid(platform_window *window);
 
 #define platform_open_window(name, width, height, max_w, max_h, min_w, min_h) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0)
@@ -262,6 +258,10 @@ void get_directory_from_path(char *buffer, char *path);
 vec2 platform_get_window_size(platform_window *window);
 s32 filter_matches(array *filters, char *string, char **matched_filter);
 void platform_delete_file(char *path);
+
+bool platform_keep_running(platform_window *window);
+void platform_init_shared(int argc, char **argv);
+void platform_destroy_shared();
 
 u64 platform_get_time(time_type time_type, time_precision precision);
 s32 platform_get_memory_size();

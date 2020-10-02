@@ -9,6 +9,7 @@
 - stop linking to libs and use LoadLibrary
 - let the library handle asset destroying
 - make settings pages use settings_config directly
+- get rid of text-search code in platform.h
 
 */
 
@@ -100,8 +101,6 @@
 #include "settings_config.h"
 #include "localization.h"
 
-#include "platform_shared.c"
-
 #ifdef OS_LINUX
 #include "linux/thread.c"
 #include "linux/platform.c"
@@ -111,6 +110,8 @@
 #include "windows/thread.c"
 #include "windows/platform.c"
 #endif
+
+#include "platform_shared.c"
 
 #include "render.c"
 #include "input.c"

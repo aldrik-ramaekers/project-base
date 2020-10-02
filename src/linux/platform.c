@@ -83,6 +83,7 @@ bool platform_get_clipboard(platform_window *window, char *buffer)
 	
 	if(window->CLIPBOARD != None) {
 		
+		// this is nasty
 		if (settings_window && XGetSelectionOwner(window->display, window->CLIPBOARD) == settings_window->window)
 		{
 			snprintf(buffer, MAX_INPUT_LENGTH, "%s", settings_window->clipboard_str);
@@ -94,6 +95,7 @@ bool platform_get_clipboard(platform_window *window, char *buffer)
 			snprintf(buffer, MAX_INPUT_LENGTH, "%s", main_window->clipboard_str);
 			return true;
 		}
+		// this is nasty
 	}
 	
 	XConvertSelection(window->display, bufid, fmtid, propid, window->window, CurrentTime);
