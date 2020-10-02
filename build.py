@@ -18,6 +18,10 @@ include_dir = install_dir + "include/projectbase"
 lib_dir = install_dir + "lib/" + lib_output_file
 
 def do_windows_build():
+    # make resource object file
+    command = "ld -r -b binary -o data.o src/resources/mono.ttf"
+    subprocess.call(command)
+
     # make object file
     libs = "-lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp"
     flags = "-m64 -c -Wall -O3"
@@ -25,7 +29,7 @@ def do_windows_build():
     subprocess.call(command)
 
     # make static lib
-    command = linker + " rcs " + lib_output_file + " " + obj_output_file
+    command = linker + " rcs " + lib_output_file + " " + obj_output_file + " data.o "
     subprocess.call(command)
 
 # remove old files

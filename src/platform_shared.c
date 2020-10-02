@@ -240,6 +240,8 @@ s32 filter_matches(array *filters, char *string, char **matched_filter)
 
 void platform_destroy_shared()
 {
+	localization_destroy();
+	ui_destroy();
 	assets_destroy();
 
 	keyboard_input_destroy(&_global_keyboard);
@@ -259,9 +261,10 @@ void platform_init_shared(int argc, char **argv)
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
 
 	assets_create();
-
 	for (s32 i = 0; i < ASSET_WORKER_COUNT; i++) {
 		thread asset_queue_worker_thread = thread_start(assets_queue_worker, NULL);
 		thread_detach(&asset_queue_worker_thread);
 	}
+	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
+	localization_init();
 }

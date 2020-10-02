@@ -100,7 +100,6 @@ char* localize(const char *identifier)
 
 	if (!global_localization.active_localization)
 	{
-		//printf("NO LOCALE SELECTED.");
 		return (char*)identifier;
 	}
 	

@@ -188,7 +188,7 @@ typedef struct t_ui_context
 ui_context global_ui_context;
 
 u32 ui_get_id();
-void ui_create(platform_window *window, font *font_small);
+void ui_init(font *font_small);
 void ui_set_active_window(platform_window *window);
 void ui_destroy();
 void ui_begin(s32 id, platform_window *window);

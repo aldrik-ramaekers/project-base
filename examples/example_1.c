@@ -1,17 +1,11 @@
 #include <projectbase/project_base.h>
 
-extern unsigned char _binary_examples_mono_ttf_start[];
-extern unsigned char _binary_examples_mono_ttf_end[];
-
 #define CONFIG_DIRECTORY "example_program_1"
-
-font* main_font;
 
 int main(int argc, char **argv)
 {
     platform_init(argc, argv);
     settings_init(CONFIG_DIRECTORY);
-    localization_init(); // move to platform_init
 
     // localization_load();
 
@@ -20,18 +14,11 @@ int main(int argc, char **argv)
                 settings_get_number("WINDOW_HEIGHT"), 0, 0, 800, 600);
     main_window = &window;
 
-    // do this in lib, include mono.ttf in lib
-    main_font = assets_load_font(_binary_examples_mono_ttf_start, _binary_examples_mono_ttf_end, 16);
-
-    ui_create(&window, main_font);
-
     while(window.is_open) {
         u64 last_stamp = platform_get_time(TIME_FULL, TIME_US); // make macro for this
-
 		platform_handle_events(&window);		
-		platform_window_make_current(&window); // move to ui_begin
 
-		//platform_set_icon(&window, logo_small_img); // move to platform_open_window
+		//platform_set_icon(&window, logo_small_img); // move to platform_open_window, put default icon in resource file
 		
 		if (assets_do_post_process())
 			window.do_draw = true;
@@ -77,9 +64,6 @@ int main(int argc, char **argv)
 
     platform_destroy_window(&window);
 
-    ui_destroy();
-
-    localization_destroy();
     settings_destroy();
     platform_destroy();
 

@@ -56,5 +56,6 @@ char* locale_get_name();
 char* localize(const char *identifier);
 bool set_locale(char *country_id);
 void localization_init();
+void localization_destroy();
 
 #endif

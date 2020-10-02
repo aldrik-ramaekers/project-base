@@ -75,6 +75,7 @@
 #define true 1
 #define false 0
 
+#include "resources.h"
 #include "thread.h"
 #include "array.h"
 #include "memory.h"

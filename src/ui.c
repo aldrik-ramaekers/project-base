@@ -22,6 +22,7 @@ void ui_set_hovered(u32 id, s32 x, s32 y, s32 w, s32 h)
 
 inline void ui_begin(s32 id, platform_window *window)
 {
+	platform_window_make_current(window);
 	platform_set_cursor(window, CURSOR_DEFAULT);
 	render_clear(window);
 	camera_apply_transformations(window, &_global_camera);
@@ -202,15 +203,15 @@ void ui_set_style(u16 style)
 }
 
 static scroll_state empty_scroll;
-inline void ui_create(platform_window *window, font *font_small)
+inline void ui_init(font *font_small)
 {
 	ui_set_style(UI_STYLE_LIGHT);
 	
 	global_ui_context.layout.layout_direction = LAYOUT_VERTICAL;
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.offset_y = 0;
-	global_ui_context.active_window = window;
-	global_ui_context.layout.width = global_ui_context.active_window->width;
+	//global_ui_context.active_window = window;
+	//global_ui_context.layout.width = global_ui_context.active_window->width;
 	empty_scroll = ui_create_scroll(1);
 	global_ui_context.layout.scroll = &empty_scroll;
 	
@@ -532,9 +533,6 @@ bool ui_push_menu(char *title)
 		ui_set_cursor(CURSOR_POINTER);
 		if (is_left_clicked(global_ui_context.mouse))
 		{
-			printf("---------------------------------\n");
-			printf("id %d, open: %d\n", id, is_open);
-			
 			if (is_open)
 				global_ui_context.active_menu_id = -1;
 			else
@@ -542,8 +540,6 @@ bool ui_push_menu(char *title)
 			
 			result = !is_open;
 			is_open = result;
-			
-			printf("id %d, open: %d\n", id, is_open);
 		}
 		
 		bg_color = global_ui_context.style.menu_hover_background;
