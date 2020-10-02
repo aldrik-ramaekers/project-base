@@ -7,10 +7,8 @@
 /*
 
 - stop linking to libs and use LoadLibrary
-- init ui in platform_init
 - let the library handle asset destroying
 - make settings pages use settings_config directly
-- include font in lib
 
 */
 
