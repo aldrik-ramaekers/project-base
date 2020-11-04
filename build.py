@@ -74,4 +74,4 @@ for file in glob.glob("examples/*.c"):
 
 do_cleanup()
 
-subprocess.call("./examples/example_1.c.exe");
+subprocess.call("./examples/example_1.c.exe")
