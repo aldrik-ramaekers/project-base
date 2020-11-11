@@ -5,7 +5,7 @@
    - make example programs
    - more customization
    - make settings_config global
-   - get rid of definitials like CONFIG_DIRECTORY_WINDOWS
+   - get rid of definitions like CONFIG_DIRECTORY_WINDOWS
    - move localization loading to user code
    - refactor settings_config
 1.2 [21-07-2020]
