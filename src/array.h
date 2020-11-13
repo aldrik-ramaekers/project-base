@@ -20,6 +20,7 @@ typedef struct t_array
 } array;
 
 array array_create(u64 entry_size);
+bool array_exists(array *array);
 int array_push(array *array, void *data);
 int array_push_size(array *array, void *data, s32 data_size);
 void array_remove_at(array *array, u32 at);

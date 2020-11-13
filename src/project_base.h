@@ -16,6 +16,8 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
+#pragma GCC diagnostic ignored "-Wunused-result"
+
 #define PROJECT_BASE_VERSION "2.0"
 
 #ifndef TARGET_FRAMERATE
@@ -80,12 +82,14 @@
 #include "memory.h"
 #include "external/cJSON.h"
 
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "external/stb_image.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_truetype.h"
+#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 
 #include "external/utf8.h"
 #include "input.h"

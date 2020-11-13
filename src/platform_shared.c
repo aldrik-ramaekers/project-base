@@ -292,3 +292,20 @@ bool platform_keep_running(platform_window *window)
 
 	return window->is_open;
 }
+
+void _platform_register_window(platform_window* window) {
+	if (!array_exists(&window_registry)) {
+		window_registry = array_create(sizeof(platform_window*));
+		array_reserve(&window_registry, 10);
+	}
+
+	array_push(&window_registry, &window);
+
+	printf("poop: %d\n", window_registry.length);
+}
+
+void _platform_unregister_window(platform_window* window) {
+	array_remove_by(&window_registry, &window);
+
+	printf("poop: %d\n", window_registry.length);
+}

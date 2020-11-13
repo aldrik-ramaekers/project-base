@@ -22,7 +22,7 @@
 #include <sys/mman.h>
 #include <X11/cursorfont.h>
 
-#define GET_ATOM(X) window.X = XInternAtom(window.display, #X, False)
+#define GET_ATOM(X) window->X = XInternAtom(window->display, #X, False)
 
 struct t_platform_window
 {
@@ -82,20 +82,14 @@ bool platform_get_clipboard(platform_window *window, char *buffer)
 	XEvent event;
 	
 	if(window->CLIPBOARD != None) {
-		
-		// this is nasty
-		if (settings_window && XGetSelectionOwner(window->display, window->CLIPBOARD) == settings_window->window)
-		{
-			snprintf(buffer, MAX_INPUT_LENGTH, "%s", settings_window->clipboard_str);
-			return true;
+		for (s32 i = 0; i < window_registry.length; i++) {
+			platform_window* w = *(platform_window**)array_at(&window_registry, i);
+
+			if (XGetSelectionOwner(window->display, window->CLIPBOARD) == w->window) {
+				snprintf(buffer, MAX_INPUT_LENGTH, "%s", w->clipboard_str);
+				return true;
+			}
 		}
-		else if (XGetSelectionOwner(window->display, window->CLIPBOARD) == 
-				 main_window->window)
-		{
-			snprintf(buffer, MAX_INPUT_LENGTH, "%s", main_window->clipboard_str);
-			return true;
-		}
-		// this is nasty
 	}
 	
 	XConvertSelection(window->display, bufid, fmtid, propid, window->window, CurrentTime);
@@ -525,15 +519,16 @@ static s32 translate_keycode(platform_window *window, s32 scancode)
     return KEY_UNKNOWN;
 }
 
-static void create_key_tables(platform_window window)
+static void create_key_tables(platform_window* window)
 {
-	s32 scancode, key;
-	char name[XkbKeyNameLength + 1];
-	XkbDescPtr desc = XkbGetMap(window.display, 0, XkbUseCoreKbd);
-	XkbGetNames(window.display, XkbKeyNamesMask, desc);
+	s32 scancode;
+	XkbDescPtr desc = XkbGetMap(window->display, 0, XkbUseCoreKbd);
+	XkbGetNames(window->display, XkbKeyNamesMask, desc);
 	
 	// uncomment for layout independant input for games.
 #if 0
+	s32 key;
+	char name[XkbKeyNameLength + 1];
 	for (scancode = desc->min_key_code;  scancode <= desc->max_key_code;  scancode++)
 	{
 		memcpy(name, desc->names->keys[scancode].name, XkbKeyNameLength);
@@ -599,7 +594,7 @@ static void create_key_tables(platform_window window)
 		// Translate the un-translated key codes using traditional X11 KeySym
 		// lookups
 		
-		keycode_map[scancode] = translate_keycode(&window, scancode);
+		keycode_map[scancode] = translate_keycode(window, scancode);
 	}
 	
 	XkbFreeNames(desc, XkbKeyNamesMask, True);
@@ -741,25 +736,25 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 	return 0;
 }
 
-platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
 	bool has_max_size = max_w || max_h;
 	
-	platform_window window;
-	window.width = width;
-	window.height = height;
-	window.backbuffer.buffer = 0;
-	window.gl_context = 0;
-	window.icon_loaded = false;
-	window.has_focus = true;
-	window.curr_cursor_type = CURSOR_DEFAULT;
-	window.next_cursor_type = CURSOR_DEFAULT;
-	window.clipboard_str = 0;
-	window.clipboard_strlen = 0;
-	window.do_draw = true;
-	window.backbuffer.s_image = 0;
+	platform_window* window = mem_alloc(sizeof(platform_window));
+	window->width = width;
+	window->height = height;
+	window->backbuffer.buffer = 0;
+	window->gl_context = 0;
+	window->icon_loaded = false;
+	window->has_focus = true;
+	window->curr_cursor_type = CURSOR_DEFAULT;
+	window->next_cursor_type = CURSOR_DEFAULT;
+	window->clipboard_str = 0;
+	window->clipboard_strlen = 0;
+	window->do_draw = true;
+	window->backbuffer.s_image = 0;
 	
 	static int att[] =
 	{
@@ -779,29 +774,29 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		None
 	};
 	
-	window.display = XOpenDisplay(NULL);
+	window->display = XOpenDisplay(NULL);
 	
 	XSetErrorHandler(_x11_error_handler);
 	
-	if(window.display == NULL) {
+	if(window->display == NULL) {
 		return window;
 	}
 	
-	window.parent = DefaultRootWindow(window.display);
+	window->parent = DefaultRootWindow(window->display);
 	
 	int fbcount;
-	GLXFBConfig* fbc = glXChooseFBConfig(window.display, DefaultScreen(window.display), att, &fbcount);
+	GLXFBConfig* fbc = glXChooseFBConfig(window->display, DefaultScreen(window->display), att, &fbcount);
 	int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
 	
 	int i;
 	for (i=0; i<fbcount; ++i)
 	{
-		XVisualInfo *vi = glXGetVisualFromFBConfig(window.display, fbc[i] );
+		XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, fbc[i] );
 		if ( vi )
 		{
 			int samp_buf, samples;
-			glXGetFBConfigAttrib(window.display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
-			glXGetFBConfigAttrib(window.display, fbc[i], GLX_SAMPLES       , &samples  );
+			glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
+			glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLES       , &samples  );
 			
 			if ( best_fbc < 0 || (samp_buf && samples > best_num_samp))
 				best_fbc = i, best_num_samp = samples;
@@ -814,18 +809,18 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	GLXFBConfig bestFbc = fbc[best_fbc];
 	XFree(fbc);
 	
-	XVisualInfo *vi = glXGetVisualFromFBConfig(window.display, bestFbc );
-	window.visual_info = vi;
+	XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, bestFbc );
+	window->visual_info = vi;
 	
-	if(window.visual_info == NULL) {
+	if(window->visual_info == NULL) {
 		return window;
 	}
 	
-	window.cmap = XCreateColormap(window.display, window.parent, window.visual_info->visual, AllocNone);
+	window->cmap = XCreateColormap(window->display, window->parent, window->visual_info->visual, AllocNone);
 	
 	// calculate window center
-	XRRScreenResources *screens = XRRGetScreenResources(window.display, window.parent);
-	XRRCrtcInfo *info = XRRGetCrtcInfo(window.display, screens, screens->crtcs[0]);
+	XRRScreenResources *screens = XRRGetScreenResources(window->display, window->parent);
+	XRRCrtcInfo *info = XRRGetCrtcInfo(window->display, screens, screens->crtcs[0]);
 	
 	s32 center_x = (info->width / 2) - (width / 2);
 	s32 center_y = (info->height / 2) - (height / 2);
@@ -834,21 +829,21 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	XRRFreeScreenResources(screens);
 	
 	XSetWindowAttributes window_attributes;
-	window_attributes.colormap = window.cmap;
+	window_attributes.colormap = window->cmap;
 	window_attributes.border_pixel = 0;
 	window_attributes.event_mask = KeyPressMask | KeyReleaseMask | PointerMotionMask |
 		ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | FocusChangeMask | LeaveWindowMask;
 	
-	window.window = XCreateWindow(window.display, window.parent, center_x, center_y, width, height, 0, window.visual_info->depth, InputOutput, window.visual_info->visual, CWColormap | CWEventMask | CWBorderPixel, &window_attributes);
+	window->window = XCreateWindow(window->display, window->parent, center_x, center_y, width, height, 0, window->visual_info->depth, InputOutput, window->visual_info->visual, CWColormap | CWEventMask | CWBorderPixel, &window_attributes);
 	
 	
 	XGCValues values;
-	window.gc = XCreateGC(window.display, window.window, 0, &values);
+	window->gc = XCreateGC(window->display, window->window, 0, &values);
 	
-	XMapWindow(window.display, window.window);
-	XFlush(window.display);
+	XMapWindow(window->display, window->window);
+	XFlush(window->display);
 	
-	XSync(window.display, False);
+	XSync(window->display, False);
 	
 	XSizeHints hints;
 	
@@ -863,46 +858,46 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	hints.min_width = min_w;
 	hints.min_height = min_h;
 	
-	XSetWMNormalHints(window.display, window.window, &hints);
+	XSetWMNormalHints(window->display, window->window, &hints);
 	
 	// window name
 	{
-		Atom WM_NAME = XInternAtom(window.display, "WM_NAME", False);
-		Atom _NET_WM_NAME = XInternAtom(window.display, "_NET_WM_NAME", False);
-		Atom _NET_WM_ICON_NAME = XInternAtom(window.display, "_NET_WM_ICON_NAME", False);
+		Atom WM_NAME = XInternAtom(window->display, "WM_NAME", False);
+		Atom _NET_WM_NAME = XInternAtom(window->display, "_NET_WM_NAME", False);
+		Atom _NET_WM_ICON_NAME = XInternAtom(window->display, "_NET_WM_ICON_NAME", False);
 		
 		char *list[1] = { (char *) name };
 		XTextProperty property;
 		
-		XStoreName(window.display, window.window, name);
+		XStoreName(window->display, window->window, name);
 		
-		Xutf8TextListToTextProperty(window.display, list, 1, XUTF8StringStyle,
+		Xutf8TextListToTextProperty(window->display, list, 1, XUTF8StringStyle,
 									&property);
-		XSetTextProperty(window.display, window.window, &property, WM_NAME);
-		XSetTextProperty(window.display, window.window, &property, _NET_WM_NAME);
-		XSetTextProperty(window.display, window.window, &property, XA_WM_NAME);
-		XSetTextProperty(window.display, window.window, &property, _NET_WM_ICON_NAME);
+		XSetTextProperty(window->display, window->window, &property, WM_NAME);
+		XSetTextProperty(window->display, window->window, &property, _NET_WM_NAME);
+		XSetTextProperty(window->display, window->window, &property, XA_WM_NAME);
+		XSetTextProperty(window->display, window->window, &property, _NET_WM_ICON_NAME);
 		XFree(property.value);
 		
 		XClassHint class_hint;
 		class_hint.res_name = name;
 		class_hint.res_class = name;
-		XSetClassHint(window.display, window.window, &class_hint);
+		XSetClassHint(window->display, window->window, &class_hint);
 	}
 	
 	
 	// hide taskbar icon and stay on top
 #if 0
 	{
-		Atom wm_state = XInternAtom(window.display, 
+		Atom wm_state = XInternAtom(window->display, 
 									"_NET_WM_STATE", False);
-		Atom taskbar_atom = XInternAtom(window.display, 
+		Atom taskbar_atom = XInternAtom(window->display, 
 										"_NET_WM_STATE_SKIP_TASKBAR", False);
-		Atom above_atom = XInternAtom(window.display, 
+		Atom above_atom = XInternAtom(window->display, 
 									  "_NET_WM_STATE_ABOVE", False);
 		
 		Atom atom_list[2] = {taskbar_atom, above_atom};
-		XChangeProperty(window.display, window.window, wm_state, XA_ATOM, 32,
+		XChangeProperty(window->display, window->window, wm_state, XA_ATOM, 32,
 						PropModeReplace, (const unsigned char*)&atom_list, 2);
 	}
 #endif
@@ -915,21 +910,21 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		win_hints->icon_y = 0;
 		
 		/* pass the hints to the window manager. */
-		XSetWMHints(window.display, window.window, win_hints);
+		XSetWMHints(window->display, window->window, win_hints);
 		XFree(win_hints);
 	}
 	
-	platform_setup_backbuffer(&window);
+	platform_setup_backbuffer(window);
 	platform_setup_renderer();
 	
-	window.is_open = true;
-	window.width = width;
-	window.height = height;
+	window->is_open = true;
+	window->width = width;
+	window->height = height;
 	
 	create_key_tables(window);
 	
 	// recieve window close event
-	window.quit = XInternAtom(window.display, "WM_DELETE_WINDOW", False);
+	window->quit = XInternAtom(window->display, "WM_DELETE_WINDOW", False);
 	
 	GET_ATOM(XdndEnter);
 	GET_ATOM(XdndPosition);
@@ -949,35 +944,37 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	GET_ATOM(_NET_WM_STATE);
 	
 	array atoms = array_create(sizeof(Atom));
-	array_push(&atoms, &window.quit);
-	array_push(&atoms, &window.XdndEnter);
-	array_push(&atoms, &window.XdndPosition);
-	array_push(&atoms, &window.XdndStatus);
-	array_push(&atoms, &window.XdndTypeList);
-	array_push(&atoms, &window.XdndActionCopy);
-	array_push(&atoms, &window.XdndDrop);
-	array_push(&atoms, &window.XdndFinished);
-	array_push(&atoms, &window.XdndSelection);
-	array_push(&atoms, &window.XdndLeave);
-	array_push(&atoms, &window.PRIMARY);
-	array_push(&atoms, &window.CLIPBOARD);
-	array_push(&atoms, &window.UTF8_STRING);
-	array_push(&atoms, &window.COMPOUND_STRING);
-	array_push(&atoms, &window.TARGETS);
-	array_push(&atoms, &window.MULTIPLE);
-	array_push(&atoms, &window._NET_WM_STATE);
+	array_push(&atoms, &window->quit);
+	array_push(&atoms, &window->XdndEnter);
+	array_push(&atoms, &window->XdndPosition);
+	array_push(&atoms, &window->XdndStatus);
+	array_push(&atoms, &window->XdndTypeList);
+	array_push(&atoms, &window->XdndActionCopy);
+	array_push(&atoms, &window->XdndDrop);
+	array_push(&atoms, &window->XdndFinished);
+	array_push(&atoms, &window->XdndSelection);
+	array_push(&atoms, &window->XdndLeave);
+	array_push(&atoms, &window->PRIMARY);
+	array_push(&atoms, &window->CLIPBOARD);
+	array_push(&atoms, &window->UTF8_STRING);
+	array_push(&atoms, &window->COMPOUND_STRING);
+	array_push(&atoms, &window->TARGETS);
+	array_push(&atoms, &window->MULTIPLE);
+	array_push(&atoms, &window->_NET_WM_STATE);
 	
-	XSetWMProtocols(window.display, window.window, atoms.data, atoms.length);
+	XSetWMProtocols(window->display, window->window, atoms.data, atoms.length);
 	array_destroy(&atoms);
 	
-	Atom XdndAware = XInternAtom(window.display, "XdndAware", False);
+	Atom XdndAware = XInternAtom(window->display, "XdndAware", False);
 	Atom xdnd_version = 5;
-	XChangeProperty(window.display, window.window, XdndAware, XA_ATOM, 32,
+	XChangeProperty(window->display, window->window, XdndAware, XA_ATOM, 32,
 					PropModeReplace, (unsigned char*)&xdnd_version, 1);
 	
 	
-	XFlush(window.display);
-	XSync(window.display, True);
+	XFlush(window->display);
+	XSync(window->display, True);
+
+	_platform_register_window(window);
 	
 	return window;
 }
@@ -989,23 +986,22 @@ inline bool platform_window_is_valid(platform_window *window)
 
 void platform_destroy_window(platform_window *window)
 {
-	if (global_use_gpu)
-	{
-		glXMakeCurrent(window->display, None, NULL);
-		glXDestroyContext(window->display, window->gl_context);
-	}
-	else
-	{
+	if (platform_window_is_valid(window)) {
+		if (global_use_gpu)
+		{
+			glXMakeCurrent(window->display, None, NULL);
+			glXDestroyContext(window->display, window->gl_context);
+		}
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+		
+		XDestroyWindow(window->display, window->window);
+		XCloseDisplay(window->display);
+		XFree(window->visual_info);
+		mem_free(window->clipboard_str);
+		_platform_unregister_window(window);
+		window->window = 0;
+		window->display = 0;
 	}
-	
-	XDestroyWindow(window->display, window->window);
-	XCloseDisplay(window->display);
-	XFree(window->visual_info);
-	mem_free(window->clipboard_str);
-	
-	window->window = 0;
-	window->display = 0;
 }
 
 void platform_hide_window_taskbar_icon(platform_window *window)
@@ -1134,7 +1130,7 @@ void platform_handle_events(platform_window *window)
 			
 			bool is_left_down = window->event.xbutton.button == Button1;
 			bool is_right_down = window->event.xbutton.button == Button3;
-			bool is_middle_down = window->event.xbutton.button == Button2;
+			//bool is_middle_down = window->event.xbutton.button == Button2;
 			bool scroll_up = window->event.xbutton.button == Button4;
 			bool scroll_down = window->event.xbutton.button == Button5;
 			
@@ -1167,7 +1163,7 @@ void platform_handle_events(platform_window *window)
 		{
 			bool is_left_up = window->event.xbutton.button == Button1;
 			bool is_right_up = window->event.xbutton.button == Button3;
-			bool is_middle_up = window->event.xbutton.button == Button2;
+			//bool is_middle_up = window->event.xbutton.button == Button2;
 			
 			if (is_left_up)
 			{
@@ -1269,7 +1265,7 @@ void platform_handle_events(platform_window *window)
 			s32 key = window->event.xkey.keycode;
 			keyboard->keys[keycode_map[key]] = false;
 			
-			KeySym ksym = XLookupKeysym(&window->event.xkey, 0);
+			//KeySym ksym = XLookupKeysym(&window->event.xkey, 0);
 		}
 		else if (window->event.type == SelectionClear)
 		{
@@ -1422,7 +1418,7 @@ void platform_show_message(platform_window *window, char *message, char *title)
 {
 	char command[MAX_INPUT_LENGTH];
 	snprintf(command, MAX_INPUT_LENGTH, "zenity --info --text=\"%s\" --title=\"%s\" --width=240", message, title);
-	FILE *f = popen(command, "r");
+	popen(command, "r");
 }
 
 static void* platform_open_file_dialog_thread(void *data)
@@ -1434,30 +1430,31 @@ static void* platform_open_file_dialog_thread(void *data)
 	char current_val[MAX_INPUT_LENGTH];
 	string_copyn(current_val, args->buffer, MAX_INPUT_LENGTH);
 	
-	char file_filter[MAX_INPUT_LENGTH];
+	char file_filter[30];
 	file_filter[0] = 0;
 	if (args->file_filter)
-		snprintf(file_filter, MAX_INPUT_LENGTH, "--file-filter=\"%s\"", args->file_filter);
+		snprintf(file_filter, 30, "--file-filter=\"%s\"", args->file_filter);
 	
-	char start_path[MAX_INPUT_LENGTH];
+	char start_path[30];
 	start_path[0] = 0;
 	if (args->start_path)
-		snprintf(start_path, MAX_INPUT_LENGTH, "--filename=\"%s\"", args->start_path);
+		snprintf(start_path, 30, "--filename=\"%s\"", args->start_path);
 	
 	
-	char command[MAX_INPUT_LENGTH];
+	u16 command_size = MAX_INPUT_LENGTH + 200;
+	char command[command_size];
 	
 	if (args->type == OPEN_FILE)
 	{
-		snprintf(command, MAX_INPUT_LENGTH, "zenity --file-selection %s %s", file_filter, start_path);
+		snprintf(command, command_size, "zenity --file-selection %s %s", file_filter, start_path);
 	}
 	else if (args->type == OPEN_DIRECTORY)
 	{
-		snprintf(command, MAX_INPUT_LENGTH, "zenity --file-selection --directory %s %s", file_filter, start_path);
+		snprintf(command, command_size, "zenity --file-selection --directory %s %s", file_filter, start_path);
 	}
 	else if (args->type == SAVE_FILE)
 	{
-		snprintf(command, MAX_INPUT_LENGTH, "zenity --file-selection --save --confirm-overwrite %s %s", file_filter, start_path);
+		snprintf(command, command_size, "zenity --file-selection --save --confirm-overwrite %s %s", file_filter, start_path);
 	}
 	
 	f = popen(command, "r");
@@ -1679,7 +1676,7 @@ inline void platform_open_url(char *url)
 
 inline void platform_run_command(char *command)
 {
-	s32 result = system(command);
+	system(command);
 }
 
 void platform_set_icon(platform_window *window, image *img)
@@ -1726,7 +1723,7 @@ void platform_set_icon(platform_window *window, image *img)
 	Atom property = XInternAtom(window->display, "_NET_WM_ICON", 0);
 	Atom cardinal = XInternAtom(window->display, "CARDINAL", False);
 	
-	int result = XChangeProperty(window->display, window->window, 
+	XChangeProperty(window->display, window->window, 
 								 property, cardinal, 32, PropModeReplace, 
 								 (unsigned char *)data, nelements);
 }

@@ -8,10 +8,14 @@ flags = -m64 -c -Wall -O3
 ifeq ($(OS), Windows_NT)
 	install_dir = C:/mingw/mingw64/x86_64-w64-mingw32/
 	install_deps_command = empty
+	create_examples_command = examples_windows
+	permissions = 
 	libs = -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp
 else
 	install_dir = /usr/
 	install_deps_command = install_deps
+	create_examples_command = examples_linux
+	permissions = sudo
 	libs = -lX11 -lGL -lGLU -lXrandr -lm -lpthread -ldl
 endif
 
@@ -39,16 +43,24 @@ install_deps:
 	sudo apt-get install libxrandr-dev
 
 build:
-	mkdir -p "build/"
-	rm -rf "$(include_dir)"
-	mkdir -p "$(include_dir)"
+	$(permissions) mkdir -p "build/"
+	$(permissions) rm -rf "$(include_dir)"
+	$(permissions) mkdir -p "$(include_dir)"
 
 	ld -r -b binary -o build/data.o src/resources/mono.ttf
 	gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
 	ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
-	cp -a "src/." "$(include_dir)"
-	cp "build/$(output_file).a" "$(lib_dir)"
+	$(permissions) cp -a "src/." "$(include_dir)"
+	$(permissions) cp "build/$(output_file).a" "$(lib_dir)"
 
+## Examples
 examples:
-	gcc -m64 -O3 examples/example_1.c -o build/example1.exe -lprojectbase $(libs) -mwindows
+	make $(create_examples_command)
+
+examples_windows:
+	gcc -m64 -g examples/example_1.c -o build/example1.exe -lprojectbase $(libs)
+
+examples_linux:
+	gcc -m64 -g examples/example_1.c -o build/example1 -lprojectbase $(libs)
+	sudo chmod +x build/example1

@@ -662,7 +662,7 @@ void platform_setup_renderer()
 	}
 }
 
-platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
@@ -673,36 +673,36 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 	u64 startup_stamp = platform_get_time(TIME_FULL, TIME_US);
 #endif
 	
-	platform_window window;
-	window.has_focus = true;
-	window.window_handle = 0;
-	window.hdc = 0;
-	window.width = width;
-	window.height = height;
-	window.min_width = min_w;
-	window.min_height = min_h;
-	window.max_width = max_w;
-	window.max_height = max_h;
-	window.curr_cursor_type = -1;
-	window.next_cursor_type = CURSOR_DEFAULT;
-	window.backbuffer.buffer = 0;
-	window.do_draw = true;
-	window.gl_context = 0;
-	window.icon_loaded = false;
+	platform_window* window = mem_alloc(sizeof(platform_window));
+	window->has_focus = true;
+	window->window_handle = 0;
+	window->hdc = 0;
+	window->width = width;
+	window->height = height;
+	window->min_width = min_w;
+	window->min_height = min_h;
+	window->max_width = max_w;
+	window->max_height = max_h;
+	window->curr_cursor_type = -1;
+	window->next_cursor_type = CURSOR_DEFAULT;
+	window->backbuffer.buffer = 0;
+	window->do_draw = true;
+	window->gl_context = 0;
+	window->icon_loaded = false;
 	
-	current_window_to_handle = &window;
+	current_window_to_handle = window;
 	
-	memset(&window.window_class, 0, sizeof(WNDCLASS));
-	window.window_class.style = CS_OWNDC|CS_VREDRAW|CS_HREDRAW;
-	window.window_class.lpfnWndProc = main_window_callback;
-	window.window_class.hInstance = instance;
-	window.window_class.lpszClassName = name;
-	window.window_class.hIcon = LoadIcon(NULL, IDI_WINLOGO);
-	//window.window_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+	memset(&window->window_class, 0, sizeof(WNDCLASS));
+	window->window_class.style = CS_OWNDC|CS_VREDRAW|CS_HREDRAW;
+	window->window_class.lpfnWndProc = main_window_callback;
+	window->window_class.hInstance = instance;
+	window->window_class.lpszClassName = name;
+	window->window_class.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+	//window->window_class.hCursor = LoadCursor(NULL, IDC_ARROW);
 	
 	debug_print_elapsed(startup_stamp, "setup");
 	
-	if (RegisterClass(&window.window_class))
+	if (RegisterClass(&window->window_class))
 	{
 		debug_print_elapsed(startup_stamp, "register class");
 		
@@ -727,8 +727,8 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 			ex_style |= WS_EX_TOOLWINDOW;
 		}
 		
-		window.window_handle = CreateWindowEx(ex_style,
-											  window.window_class.lpszClassName,
+		window->window_handle = CreateWindowEx(ex_style,
+											  window->window_class.lpszClassName,
 											  name,
 											  style,
 											  CW_USEDEFAULT,
@@ -742,39 +742,41 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		
 		if (flags & FLAGS_BORDERLESS)
 		{
-			ShowScrollBar(window.window_handle, SB_VERT, FALSE);
-			ShowScrollBar(window.window_handle, SB_HORZ, FALSE);
+			ShowScrollBar(window->window_handle, SB_VERT, FALSE);
+			ShowScrollBar(window->window_handle, SB_HORZ, FALSE);
 		}
 		
-		window.flags = flags;
+		window->flags = flags;
 		
 		debug_print_elapsed(startup_stamp, "create window");
 		
-		if (window.window_handle)
+		if (window->window_handle)
 		{
-			window.hdc = GetDC(window.window_handle);
+			window->hdc = GetDC(window->window_handle);
 			
-			platform_setup_backbuffer(&window);
+			platform_setup_backbuffer(window);
 			debug_print_elapsed(startup_stamp, "backbuffer");
 			
 			platform_setup_renderer();
 			debug_print_elapsed(startup_stamp, "renderer");
 			
-			ShowWindow(window.window_handle, cmd_show);
+			ShowWindow(window->window_handle, cmd_show);
 			if (flags & FLAGS_HIDDEN)
-				ShowWindow(window.window_handle, SW_HIDE);
+				ShowWindow(window->window_handle, SW_HIDE);
 			else
-				ShowWindow(window.window_handle, SW_SHOW);
+				ShowWindow(window->window_handle, SW_SHOW);
 			
-			window.is_open = true;
+			window->is_open = true;
 			
 			TRACKMOUSEEVENT track;
 			track.cbSize = sizeof(track);
 			track.dwFlags = TME_LEAVE;
-			track.hwndTrack = window.window_handle;
+			track.hwndTrack = window->window_handle;
 			TrackMouseEvent(&track);
 			
 			debug_print_elapsed(startup_stamp, "windows nonsense");
+
+			_platform_register_window(window);
 		}
 		else
 		{
@@ -788,7 +790,7 @@ platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 m
 		abort();
 	}
 	
-	platform_get_focus(&window);
+	platform_get_focus(window);
 	
 	debug_print_elapsed_undent();
 	
@@ -826,23 +828,23 @@ bool platform_window_is_valid(platform_window *window)
 
 void platform_destroy_window(platform_window *window)
 {
-	if (global_use_gpu)
-	{
-		wglMakeCurrent(NULL, NULL);
-		wglDeleteContext(window->gl_context);
-	}
-	else
-	{
+	if (platform_window_is_valid(window)) {
+		if (global_use_gpu)
+		{
+			wglMakeCurrent(NULL, NULL);
+			wglDeleteContext(window->gl_context);
+		}
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
+		
+		ReleaseDC(window->window_handle, window->hdc);
+		CloseWindow(window->window_handle);
+		DestroyWindow(window->window_handle);
+		UnregisterClassA(window->window_class.lpszClassName, instance);
+		_platform_unregister_window(window);
+		window->hdc = 0;
+		window->gl_context = 0;
+		window->window_handle = 0;
 	}
-	
-	ReleaseDC(window->window_handle, window->hdc);
-	CloseWindow(window->window_handle);
-	DestroyWindow(window->window_handle);
-	UnregisterClassA(window->window_class.lpszClassName, instance);
-	window->hdc = 0;
-	window->gl_context = 0;
-	window->window_handle = 0;
 }
 
 void platform_handle_events(platform_window *window)

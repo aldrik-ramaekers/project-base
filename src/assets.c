@@ -209,7 +209,7 @@ bool assets_queue_worker_load_font(font *font)
 	
 	for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 	{
-		s32 w, h, xoff, yoff;
+		s32 w = 0, h = 0, xoff = 0, yoff = 0;
 		
 		glyph new_glyph;
 		new_glyph.bitmap = stbtt_GetCodepointBitmap(&info, 0, scale, i, &w, &h, &xoff, &yoff);

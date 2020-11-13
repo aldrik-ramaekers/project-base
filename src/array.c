@@ -17,6 +17,11 @@ array array_create(u64 entry_size)
 	return new_array;
 }
 
+bool array_exists(array *array)
+{
+	return array->entry_size;
+}
+
 int array_push(array *array, void *data)
 {
 	ASSERT(array);

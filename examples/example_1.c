@@ -9,17 +9,17 @@ int main(int argc, char **argv)
 
     // localization_load();
 
-    platform_window window = platform_open_window("Example1", 
+    platform_window *window = platform_open_window("Example1", 
                 settings_get_number("WINDOW_WIDTH"), 
                 settings_get_number("WINDOW_HEIGHT"), 0, 0, 800, 600);
 
-    while(platform_keep_running(&window)) {
-        platform_handle_events(&window);
+    while(platform_keep_running(window)) {
+        platform_handle_events(window);
 
 		//platform_set_icon(&window, logo_small_img); // move to platform_open_window, put default icon in resource file
 
-		if (window.do_draw) {
-            ui_begin(1, &window);
+		if (window->do_draw) {
+            ui_begin(1, window);
             {
                 ui_begin_menu_bar();
                 {
@@ -34,13 +34,13 @@ int main(int argc, char **argv)
             }
             ui_end();
 
-		    platform_window_swap_buffers(&window);
+		    platform_window_swap_buffers(window);
         }
     }
 
     settings_write_to_file();
 
-    platform_destroy_window(&window);
+    platform_destroy_window(window);
 
     settings_destroy();
     platform_destroy();

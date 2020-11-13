@@ -1,4 +1,5 @@
 2.0
+   - Create makefile for creating lib and examples
    - make keyboard, mouse and camera global
    - let the library handle asset workerer managemnt
    - fix scissor not being reset at beginning of ui routine

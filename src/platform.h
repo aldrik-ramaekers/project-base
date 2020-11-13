@@ -202,6 +202,8 @@ typedef enum t_window_flags
 } window_flags;
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 
+array window_registry;
+
 keyboard_input _global_keyboard;
 mouse_input _global_mouse;
 camera _global_camera;
@@ -209,7 +211,7 @@ camera _global_camera;
 bool platform_window_is_valid(platform_window *window);
 
 #define platform_open_window(name, width, height, max_w, max_h, min_w, min_h) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0)
-platform_window platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags);
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags);
 void platform_get_focus(platform_window *window);
 void platform_show_window(platform_window *window);
 void platform_hide_window(platform_window *window);
@@ -279,5 +281,8 @@ s8 string_to_s8(char *str);
 
 s8 string_to_f32(char *str);
 s8 string_to_f64(char *str);
+
+void _platform_register_window(platform_window* window);
+void _platform_unregister_window(platform_window* window);
 
 #endif
