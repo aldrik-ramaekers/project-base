@@ -10,8 +10,7 @@ int main(int argc, char **argv)
     // localization_load();
 
     platform_window *window = platform_open_window("Example1", 
-                settings_get_number("WINDOW_WIDTH"), 
-                settings_get_number("WINDOW_HEIGHT"), 0, 0, 800, 600);
+                500, 500, 800, 600, 500, 500);
 
     while(platform_keep_running(window)) {
         platform_handle_events(window);

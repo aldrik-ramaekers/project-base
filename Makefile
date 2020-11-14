@@ -56,6 +56,7 @@ build:
 
 ## Examples
 examples:
+	make build
 	make $(create_examples_command)
 
 examples_windows:

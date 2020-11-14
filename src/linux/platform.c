@@ -738,6 +738,13 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
+	assert(width > 0);
+	assert(height > 0);
+	assert(max_w >= 0);
+	assert(max_h >= 0);
+	assert(min_w > 0);
+	assert(min_h > 0);
+
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
 	bool has_max_size = max_w || max_h;
@@ -853,8 +860,8 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 		hints.flags = PMinSize | USPosition;
 	hints.x = center_x;
 	hints.y = center_y;
-	hints.max_width = width;
-	hints.max_height = height;
+	hints.max_width = max_w;
+	hints.max_height = max_h;
 	hints.min_width = min_w;
 	hints.min_height = min_h;
 	
