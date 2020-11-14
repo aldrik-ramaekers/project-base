@@ -30,17 +30,17 @@ empty:
 	@$(NOECHO) $(NOOP)
 
 install_deps:
-	sudo apt-get install freeglut3-dev
-	sudo apt-get install binutils-gold
-	sudo apt-get install g++
-	sudo apt-get install mesa-common-dev
-	sudo apt-get install build-essential
-	sudo apt-get install libglew1.5-dev
-	sudo apt-get install libglm-dev
-	sudo apt-get install mesa-utils
-	sudo apt-get install libglu1-mesa-dev
-	sudo apt-get install libgl1-mesa-dev
-	sudo apt-get install libxrandr-dev
+	sudo apt-get --yes --force-yes install freeglut3-dev
+	sudo apt-get --yes --force-yes install binutils-gold
+	sudo apt-get --yes --force-yes install g++
+	sudo apt-get --yes --force-yes install mesa-common-dev
+	sudo apt-get --yes --force-yes install build-essential
+	sudo apt-get --yes --force-yes install libglew1.5-dev
+	sudo apt-get --yes --force-yes install libglm-dev
+	sudo apt-get --yes --force-yes install mesa-utils
+	sudo apt-get --yes --force-yes install libglu1-mesa-dev
+	sudo apt-get --yes --force-yes install libgl1-mesa-dev
+	sudo apt-get --yes --force-yes install libxrandr-dev
 
 build:
 	$(permissions) mkdir -p "build/"

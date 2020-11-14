@@ -6,6 +6,7 @@
 
 /*
 
+- make custom popup windows so we can get rid of zenity and windows deps
 - stop linking to libs and use LoadLibrary
 - let the library handle asset destroying
 - make settings pages use settings_config directly
@@ -18,7 +19,7 @@
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
-#define PROJECT_BASE_VERSION "2.0"
+#define PROJECT_BASE_VERSION "2.0.0"
 
 #ifndef TARGET_FRAMERATE
 #define TARGET_FRAMERATE (1000/24.0)
