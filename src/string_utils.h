@@ -75,7 +75,7 @@ char* string_get_json_literal(char **buffer, char *tmp);
 s32 string_get_json_number(char **buffer);
 s32 string_get_json_ulong_number(char **buffer);
 char *string_get_next(char *list, char *buffer, char seperator);
-
+bool string_is_whitespace(char *text);
 utf8_int32_t utf8_str_at(char *str, s32 index);
 void utf8_str_remove_at(char *str, s32 at);
 void utf8_str_remove_range(char *str, s32 from, s32 to);

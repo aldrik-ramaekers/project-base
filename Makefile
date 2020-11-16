@@ -7,16 +7,22 @@ flags = -m64 -c -Wall -O3
 
 ifeq ($(OS), Windows_NT)
 	install_dir = C:/mingw/mingw64/x86_64-w64-mingw32/
-	install_deps_command = empty
-	create_examples_command = examples_windows
 	permissions = 
 	libs = -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp
+
+	# Commands
+	install_deps_command = empty
+	create_examples_command = examples_windows
+	generate_docs_command = docs_windows
 else
 	install_dir = /usr/
-	install_deps_command = install_deps
-	create_examples_command = examples_linux
 	permissions = sudo
 	libs = -lX11 -lGL -lGLU -lXrandr -lm -lpthread -ldl
+
+	# Commands
+	install_deps_command = install_deps
+	create_examples_command = examples_linux
+	generate_docs_command = docs_linux
 endif
 
 include_dir = $(install_dir)include/projectbase
@@ -24,11 +30,13 @@ lib_dir = $(install_dir)lib/$(output_file).a
 
 all:
 	make $(install_deps_command)
-	make build
+	make examples
+	make docs
 
 empty:
 	@$(NOECHO) $(NOOP)
 
+# Install deps (Linux)
 install_deps:
 	sudo apt-get --yes --force-yes install freeglut3-dev
 	sudo apt-get --yes --force-yes install binutils-gold
@@ -42,6 +50,7 @@ install_deps:
 	sudo apt-get --yes --force-yes install libgl1-mesa-dev
 	sudo apt-get --yes --force-yes install libxrandr-dev
 
+# Build (Windows + Linux)
 build:
 	$(permissions) mkdir -p "build/"
 	$(permissions) rm -rf "$(include_dir)"
@@ -54,7 +63,7 @@ build:
 	$(permissions) cp -a "src/." "$(include_dir)"
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir)"
 
-## Examples
+## Examples (Windows + Linux)
 examples:
 	make build
 	make $(create_examples_command)
@@ -65,3 +74,9 @@ examples_windows:
 examples_linux:
 	gcc -m64 -g examples/example_1.c -o build/example1 -lprojectbase $(libs)
 	sudo chmod +x build/example1
+
+# Docs (Windows)
+docs:
+	gcc -m64 -g utils/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
+	./build/gen_docs.exe
+	#./htmldoc -f docs.pdf -t pdf build/docs.html

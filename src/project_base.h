@@ -5,7 +5,16 @@
 */
 
 /*
+:docs:
+This is that entry point of the project_base library. This is the only file you
+will have to include to use this library. All files will be imported by including
+this file.
+*/
 
+/*
+
+- move convert_crlf_to_lf to string utils
+- rename get_filters to something more obvious and move to respective file
 - generate docs
 - prefix private functions with _ like platform_destroy_shared
 - fix indentation of definitions so name is on same column

@@ -45,6 +45,15 @@ bool string_match(char *first, char *second)
 	return false; 
 }
 
+bool string_is_whitespace(char *text) {
+	utf8_int32_t ch;
+	while((text = utf8codepoint(text, &ch)) && ch)
+	{
+		if (ch != ' ') return false;
+	}
+	return true;
+}
+
 bool string_is_asteriks(char *text)
 {
 	utf8_int32_t ch;
