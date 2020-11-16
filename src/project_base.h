@@ -6,6 +6,13 @@
 
 /*
 
+- generate docs
+- prefix private functions with _ like platform_destroy_shared
+- fix indentation of definitions so name is on same column
+- get_active_directory and get_active_directory prefix with platform_
+- move string_to_[type] to string utils
+- return code for platform_delete_file
+- move filter_matches to string utils and rename to string_split
 - make custom popup windows so we can get rid of zenity and windows deps
 - stop linking to libs and use LoadLibrary
 - let the library handle asset destroying

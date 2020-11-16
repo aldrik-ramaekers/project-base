@@ -1,4 +1,5 @@
 2.0.0
+   - Remove unused function is_platform_in_darkmode
    - Fix maximum size not working on linux
    - Create makefile for creating lib and examples
    - make keyboard, mouse and camera global
