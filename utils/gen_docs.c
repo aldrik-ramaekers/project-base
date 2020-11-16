@@ -15,7 +15,9 @@ example:
 
 /*
 :docs:
+<h1>Cool stuff</h1>
 In order to do things we need to store things.
+
 */
 
 // Used for storing things
@@ -43,16 +45,22 @@ typedef struct t_documentation_file {
     array structs;
     array definitions;
     array functions;
+    char *file;
 } documentation_file;
 
 // This program assumes it being started from the root directory of this project.
 
 documentation_file generate_docs_from_file(file_content* content);
+void write_title_page(char* build_folder);
+void write_doc_pages(char* build_folder, array* pages);
 
 int main(int argc, char **argv) {
     char code_folder[MAX_INPUT_LENGTH];
+    char build_folder[MAX_INPUT_LENGTH];
     get_active_directory(code_folder);
+    get_active_directory(build_folder);
     string_appendn(code_folder, "\\src\\", MAX_INPUT_LENGTH);
+    string_appendn(build_folder, "\\build\\", MAX_INPUT_LENGTH);
 
     printf("Generating docs for %s\n", code_folder);
 
@@ -62,7 +70,7 @@ int main(int argc, char **argv) {
     }
 
     char name[10];
-    string_appendn(name, "input.h", 10);
+    string_appendn(name, "*.h", 10);
 	
 	array files = array_create(sizeof(found_file));
 	array filters = get_filters(name);
@@ -72,7 +80,7 @@ int main(int argc, char **argv) {
 
     array documentation_files = array_create(sizeof(documentation_file));
     array_reserve(&documentation_files, 100);
-
+    s32 len = strlen(code_folder);
     for (s32 i = 0; i < files.length; i++)
 	{
 		found_file *file = array_at(&files, i);
@@ -85,12 +93,12 @@ int main(int argc, char **argv) {
 
         file_content content = platform_read_file_content(file->path, "rb");
         documentation_file result = generate_docs_from_file(&content);
-        array_push(&documentation_files, &content);
-
-        for (s32 d = 0; d < result.docs.length; d++) {
-            printf("DOC FOUND: %s\n", *(char**)array_at(&result.docs, d));
-        }
+        result.file = file->path +len;
+        array_push(&documentation_files, &result);
 	}
+
+    write_doc_pages(build_folder, &documentation_files);
+    write_title_page(build_folder);
 
     array_destroy(&filters);
     array_destroy(&files);
@@ -158,12 +166,11 @@ documentation_file generate_docs_from_file(file_content* content) {
 
             array matches = array_create(sizeof(text_match));
             bool cancel = false;
-            bool is_definition = string_contains_ex(line, "#define", &matches, &cancel);
+            bool is_definition = string_contains_ex(line, "#define * ", &matches, &cancel);
             bool is_function = string_contains_ex(line, ");", &matches, &cancel);
             bool is_comment = string_contains_ex(line, "//", &matches, &cancel);
 
             if (is_definition) {
-                printf("DEFI: %s\n", line);
                 array_push(&new_f.definitions, &line);
             }
             else if (is_function) {
@@ -171,7 +178,6 @@ documentation_file generate_docs_from_file(file_content* content) {
                 def.comments = array_copy(&comments);
                 comments.length = 0;
                 def.content = line;
-                printf("FUNC: %s\n", def.content);
                 array_push(&new_f.functions, &def);
             }
             else if (is_comment) {
@@ -256,4 +262,65 @@ documentation_file generate_docs_from_file(file_content* content) {
     }
 
     return new_f;
+}
+
+void write_doc_pages(char* build_folder, array* pages) {
+    char str[MAX_INPUT_LENGTH];
+    string_copyn(str, build_folder, MAX_INPUT_LENGTH);
+    string_appendn(str, "docs.html", MAX_INPUT_LENGTH);
+
+    s32 size = megabytes(10);
+    char* tmp = mem_alloc(size);
+    tmp[0] = 0;
+
+    string_appendn(tmp, "<html>", size);
+    string_appendn(tmp, "<body>", size);
+
+    for (s32 i = 0; i < pages->length; i++) {
+        documentation_file *f = array_at(pages, i);
+
+        bool is_valid = false;
+        for (s32 d = 0; d < f->docs.length; d++) {
+            char *doc_str = *(char**)array_at(&f->docs, d);
+            string_appendn(tmp, doc_str, size);
+
+            if (string_contains(doc_str, "*")) {
+                is_valid = true;
+            }
+        }
+
+        if (!is_valid) continue;
+        
+        // Dont write a page for anthing that doesnt have a description.
+        // This description needs to have a <h1> defined.
+        if (f->docs.length) {
+            
+        
+            string_appendn(tmp, "<h2>", size);
+            string_appendn(tmp, "Definitions", size);
+            string_appendn(tmp, "</h2>", size);
+            
+            for (s32 d = 0; d < f->definitions.length; d++) {
+                string_appendn(tmp, "<KBD>", size);
+                string_appendn(tmp, *(char**)array_at(&f->definitions, d), size);
+                string_appendn(tmp, "</KBD>", size);
+                string_appendn(tmp, "<br>", size);
+            }
+        }
+    }
+
+    string_appendn(tmp, "</body>", size);
+    string_appendn(tmp, "</html>", size);
+
+    platform_write_file_content(str, "w+", tmp, strlen(tmp));
+}
+
+void write_title_page(char* build_folder) {
+    char tmp[MAX_INPUT_LENGTH];
+    string_copyn(tmp, build_folder, MAX_INPUT_LENGTH);
+    string_appendn(tmp, "docs_title.html", MAX_INPUT_LENGTH);
+
+    char* str = "<h1>Project-base documentation</h1><hr><p>Written by Aldrik Ramaekers<br>This document is distributed under the BSD 2-Clause 'Simplified' License.</p><cite>This document pertains to version 2.0.0 of the project-base library.</cite><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><BLOCKQUOTE>© Aldrik Ramaekers, 2020<br>https://aldrik.org<br>aldrik.ramaekers@protonmail.com</BLOCKQUOTE>";
+
+    platform_write_file_content(tmp, "w+", str, strlen(str));
 }
