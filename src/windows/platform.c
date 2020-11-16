@@ -121,25 +121,6 @@ inline void platform_destroy()
 #endif
 }
 
-bool is_platform_in_darkmode()
-{
-	char *key = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\\";
-	
-	HKEY result;
-	LSTATUS o = RegOpenKeyExA(HKEY_CURRENT_USER, key, 0, KEY_READ, &result);
-	
-	if (o == 0)
-	{
-		BYTE data;
-		DWORD len = 4;
-		RegQueryValueExA(result, "AppsUseLightTheme", NULL, NULL, &data, &len);
-		
-		if (data == 1) return true;
-	}
-	
-	return false;
-}
-
 inline void platform_set_cursor(platform_window *window, cursor_type type)
 {
 	if (window->next_cursor_type != type)
@@ -664,6 +645,18 @@ void platform_setup_renderer()
 
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
+	if (width < min_w) width = min_w;
+	if (height < min_h) width = min_h;
+	if (width > max_w) width = max_w;
+	if (height > max_h) width = max_h;
+
+	assert(width > 0);
+	assert(height > 0);
+	assert(max_w >= 0);
+	assert(max_h >= 0);
+	assert(min_w > 0);
+	assert(min_h > 0);
+	
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
 	debug_print_elapsed_title("window creation");

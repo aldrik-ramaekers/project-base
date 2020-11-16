@@ -163,11 +163,6 @@ inline void platform_set_cursor(platform_window *window, cursor_type type)
 	}
 }
 
-bool is_platform_in_darkmode()
-{
-	return false;
-}
-
 bool get_active_directory(char *buffer)
 {
 	char cwd[PATH_MAX];
@@ -738,6 +733,11 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
+	if (width < min_w) width = min_w;
+	if (height < min_h) width = min_h;
+	if (width > max_w) width = max_w;
+	if (height > max_h) width = max_h;
+
 	assert(width > 0);
 	assert(height > 0);
 	assert(max_w >= 0);
