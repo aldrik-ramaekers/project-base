@@ -77,6 +77,7 @@ examples_linux:
 
 # Docs (Windows)
 docs:
+	$(permissions) mkdir -p "docs/"
 	gcc -m64 -g utils/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
 	./build/gen_docs.exe
-	#./htmldoc -f docs.pdf -t pdf build/docs.html
+	#htmldoc -f docs/Documentation.pdf -t pdf build/docs.html --embedfonts --encryption --headfootsize 8 --charset utf-8
