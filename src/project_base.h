@@ -6,7 +6,6 @@
 
 /*
 :docs:
-<h1>Project-base</h1>
 This is that entry point of the project_base library. This is the only file you
 will have to include to use this library. All files will be imported by including
 this file.
@@ -17,6 +16,15 @@ this file.
 
 /*
 
+- remove all unused functions
+- move is_shortcut_down to input.h
+- remove unused code from memory.h, and move usefull code to memory.c
+- say what this documentation is about on first page
+- add :private: tag and hide everything that comes after it from documentation
+- make project_base the first chapter in documentation
+- add examples to documentation
+- add comments to each subject
+- make table of comments for each subject
 - move convert_crlf_to_lf to string utils
 - rename get_filters to something more obvious and move to respective file
 - generate docs
@@ -39,6 +47,7 @@ this file.
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
+#define PROJECT_BASE_NAME "Project-base"
 #define PROJECT_BASE_VERSION "2.0.0"
 
 #ifndef TARGET_FRAMERATE

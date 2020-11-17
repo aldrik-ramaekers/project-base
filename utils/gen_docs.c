@@ -49,11 +49,17 @@ typedef struct t_documentation_file {
     char *name;
 } documentation_file;
 
+typedef struct t_table_entry {
+    char *id;
+    array comments;
+} table_entry;
+
 // This program assumes it being started from the root directory of this project.
 
 documentation_file generate_docs_from_file(file_content* content);
 void write_title_page(char* build_folder);
 void write_doc_pages(char* build_folder, array* pages);
+void get_item_id(s32 h, char*s, s32 i, char *id_buf, char* link_buf);
 
 int main(int argc, char **argv) {
     char code_folder[MAX_INPUT_LENGTH];
@@ -169,7 +175,7 @@ documentation_file generate_docs_from_file(file_content* content) {
             array matches = array_create(sizeof(text_match));
             bool cancel = false;
             bool is_definition = string_contains_ex(line, "#define * ", &matches, &cancel);
-            bool is_function = string_contains_ex(line, ");", &matches, &cancel);
+            bool is_function = string_contains_ex(line, "* *(*);", &matches, &cancel);
             bool is_comment = string_contains_ex(line, "//", &matches, &cancel);
 
             if (is_definition) {
@@ -289,6 +295,12 @@ void write_doc_pages(char* build_folder, array* pages) {
             }
         }
 
+        if (!f->definitions.length && !f->structs.length && !f->functions.length) {
+            continue;
+        }
+        
+        string_appendn(tmp, "<TITLE>Project-base Technical Reference Manual</TITLE>", size);      
+
         if (!is_valid) {
             string_appendn(tmp, "<h1>", size);
             string_appendn(tmp, f->name, size);
@@ -314,34 +326,73 @@ void write_doc_pages(char* build_folder, array* pages) {
         string_appendn(tmp, "Definitions", size);
         string_appendn(tmp, "</h2>", size);
         
-        string_appendn(tmp, "<h3>", size);
-        string_appendn(tmp, "Constants", size);
-        string_appendn(tmp, "</h3>", size);
-
-        string_appendn(tmp, "<pre>", size);
-        for (s32 d = 0; d < f->definitions.length; d++) {
-            string_appendn(tmp, *(char**)array_at(&f->definitions, d), size);
-            string_appendn(tmp, "<br>", size);
-        }
-        string_appendn(tmp, "</pre>", size);
-
-        string_appendn(tmp, "<h3>", size);
-        string_appendn(tmp, "Structures", size);
-        string_appendn(tmp, "</h3>", size);
-            
-        for (s32 d = 0; d < f->structs.length; d++) {
-            struct_def *def = array_at(&f->structs, d);
-            string_appendn(tmp, "<p>", size);
-            for (s32 c = 0; c < def->comments.length; c++) {
-                string_appendn(tmp, *(char**)array_at(&def->comments, c), size);
-                string_appendn(tmp, "<br>", size);
-            }
-            string_appendn(tmp, "</p>", size);
+        if (f->definitions.length) {
+            string_appendn(tmp, "<h3>", size);
+            string_appendn(tmp, "Constants", size);
+            string_appendn(tmp, "</h3>", size);
 
             string_appendn(tmp, "<pre>", size);
-            string_appendn(tmp, def->content, size);
+            for (s32 d = 0; d < f->definitions.length; d++) {
+                char id_buf[100];
+                char link_buf[100];
+                get_item_id(i+1, "d", d+1, id_buf, link_buf);
+                string_appendn(tmp, link_buf, size);
+
+                string_appendn(tmp, *(char**)array_at(&f->definitions, d), size);
+                string_appendn(tmp, "<br>", size);
+            }
             string_appendn(tmp, "</pre>", size);
-            string_appendn(tmp, "<br>", size);
+        }
+
+        if (f->structs.length) {
+            string_appendn(tmp, "<h3>", size);
+            string_appendn(tmp, "Structures", size);
+            string_appendn(tmp, "</h3>", size);
+            
+            string_appendn(tmp, "<pre>", size);
+            for (s32 d = 0; d < f->structs.length; d++) {
+                struct_def *def = array_at(&f->structs, d);
+
+                char id_buf[100];
+                char link_buf[100];
+                get_item_id(i+1, "s", d+1, id_buf, link_buf);
+                string_appendn(tmp, link_buf, size);
+                string_appendn(tmp, "<br>", size);
+
+                string_appendn(tmp, def->content, size);
+                string_appendn(tmp, "<br>", size);
+                string_appendn(tmp, "<br>", size);
+            }
+            string_appendn(tmp, "</pre>", size);
+        }
+
+        if (f->functions.length) {
+            string_appendn(tmp, "<h3>", size);
+            string_appendn(tmp, "Methods", size);
+            string_appendn(tmp, "</h3>", size);
+                
+            string_appendn(tmp, "<pre>", size);
+            for (s32 d = 0; d < f->functions.length; d++) {
+                function *def = array_at(&f->functions, d);
+
+                #if 0
+                //string_appendn(tmp, "<p>", size);
+                for (s32 c = 0; c < def->comments.length; c++) {
+                    string_appendn(tmp, *(char**)array_at(&def->comments, c), size);
+                    string_appendn(tmp, "<br>", size);
+                }
+                //string_appendn(tmp, "</p>", size);
+                #endif
+
+                char id_buf[100];
+                char link_buf[100];
+                get_item_id(i+1, "f", d+1, id_buf, link_buf);
+                string_appendn(tmp, link_buf, size);
+
+                string_appendn(tmp, def->content, size);
+                string_appendn(tmp, "<br>", size);
+            }
+            string_appendn(tmp, "</pre>", size);
         }
     }
 
@@ -351,12 +402,34 @@ void write_doc_pages(char* build_folder, array* pages) {
     platform_write_file_content(str, "w+", tmp, strlen(tmp));
 }
 
+void get_item_id(s32 h, char*s, s32 i, char *id_buf, char* link_buf) {
+    s32 max_length = 7;
+    sprintf(id_buf, "%d%s%d", h, s, i);
+    s32 len = strlen(id_buf);
+    sprintf(link_buf, "<a href=\"%s\">", id_buf);
+    string_appendn(link_buf, id_buf, 100);
+    string_appendn(link_buf, "</a>", 100);
+    for (s32 i = 0; i < max_length - len; i++) {
+       string_appendn(link_buf, "&nbsp;", 100);
+    }
+}
+
 void write_title_page(char* build_folder) {
     char tmp[MAX_INPUT_LENGTH];
     string_copyn(tmp, build_folder, MAX_INPUT_LENGTH);
     string_appendn(tmp, "docs_title.html", MAX_INPUT_LENGTH);
 
-    char* str = "<h1>Project-base documentation</h1><hr><p>Written by Aldrik Ramaekers<br>This document is distributed under the BSD 2-Clause 'Simplified' License.</p><cite>This document pertains to version 2.0.0 of the project-base library.</cite><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><BLOCKQUOTE>© Aldrik Ramaekers, 2020<br>https://aldrik.org<br>aldrik.ramaekers@protonmail.com</BLOCKQUOTE>";
+    char* str = 
+    "<h1>Project-base Technical Reference Manual</h1><hr>"
+    "<p>Written by Aldrik Ramaekers<br>This document is distributed under the BSD 2-Clause 'Simplified' License.</p>"
+    "<cite>This document pertains to version 2.0.0 of the project-base library.</cite>"
+    "<br><br>"
+    "<h1>Introduction</h1>"
+    "<p>This document gives a technical description for the Project-base library."
+    "The Project-base library is a general purpose library intended for creating graphical programs for the Windows and Linux operating system."
+    "This document describes all the components of the Project-base library and gives examples for using these components.</p>"
+    "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
+    "<BLOCKQUOTE>© Aldrik Ramaekers, 2020<br>https://aldrik.org<br>aldrik.ramaekers@protonmail.com</BLOCKQUOTE>";
 
     platform_write_file_content(tmp, "w+", str, strlen(str));
 }

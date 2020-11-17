@@ -7,6 +7,18 @@
 #ifndef INCLUDE_MEMORY
 #define INCLUDE_MEMORY
 
+/*
+:docs:
+The Project-base library does not help the user manange memory in any way. 
+It does however provide the functions <code>mem_alloc(s32 size)</code>,
+<code>mem_realloc(void* ptr, s32 size)</code> and <code>mem_free(void* ptr)</code>.
+These functions work identical to the standard library memory management functions,
+but provides the ability to track allocated memory. 
+By specifying the <code>MODE_DEBUGMEM</code> flag all allocations will be tracked
+untill they are free'd using <code>mem_free()</code>. All allocations that are
+being tracked can be printed to stdout using <code>memory_print_leaks()</code>.
+*/
+
 #ifdef MODE_DEBUGMEM
 #include <stdio.h>
 #include <dbghelp.h>
