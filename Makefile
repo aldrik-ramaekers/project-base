@@ -80,4 +80,4 @@ docs:
 	$(permissions) mkdir -p "docs/"
 	gcc -m64 -g utils/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
 	./build/gen_docs.exe
-	htmldoc -f docs/Documentation.pdf -t pdf build/docs.html --embedfonts --encryption --headfootsize 8 --charset utf-8 --titlefile build/docs_title.html --toctitle Content --footer h.1 --numbered --left 0.4in --right 0.4in --textcolor 222222
+	htmldoc -f docs/Documentation.pdf -t pdf build/docs.html --embedfonts --encryption --headfootsize 8 --charset utf-8 --titlefile build/docs_title.html --toctitle Content --footer h.1 --numbered --left 0.4in --right 0.4in --textcolor 222222 --fontsize 10

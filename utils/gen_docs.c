@@ -46,6 +46,7 @@ typedef struct t_documentation_file {
     array definitions;
     array functions;
     char *file;
+    char *name;
 } documentation_file;
 
 // This program assumes it being started from the root directory of this project.
@@ -86,14 +87,15 @@ int main(int argc, char **argv) {
 		found_file *file = array_at(&files, i);
 
         printf("Generating docs for file %s\n", file->path);
-        if (!platform_file_exists(file->path)) {
-            printf("File doesnt exist.");
+        if (!platform_file_exists(file->path) || string_contains(file->path, "external")) {
             continue;
         }
 
         file_content content = platform_read_file_content(file->path, "rb");
         documentation_file result = generate_docs_from_file(&content);
         result.file = file->path +len;
+        result.name = mem_alloc(strlen(result.file)+1);
+        string_copyn(result.name, result.file, strlen(result.file)-2);
         array_push(&documentation_files, &result);
 	}
 
@@ -282,30 +284,64 @@ void write_doc_pages(char* build_folder, array* pages) {
         bool is_valid = false;
         for (s32 d = 0; d < f->docs.length; d++) {
             char *doc_str = *(char**)array_at(&f->docs, d);
-            string_appendn(tmp, doc_str, size);
-
-            if (string_contains(doc_str, "*")) {
+            if (string_contains(doc_str, "<h1>")) {
                 is_valid = true;
             }
         }
 
-        if (!is_valid) continue;
-        
+        if (!is_valid) {
+            string_appendn(tmp, "<h1>", size);
+            string_appendn(tmp, f->name, size);
+            string_appendn(tmp, "</h1>", size);
+            string_appendn(tmp, "<cite>", size);
+            string_appendn(tmp, f->file, size);
+            string_appendn(tmp, "</cite>", size);
+            string_appendn(tmp, "<hr>", size);
+            is_valid = true;
+        }
+
+        for (s32 d = 0; d < f->docs.length; d++) {
+            char *doc_str = *(char**)array_at(&f->docs, d);
+            string_appendn(tmp, doc_str, size);
+        }
+
         // Dont write a page for anthing that doesnt have a description.
         // This description needs to have a <h1> defined.
-        if (f->docs.length) {
-            
+        if (!is_valid) continue;
         
-            string_appendn(tmp, "<h2>", size);
-            string_appendn(tmp, "Definitions", size);
-            string_appendn(tmp, "</h2>", size);
+        // Definitions
+        string_appendn(tmp, "<h2>", size);
+        string_appendn(tmp, "Definitions", size);
+        string_appendn(tmp, "</h2>", size);
+        
+        string_appendn(tmp, "<h3>", size);
+        string_appendn(tmp, "Constants", size);
+        string_appendn(tmp, "</h3>", size);
+
+        string_appendn(tmp, "<pre>", size);
+        for (s32 d = 0; d < f->definitions.length; d++) {
+            string_appendn(tmp, *(char**)array_at(&f->definitions, d), size);
+            string_appendn(tmp, "<br>", size);
+        }
+        string_appendn(tmp, "</pre>", size);
+
+        string_appendn(tmp, "<h3>", size);
+        string_appendn(tmp, "Structures", size);
+        string_appendn(tmp, "</h3>", size);
             
-            for (s32 d = 0; d < f->definitions.length; d++) {
-                string_appendn(tmp, "<KBD>", size);
-                string_appendn(tmp, *(char**)array_at(&f->definitions, d), size);
-                string_appendn(tmp, "</KBD>", size);
+        for (s32 d = 0; d < f->structs.length; d++) {
+            struct_def *def = array_at(&f->structs, d);
+            string_appendn(tmp, "<p>", size);
+            for (s32 c = 0; c < def->comments.length; c++) {
+                string_appendn(tmp, *(char**)array_at(&def->comments, c), size);
                 string_appendn(tmp, "<br>", size);
             }
+            string_appendn(tmp, "</p>", size);
+
+            string_appendn(tmp, "<pre>", size);
+            string_appendn(tmp, def->content, size);
+            string_appendn(tmp, "</pre>", size);
+            string_appendn(tmp, "<br>", size);
         }
     }
 
