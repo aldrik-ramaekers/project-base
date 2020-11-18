@@ -214,6 +214,7 @@ bool keyboard_is_key_down(keyboard_input *keyboard, s16 key);
 bool keyboard_is_key_pressed(keyboard_input *keyboard, s16 key);
 void keyboard_set_input_text(keyboard_input *keyboard, char *text);
 void keyboard_set_input_mode(keyboard_input *keyboard, keyboard_input_mode mode);
+bool keyboard_is_shortcut_down(s32 shortcut_keys[2]);
 
 typedef struct t_platform_window platform_window;
 void keyboard_handle_input_string(platform_window *window, keyboard_input *keyboard, char *text);

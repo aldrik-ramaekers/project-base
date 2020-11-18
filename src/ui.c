@@ -1282,12 +1282,6 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	return result;
 }
 
-inline bool is_shortcut_down(s32 shortcut_keys[2])
-{
-	return keyboard_is_key_down(global_ui_context.keyboard, shortcut_keys[0]) &&
-		keyboard_is_key_pressed(global_ui_context.keyboard, shortcut_keys[1]);
-}
-
 void ui_begin_menu_submenu(submenu_state *state, char *title)
 {
 	bool result = ui_push_menu_item(title, "");

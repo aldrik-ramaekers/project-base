@@ -289,3 +289,9 @@ void keyboard_handle_input_string(platform_window *window, keyboard_input *keybo
 		keyboard->input_text_len = utf8len(keyboard->input_text);
 	}
 }
+
+inline bool keyboard_is_shortcut_down(s32 shortcut_keys[2])
+{
+	return keyboard_is_key_down(global_ui_context.keyboard, shortcut_keys[0]) &&
+		keyboard_is_key_pressed(global_ui_context.keyboard, shortcut_keys[1]);
+}

@@ -14,10 +14,10 @@ this file.
 
 /*
 
+- replace all int with s32
 - move platform dependent includes in project_base.h to respective files
 - make a pdf writer
 - remove all unused functions
-- move is_shortcut_down to input.h
 - remove unused code from memory.h, and move usefull code to memory.c
 - add :private: tag and hide everything that comes after it from documentation
 - make project_base the first chapter in documentation

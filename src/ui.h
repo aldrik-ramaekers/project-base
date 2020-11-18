@@ -212,7 +212,6 @@ submenu_state ui_create_submenu();
 void ui_destroy_textbox(textbox_state *state);
 
 // widgets
-bool is_shortcut_down(s32 shortcut_keys[2]);
 void ui_begin_menu_bar();
 bool ui_push_menu(char *title);
 bool ui_push_menu_item(char *title, char *shortcut);
