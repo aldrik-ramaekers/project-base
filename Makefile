@@ -13,6 +13,7 @@ ifeq ($(OS), Windows_NT)
 	# Commands
 	install_deps_command = empty
 	create_examples_command = examples_windows
+	create_tests_command = tests_windows
 	generate_docs_command = docs_windows
 else
 	install_dir = /usr/
@@ -22,6 +23,7 @@ else
 	# Commands
 	install_deps_command = install_deps
 	create_examples_command = examples_linux
+	create_tests_command = tests_linux
 	generate_docs_command = docs_linux
 endif
 
@@ -63,17 +65,29 @@ build:
 	$(permissions) cp -a "src/." "$(include_dir)"
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir)"
 
+## Tests (Windows + Linux)
+tests:
+	make $(create_tests_command)
+
+tests_windows:
+	gcc -m64 -g tests/main.c -o build/tests.exe -lprojectbase $(libs)
+	./build/tests
+
+tests_linux:
+	gcc -m64 -g tests/main.c -o build/tests -lprojectbase $(libs)
+	sudo chmod +x build/tests
+	./build/tests
+
 ## Examples (Windows + Linux)
 examples:
-	make build
 	make $(create_examples_command)
 
 examples_windows:
-	gcc -m64 -g examples/example_1.c -o build/example1.exe -lprojectbase $(libs)
+	gcc -m64 -g examples/example_window.c -o build/example_window.exe -lprojectbase $(libs)
 
 examples_linux:
-	gcc -m64 -g examples/example_1.c -o build/example1 -lprojectbase $(libs)
-	sudo chmod +x build/example1
+	gcc -m64 -g examples/example_window.c -o build/example_window -lprojectbase $(libs)
+	sudo chmod +x build/example_window
 
 # Docs (Windows)
 docs:
