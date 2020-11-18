@@ -3,28 +3,26 @@ name: Tests
 on: [push]
 
 jobs:
-  tests_linux:
+  Linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      working-directory: ${{runner.workspace}}
       shell: bash
       run: make
+
     - name: Test
-      working-directory: ${{runner.workspace}}
       shell: bash
       run: make tests
       
-  tests_windows:
+  Windows:
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      working-directory: ${{runner.workspace}}
-      shell: cmd
+      shell: pwsh
       run: make
+
     - name: Test
-      working-directory: ${{runner.workspace}}
-      shell: cmd
+      shell: pwsh
       run: make tests

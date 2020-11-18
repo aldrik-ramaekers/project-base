@@ -32,8 +32,8 @@ lib_dir = $(install_dir)lib/$(output_file).a
 
 all:
 	make $(install_deps_command)
+	make build
 	make examples
-	make docs
 
 empty:
 	@$(NOECHO) $(NOOP)
@@ -58,12 +58,17 @@ build:
 	$(permissions) rm -rf "$(include_dir)"
 	$(permissions) mkdir -p "$(include_dir)"
 
-	ld -r -b binary -o build/data.o src/resources/mono.ttf
-	gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
-	ar rcs build/$(output_file).a build/$(output_file).o build/data.o
+	$(permissions) ld -r -b binary -o build/data.o src/resources/mono.ttf
+	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
+	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
-	$(permissions) cp -a "src/." "$(include_dir)"
-	$(permissions) cp "build/$(output_file).a" "$(lib_dir)"
+	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file).a" "$(lib_dir)" 2>/dev/null || :
+
+	# github action shite
+	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
+	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
 
 ## Tests (Windows + Linux)
 tests:
@@ -74,9 +79,9 @@ tests_windows:
 	./build/tests
 
 tests_linux:
-	gcc -m64 -g tests/main.c -o build/tests -lprojectbase $(libs)
-	sudo chmod +x build/tests
-	./build/tests
+	$(permissions) gcc -m64 -g tests/main.c -o build/tests -lprojectbase $(libs)
+	$(permissions) sudo chmod +x build/tests
+	$(permissions) ./build/tests
 
 ## Examples (Windows + Linux)
 examples:
@@ -86,8 +91,8 @@ examples_windows:
 	gcc -m64 -g examples/example_window.c -o build/example_window.exe -lprojectbase $(libs)
 
 examples_linux:
-	gcc -m64 -g examples/example_window.c -o build/example_window -lprojectbase $(libs)
-	sudo chmod +x build/example_window
+	$(permissions) gcc -m64 -g examples/example_window.c -o build/example_window -lprojectbase $(libs)
+	$(permissions) chmod +x build/example_window
 
 # Docs (Windows)
 docs:
