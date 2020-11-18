@@ -988,7 +988,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 
 inline bool platform_window_is_valid(platform_window *window)
 {
-	return window->window && window->display;
+	return window && window->window && window->display;
 }
 
 void platform_destroy_window(platform_window *window)

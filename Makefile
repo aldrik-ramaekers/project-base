@@ -12,6 +12,7 @@ ifeq ($(OS), Windows_NT)
 
 	# Commands
 	install_deps_command = empty
+	install_lib_command = install_windows
 	create_examples_command = examples_windows
 	create_tests_command = tests_windows
 	generate_docs_command = docs_windows
@@ -22,6 +23,7 @@ else
 
 	# Commands
 	install_deps_command = install_deps
+	install_lib_command = install_linux
 	create_examples_command = examples_linux
 	create_tests_command = tests_linux
 	generate_docs_command = docs_linux
@@ -62,6 +64,9 @@ build:
 	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
 	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
+	make $(install_lib_command)
+
+install_windows:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir)" 2>/dev/null || :
 
@@ -69,6 +74,10 @@ build:
 	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
+
+install_linux:
+	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file).a" "$(lib_dir)" 2>/dev/null || :
 
 ## Tests (Windows + Linux)
 tests:

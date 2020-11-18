@@ -14,6 +14,7 @@ this file.
 
 /*
 
+- linux test crashes on action when opening window.
 - write tests (XD!)
 - return error when open_window fails
 - make sure a valid render config is found on linux

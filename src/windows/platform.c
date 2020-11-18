@@ -816,7 +816,7 @@ void platform_window_set_position(platform_window *window, u16 x, u16 y)
 
 bool platform_window_is_valid(platform_window *window)
 {
-	return window->hdc && window->window_handle;
+	return window && window->hdc && window->window_handle;
 }
 
 void platform_destroy_window(platform_window *window)

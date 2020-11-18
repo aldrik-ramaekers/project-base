@@ -9,10 +9,6 @@
 
 #define ASSERT(e_) {if(!(e_)){*(int*)0=0;}}
 
-// Comment
-
-// Comment 1
-// Comment 2
 typedef struct t_array
 {
 	u32 length;

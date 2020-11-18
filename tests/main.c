@@ -8,6 +8,7 @@
 #include "string_utils.c"
 #include "threads.c"
 #include "window.c"
+#include "array.c"
 
 bool failure = false;
 void print_h1(char *str) {
@@ -35,6 +36,12 @@ int main(int argc, char** argv) {
 
     print_h1("Platform");
     print_result("Open window", open_window(argc, argv));
+    
+    print_h1("Array");
+    print_result("Write", array_write());
+    print_result("Read", array_read());
+    print_result("Delete", array_delete());
+    print_result("Swap", array_swap_());
 
     if (failure) exit(EXIT_FAILURE);
     return 0;

@@ -177,6 +177,7 @@ void array_destroy(array *array)
 	ASSERT(array);
 	mem_free(array->data);
 	mutex_destroy(&array->mutex);
+	array->entry_size = 0;
 }
 
 void array_swap(array *array, u32 swap1, u32 swap2)
