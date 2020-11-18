@@ -107,7 +107,7 @@ static void keyboard_handle_input_copy_and_paste(platform_window *window, keyboa
 		char buf[MAX_INPUT_LENGTH];
 		bool result = platform_get_clipboard(window, buf);
 		
-		if (keyboard->input_mode == INPUT_NUMERIC && !is_string_numeric(buf))
+		if (keyboard->input_mode == INPUT_NUMERIC && !string_is_numeric(buf))
 		{
 			return;
 		}

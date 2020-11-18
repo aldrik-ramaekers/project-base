@@ -85,6 +85,19 @@ void utf8_str_replace_at(char *str, s32 at, utf8_int32_t newval);
 char* utf8_str_upto(char *str, s32 index);
 char *utf8_str_copy_upto(char *str, s32 roof, char *buffer);
 char *utf8_str_copy_range(char *str, s32 floor, s32 roof, char *buffer);
-bool is_string_numeric(char *str);
+bool string_is_numeric(char *str);
+void string_convert_crlf_to_lf(char *buffer);
+u64 string_to_u64(char *str);
+u32 string_to_u32(char *str);
+u16 string_to_u16(char *str);
+u8 string_to_u8(char *str);
+
+s64 string_to_s64(char *str);
+s32 string_to_s32(char *str);
+s16 string_to_s16(char *str);
+s8 string_to_s8(char *str);
+
+s8 string_to_f32(char *str);
+s8 string_to_f64(char *str);
 
 #endif

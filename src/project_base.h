@@ -14,6 +14,8 @@ this file.
 
 /*
 
+- return error when open_window fails
+- make sure a valid render config is found on linux
 - replace all int with s32
 - move platform dependent includes in project_base.h to respective files
 - make a pdf writer
@@ -23,14 +25,9 @@ this file.
 - make project_base the first chapter in documentation
 - add examples to documentation
 - add comments to each subject
-- make table of comments for each subject
-- move convert_crlf_to_lf to string utils
 - rename get_filters to something more obvious and move to respective file
-- generate docs
 - prefix private functions with _ like platform_destroy_shared
-- fix indentation of definitions so name is on same column
 - get_active_directory and get_active_directory prefix with platform_
-- move string_to_[type] to string utils
 - return code for platform_delete_file
 - move filter_matches to string utils and rename to string_split
 - make custom popup windows so we can get rid of zenity and windows deps
@@ -43,8 +40,6 @@ this file.
 
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
-
-#include "config.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 

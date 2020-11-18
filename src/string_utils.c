@@ -573,7 +573,7 @@ utf8_int32_t utf8_str_at(char *str, s32 index)
 	return 0;
 }
 
-bool is_string_numeric(char *str)
+bool string_is_numeric(char *str)
 {
 	utf8_int32_t ch;
 	while((str = utf8codepoint(str, &ch)) && ch)
@@ -585,4 +585,74 @@ bool is_string_numeric(char *str)
 	}
 	
 	return true;
+}
+
+void string_convert_crlf_to_lf(char *buffer)
+{
+	char *buffer_original = buffer;
+	
+	int write_offset = 0;
+	int read_offset = 0;
+	
+	while(buffer[read_offset])
+	{
+		if (buffer[read_offset] != 0x0D)
+		{
+			buffer_original[write_offset] = buffer[read_offset];
+			
+			++write_offset;
+		}
+		
+		++read_offset;
+	}
+}
+
+inline u64 string_to_u64(char *str)
+{
+	return (u64)strtoull(str, 0, 10);
+}
+
+inline u32 string_to_u32(char *str)
+{
+	return (u32)strtoul(str, 0, 10);
+}
+
+inline u16 string_to_u16(char *str)
+{
+	return (u16)strtoul(str, 0, 10);
+}
+
+inline u8 string_to_u8(char *str)
+{
+	return (u8)strtoul(str, 0, 10);
+}
+
+inline s64 string_to_s64(char *str)
+{
+	return (s64)strtoll(str, 0, 10);
+}
+
+inline s32 string_to_s32(char *str)
+{
+	return (u32)strtol(str, 0, 10);
+}
+
+inline s16 string_to_s16(char *str)
+{
+	return (s16)strtol(str, 0, 10);
+}
+
+inline s8 string_to_s8(char *str)
+{
+	return (s8)strtol(str, 0, 10);
+}
+
+inline s8 string_to_f32(char *str)
+{
+	return (f32)atof(str);
+}
+
+inline s8 string_to_f64(char *str)
+{
+	return (f64)strtod(str, NULL);
 }

@@ -1448,56 +1448,6 @@ s32 platform_get_cpu_count()
 	return info.dwNumberOfProcessors;
 }
 
-u64 string_to_u64(char *str)
-{
-	return (u64)strtoull(str, 0, 10);
-}
-
-u32 string_to_u32(char *str)
-{
-	return (u32)strtoul(str, 0, 10);
-}
-
-u16 string_to_u16(char *str)
-{
-	return (u16)strtoul(str, 0, 10);
-}
-
-u8 string_to_u8(char *str)
-{
-	return (u8)strtoul(str, 0, 10);
-}
-
-s64 string_to_s64(char *str)
-{
-	return (s64)strtoull(str, 0, 10);
-}
-
-s32 string_to_s32(char *str)
-{
-	return (s32)strtoul(str, 0, 10);
-}
-
-s16 string_to_s16(char *str)
-{
-	return (s16)strtoul(str, 0, 10);
-}
-
-s8 string_to_s8(char *str)
-{
-	return (s8)strtoul(str, 0, 10);
-}
-
-s8 string_to_f32(char *str)
-{
-	return (f32)atof(str);
-}
-
-s8 string_to_f64(char *str)
-{
-	return (f64)strtod(str, NULL);
-}
-
 #if 0
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {

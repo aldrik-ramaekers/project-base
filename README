@@ -1,4 +1,5 @@
 2.0.0
+   - rename is_shortcut_down to keyboard_is_shortcut_down
    - Remove unused function is_platform_in_darkmode
    - Fix maximum size not working on linux
    - Create makefile for creating lib and examples

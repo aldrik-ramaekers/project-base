@@ -73,26 +73,6 @@ static void get_config_from_string(settings_config *config, char *string)
 	array_push(&config->settings, &current_entry);
 }
 
-static void convert_crlf_to_lf(char *buffer)
-{
-	char *buffer_original = buffer;
-	
-	int write_offset = 0;
-	int read_offset = 0;
-	
-	while(buffer[read_offset])
-	{
-		if (buffer[read_offset] != 0x0D)
-		{
-			buffer_original[write_offset] = buffer[read_offset];
-			
-			++write_offset;
-		}
-		
-		++read_offset;
-	}
-}
-
 void settings_init(char *directory)
 {
 	settings_config config;
@@ -116,7 +96,7 @@ void settings_init(char *directory)
 		return;
 	}
 	
-	convert_crlf_to_lf(content.content);
+	string_convert_crlf_to_lf(content.content);
 	
 	s32 token_offset = 0;
 	for (s32 i = 0; i < content.content_length; i++)

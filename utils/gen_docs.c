@@ -150,7 +150,7 @@ documentation_file generate_docs_from_file(file_content* content) {
     new_f.definitions = array_create(sizeof(char*));
     new_f.functions = array_create(sizeof(function));
 
-    convert_crlf_to_lf(content->content);
+    string_convert_crlf_to_lf(content->content);
     char *start = content->content;
     s32 length = content->content_length;
 

@@ -267,19 +267,6 @@ u64 platform_get_time(time_type time_type, time_precision precision);
 s32 platform_get_memory_size();
 s32 platform_get_cpu_count();
 
-u64 string_to_u64(char *str);
-u32 string_to_u32(char *str);
-u16 string_to_u16(char *str);
-u8 string_to_u8(char *str);
-
-s64 string_to_s64(char *str);
-s32 string_to_s32(char *str);
-s16 string_to_s16(char *str);
-s8 string_to_s8(char *str);
-
-s8 string_to_f32(char *str);
-s8 string_to_f64(char *str);
-
 void _platform_register_window(platform_window* window);
 void _platform_unregister_window(platform_window* window);
 

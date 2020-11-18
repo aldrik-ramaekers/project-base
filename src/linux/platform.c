@@ -1624,56 +1624,6 @@ char *platform_get_full_path(char *file)
 	return buf;
 }
 
-inline u64 string_to_u64(char *str)
-{
-	return (u64)strtoull(str, 0, 10);
-}
-
-inline u32 string_to_u32(char *str)
-{
-	return (u32)strtoul(str, 0, 10);
-}
-
-inline u16 string_to_u16(char *str)
-{
-	return (u16)strtoul(str, 0, 10);
-}
-
-inline u8 string_to_u8(char *str)
-{
-	return (u8)strtoul(str, 0, 10);
-}
-
-inline s64 string_to_s64(char *str)
-{
-	return (s64)strtoll(str, 0, 10);
-}
-
-inline s32 string_to_s32(char *str)
-{
-	return (u32)strtol(str, 0, 10);
-}
-
-inline s16 string_to_s16(char *str)
-{
-	return (s16)strtol(str, 0, 10);
-}
-
-inline s8 string_to_s8(char *str)
-{
-	return (s8)strtol(str, 0, 10);
-}
-
-inline s8 string_to_f32(char *str)
-{
-	return (f32)atof(str);
-}
-
-inline s8 string_to_f64(char *str)
-{
-	return (f64)strtod(str, NULL);
-}
-
 inline void platform_open_url(char *url)
 {
 	char buffer[MAX_INPUT_LENGTH];
