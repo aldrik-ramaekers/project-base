@@ -279,7 +279,7 @@ void write_doc_pages(char* build_folder, array* pages, char* code_folder) {
 
     char changelog[MAX_INPUT_LENGTH];
     string_copyn(changelog, build_folder, MAX_INPUT_LENGTH);
-    string_appendn(changelog, "..\\README", MAX_INPUT_LENGTH);
+    string_appendn(changelog, "..\\DOCS\\HISTORY", MAX_INPUT_LENGTH);
 
     s32 size = megabytes(10);
     char* tmp = mem_alloc(size);
