@@ -1,0 +1,30 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  tests_linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      working-directory: ${{runner.workspace}}
+      shell: bash
+      run: make
+    - name: Test
+      working-directory: ${{runner.workspace}}
+      shell: bash
+      run: make tests
+      
+  tests_windows:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      working-directory: ${{runner.workspace}}
+      shell: cmd
+      run: make
+    - name: Test
+      working-directory: ${{runner.workspace}}
+      shell: cmd
+      run: make tests
