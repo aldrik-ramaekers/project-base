@@ -97,7 +97,7 @@ s32 string_to_s32(char *str);
 s16 string_to_s16(char *str);
 s8 string_to_s8(char *str);
 
-s8 string_to_f32(char *str);
-s8 string_to_f64(char *str);
+f32 string_to_f32(char *str);
+f64 string_to_f64(char *str);
 
 #endif

@@ -647,12 +647,12 @@ inline s8 string_to_s8(char *str)
 	return (s8)strtol(str, 0, 10);
 }
 
-inline s8 string_to_f32(char *str)
+inline f32 string_to_f32(char *str)
 {
 	return (f32)atof(str);
 }
 
-inline s8 string_to_f64(char *str)
+inline f64 string_to_f64(char *str)
 {
 	return (f64)strtod(str, NULL);
 }

@@ -300,12 +300,8 @@ void _platform_register_window(platform_window* window) {
 	}
 
 	array_push(&window_registry, &window);
-
-	printf("poop: %d\n", window_registry.length);
 }
 
 void _platform_unregister_window(platform_window* window) {
 	array_remove_by(&window_registry, &window);
-
-	printf("poop: %d\n", window_registry.length);
 }
