@@ -10,16 +10,15 @@ This is that entry point of the project_base library. This is the only file you
 will have to include to use this library. All files will be imported by including
 this file.
 
-<h2>Introduction</h2>
-
 */
 
 /*
 
+- move platform dependent includes in project_base.h to respective files
+- make a pdf writer
 - remove all unused functions
 - move is_shortcut_down to input.h
 - remove unused code from memory.h, and move usefull code to memory.c
-- say what this documentation is about on first page
 - add :private: tag and hide everything that comes after it from documentation
 - make project_base the first chapter in documentation
 - add examples to documentation
@@ -44,6 +43,8 @@ this file.
 
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
+
+#include "config.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 

@@ -58,7 +58,7 @@ typedef struct t_table_entry {
 
 documentation_file generate_docs_from_file(file_content* content);
 void write_title_page(char* build_folder);
-void write_doc_pages(char* build_folder, array* pages);
+void write_doc_pages(char* build_folder, array* pages, char* code_folder);
 void get_item_id(s32 h, char*s, s32 i, char *id_buf, char* link_buf);
 
 int main(int argc, char **argv) {
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
         array_push(&documentation_files, &result);
 	}
 
-    write_doc_pages(build_folder, &documentation_files);
+    write_doc_pages(build_folder, &documentation_files, code_folder);
     write_title_page(build_folder);
 
     array_destroy(&filters);
@@ -272,10 +272,14 @@ documentation_file generate_docs_from_file(file_content* content) {
     return new_f;
 }
 
-void write_doc_pages(char* build_folder, array* pages) {
+void write_doc_pages(char* build_folder, array* pages, char* code_folder) {
     char str[MAX_INPUT_LENGTH];
     string_copyn(str, build_folder, MAX_INPUT_LENGTH);
     string_appendn(str, "docs.html", MAX_INPUT_LENGTH);
+
+    char changelog[MAX_INPUT_LENGTH];
+    string_copyn(changelog, build_folder, MAX_INPUT_LENGTH);
+    string_appendn(changelog, "..\\README", MAX_INPUT_LENGTH);
 
     s32 size = megabytes(10);
     char* tmp = mem_alloc(size);
@@ -286,6 +290,9 @@ void write_doc_pages(char* build_folder, array* pages) {
 
     for (s32 i = 0; i < pages->length; i++) {
         documentation_file *f = array_at(pages, i);
+
+        array comments = array_create(sizeof(table_entry));
+        array_reserve(&comments, 200);
 
         bool is_valid = false;
         for (s32 d = 0; d < f->docs.length; d++) {
@@ -362,6 +369,14 @@ void write_doc_pages(char* build_folder, array* pages) {
                 string_appendn(tmp, def->content, size);
                 string_appendn(tmp, "<br>", size);
                 string_appendn(tmp, "<br>", size);
+
+                if (def->comments.length) {
+                    table_entry entry;
+                    entry.id = mem_alloc(100);
+                    string_copyn(entry.id, id_buf, 100);
+                    entry.comments = def->comments;
+                    array_push(&comments, &entry);
+                }
             }
             string_appendn(tmp, "</pre>", size);
         }
@@ -375,15 +390,6 @@ void write_doc_pages(char* build_folder, array* pages) {
             for (s32 d = 0; d < f->functions.length; d++) {
                 function *def = array_at(&f->functions, d);
 
-                #if 0
-                //string_appendn(tmp, "<p>", size);
-                for (s32 c = 0; c < def->comments.length; c++) {
-                    string_appendn(tmp, *(char**)array_at(&def->comments, c), size);
-                    string_appendn(tmp, "<br>", size);
-                }
-                //string_appendn(tmp, "</p>", size);
-                #endif
-
                 char id_buf[100];
                 char link_buf[100];
                 get_item_id(i+1, "f", d+1, id_buf, link_buf);
@@ -391,9 +397,82 @@ void write_doc_pages(char* build_folder, array* pages) {
 
                 string_appendn(tmp, def->content, size);
                 string_appendn(tmp, "<br>", size);
+
+                if (def->comments.length) {
+                    table_entry entry;
+                    entry.id = mem_alloc(100);
+                    string_copyn(entry.id, id_buf, 100);
+                    entry.comments = def->comments;
+                    array_push(&comments, &entry);
+                }
             }
             string_appendn(tmp, "</pre>", size);
+
+            // Comments
+            if (comments.length) {
+                string_appendn(tmp, "<h2>", size);
+                string_appendn(tmp, "Explaination", size);
+                string_appendn(tmp, "</h2>", size);
+                
+
+                string_appendn(tmp, "<table>", size);
+
+                string_appendn(tmp, "<tr>", size);
+
+                string_appendn(tmp, "<th>", size);
+                string_appendn(tmp, "#", size);
+                string_appendn(tmp, "<hr>", size);
+                string_appendn(tmp, "</th>", size);
+
+                string_appendn(tmp, "<th>", size);
+                string_appendn(tmp, "Comments", size);
+                string_appendn(tmp, "<hr>", size);
+                string_appendn(tmp, "</th>", size);
+
+                string_appendn(tmp, "</tr>", size);
+
+                for (s32 x = 0; x < comments.length; x++) {
+                    table_entry* entry = array_at(&comments, x);
+                    
+                    string_appendn(tmp, "<tr>", size);
+
+                    string_appendn(tmp, "<td>", size);
+
+                    string_appendn(tmp, "<a name=\"", size);
+                    string_appendn(tmp, entry->id, size);
+                    string_appendn(tmp, "\">", size);
+
+                    string_appendn(tmp, "<cite>", size);
+                    string_appendn(tmp, entry->id, size);
+                    string_appendn(tmp, "</cite>", size);
+                    string_appendn(tmp, "</td>", size);
+
+                    string_appendn(tmp, "<td>", size);
+                    string_appendn(tmp, "<pre>", size);
+                    for (s32 x = 0; x < entry->comments.length; x++) {
+                        string_appendn(tmp, *(char**)array_at(&entry->comments, x), size);
+                        string_appendn(tmp, "<br>", size);
+                    }
+                    string_appendn(tmp, "</pre>", size);
+                    string_appendn(tmp, "</td>", size);
+
+                    string_appendn(tmp, "</tr>", size);
+                }
+
+                string_appendn(tmp, "</table>", size);
+            }
         }
+    }
+
+    file_content content = platform_read_file_content(changelog, "rb");
+    if (content.content) {
+        string_appendn(tmp, "<h1>", size);
+        string_appendn(tmp, "History", size);
+        string_appendn(tmp, "</h1>", size);
+
+        string_appendn(tmp, "<pre>", size);
+        string_appendn(tmp, content.content, size);
+        string_appendn(tmp, "</pre>", size);
     }
 
     string_appendn(tmp, "</body>", size);
@@ -406,7 +485,7 @@ void get_item_id(s32 h, char*s, s32 i, char *id_buf, char* link_buf) {
     s32 max_length = 7;
     sprintf(id_buf, "%d%s%d", h, s, i);
     s32 len = strlen(id_buf);
-    sprintf(link_buf, "<a href=\"%s\">", id_buf);
+    sprintf(link_buf, "<a href=\"#%s\">", id_buf);
     string_appendn(link_buf, id_buf, 100);
     string_appendn(link_buf, "</a>", 100);
     for (s32 i = 0; i < max_length - len; i++) {
