@@ -782,24 +782,22 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	};
 	
 	window->display = XOpenDisplay(NULL);
+	if (!window->display) goto exit_failure;
 	
 	XSetErrorHandler(_x11_error_handler);
-	
-	if(window->display == NULL) {
-		return window;
-	}
 	
 	window->parent = DefaultRootWindow(window->display);
 	
 	int fbcount;
 	GLXFBConfig* fbc = glXChooseFBConfig(window->display, DefaultScreen(window->display), att, &fbcount);
+	if (!fbc) goto exit_failure;
 	int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
 	
 	int i;
 	for (i=0; i<fbcount; ++i)
 	{
 		XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, fbc[i] );
-		if ( vi )
+		if (vi)
 		{
 			int samp_buf, samples;
 			glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
@@ -818,17 +816,16 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	
 	XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, bestFbc );
 	window->visual_info = vi;
-	
-	if(window->visual_info == NULL) {
-		return window;
-	}
+	if (!window->visual_info) goto exit_failure;
 	
 	window->cmap = XCreateColormap(window->display, window->parent, window->visual_info->visual, AllocNone);
 	
 	// calculate window center
 	XRRScreenResources *screens = XRRGetScreenResources(window->display, window->parent);
+	if (!screens) goto exit_failure;
 	XRRCrtcInfo *info = XRRGetCrtcInfo(window->display, screens, screens->crtcs[0]);
-	
+	if (!info) goto exit_failure;
+
 	s32 center_x = (info->width / 2) - (width / 2);
 	s32 center_y = (info->height / 2) - (height / 2);
 	
@@ -984,6 +981,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	_platform_register_window(window);
 	
 	return window;
+
+	exit_failure:
+	mem_free(window);
+	return 0;
 }
 
 inline bool platform_window_is_valid(platform_window *window)
