@@ -14,8 +14,7 @@ this file.
 
 /*
 
-- linux test crashes on action when opening window.
-- return error when open_window fails
+- return error when open_window fails on windows
 - make sure a valid render config is found on linux
 - replace all int with s32
 - move platform dependent includes in project_base.h to respective files
@@ -29,7 +28,6 @@ this file.
 - rename get_filters to something more obvious and move to respective file
 - prefix private functions with _ like platform_destroy_shared
 - get_active_directory and get_active_directory prefix with platform_
-- return code for platform_delete_file
 - move filter_matches to string utils and rename to string_split
 - make custom popup windows so we can get rid of zenity and windows deps
 - stop linking to libs and use LoadLibrary

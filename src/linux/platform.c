@@ -181,7 +181,7 @@ bool set_active_directory(char *path)
 
 void platform_delete_file(char *path)
 {
-	remove(path);
+	return remove(path) == 0;
 }
 
 bool platform_write_file_content(char *path, const char *mode, char *buffer, s32 len)

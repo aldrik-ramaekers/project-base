@@ -258,7 +258,7 @@ void get_name_from_path(char *buffer, char *path);
 void get_directory_from_path(char *buffer, char *path);
 vec2 platform_get_window_size(platform_window *window);
 s32 filter_matches(array *filters, char *string, char **matched_filter);
-void platform_delete_file(char *path);
+bool platform_delete_file(char *path);
 
 bool platform_keep_running(platform_window *window);
 void platform_init_shared(int argc, char **argv);
