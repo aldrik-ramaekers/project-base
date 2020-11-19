@@ -667,6 +667,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 #endif
 	
 	platform_window* window = mem_alloc(sizeof(platform_window));
+	if (!window) return window;
 	window->has_focus = true;
 	window->window_handle = 0;
 	window->hdc = 0;
@@ -695,96 +696,83 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	
 	debug_print_elapsed(startup_stamp, "setup");
 	
-	if (RegisterClass(&window->window_class))
-	{
-		debug_print_elapsed(startup_stamp, "register class");
+	ATOM success = RegisterClass(&window->window_class);
+	if (!success) return 0;
+	
+	debug_print_elapsed(startup_stamp, "register class");
 		
-		int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
-		int ex_style = 0;
+	int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
+	int ex_style = 0;
 		
-		if (min_w != max_w && min_h != max_h)
-			style |= WS_SIZEBOX;
-		else
-			style |= WS_THICKFRAME;
-		
-		if (flags & FLAGS_BORDERLESS)
-		{
-			style = WS_VISIBLE|WS_POPUP;
-		}
-		if (flags & FLAGS_TOPMOST)
-		{
-			ex_style = WS_EX_TOPMOST;
-		}
-		if (flags & FLAGS_NO_TASKBAR)
-		{
-			ex_style |= WS_EX_TOOLWINDOW;
-		}
-		
-		window->window_handle = CreateWindowEx(ex_style,
-											  window->window_class.lpszClassName,
-											  name,
-											  style,
-											  CW_USEDEFAULT,
-											  CW_USEDEFAULT,
-											  width,
-											  height,
-											  0,
-											  0,
-											  instance,
-											  0);
-		
-		if (flags & FLAGS_BORDERLESS)
-		{
-			ShowScrollBar(window->window_handle, SB_VERT, FALSE);
-			ShowScrollBar(window->window_handle, SB_HORZ, FALSE);
-		}
-		
-		window->flags = flags;
-		
-		debug_print_elapsed(startup_stamp, "create window");
-		
-		if (window->window_handle)
-		{
-			window->hdc = GetDC(window->window_handle);
-			
-			platform_setup_backbuffer(window);
-			debug_print_elapsed(startup_stamp, "backbuffer");
-			
-			platform_setup_renderer();
-			debug_print_elapsed(startup_stamp, "renderer");
-			
-			ShowWindow(window->window_handle, cmd_show);
-			if (flags & FLAGS_HIDDEN)
-				ShowWindow(window->window_handle, SW_HIDE);
-			else
-				ShowWindow(window->window_handle, SW_SHOW);
-			
-			window->is_open = true;
-			
-			TRACKMOUSEEVENT track;
-			track.cbSize = sizeof(track);
-			track.dwFlags = TME_LEAVE;
-			track.hwndTrack = window->window_handle;
-			TrackMouseEvent(&track);
-			
-			debug_print_elapsed(startup_stamp, "windows nonsense");
-
-			_platform_register_window(window);
-		}
-		else
-		{
-			platform_show_message(0, "An error occured within Windows, please restart the program.", "Error");
-			abort();
-		}
-	}
+	if (min_w != max_w && min_h != max_h)
+		style |= WS_SIZEBOX;
 	else
+		style |= WS_THICKFRAME;
+		
+	if (flags & FLAGS_BORDERLESS)
 	{
-		platform_show_message(0, "An error occured within Windows, please restart the program.", "Error");
-		abort();
+		style = WS_VISIBLE|WS_POPUP;
 	}
-	
+	if (flags & FLAGS_TOPMOST)
+	{
+		ex_style = WS_EX_TOPMOST;
+	}
+	if (flags & FLAGS_NO_TASKBAR)
+	{
+		ex_style |= WS_EX_TOOLWINDOW;
+	}
+		
+	window->window_handle = CreateWindowEx(ex_style,
+											window->window_class.lpszClassName,
+											name,
+											style,
+											CW_USEDEFAULT,
+											CW_USEDEFAULT,
+											width,
+											height,
+											0,
+											0,
+											instance,
+											0);
+
+	if (!window->window_handle) return 0;
+		
+	if (flags & FLAGS_BORDERLESS)
+	{
+		ShowScrollBar(window->window_handle, SB_VERT, FALSE);
+		ShowScrollBar(window->window_handle, SB_HORZ, FALSE);
+	}
+		
+	window->flags = flags;
+		
+	debug_print_elapsed(startup_stamp, "create window");
+		
+	window->hdc = GetDC(window->window_handle);
+	if (!window->hdc) return 0;
+
+	platform_setup_backbuffer(window);
+	debug_print_elapsed(startup_stamp, "backbuffer");
+			
+	platform_setup_renderer();
+	debug_print_elapsed(startup_stamp, "renderer");
+			
+	ShowWindow(window->window_handle, cmd_show);
+	if (flags & FLAGS_HIDDEN)
+		ShowWindow(window->window_handle, SW_HIDE);
+	else
+		ShowWindow(window->window_handle, SW_SHOW);
+			
+	window->is_open = true;
+			
+	TRACKMOUSEEVENT track;
+	track.cbSize = sizeof(track);
+	track.dwFlags = TME_LEAVE;
+	track.hwndTrack = window->window_handle;
+	TrackMouseEvent(&track);
 	platform_get_focus(window);
+	debug_print_elapsed(startup_stamp, "windows nonsense");
 	
+	_platform_register_window(window);
 	debug_print_elapsed_undent();
 	
 	return window;
@@ -1057,7 +1045,7 @@ file_content platform_read_file_content(char *path, const char *mode)
 	return result;
 }
 
-void platform_delete_file(char *path)
+bool platform_delete_file(char *path)
 {
 	return remove(path) == 0;
 }

@@ -179,7 +179,7 @@ bool set_active_directory(char *path)
 	return !chdir(path);
 }
 
-void platform_delete_file(char *path)
+bool platform_delete_file(char *path)
 {
 	return remove(path) == 0;
 }
@@ -762,6 +762,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	bool has_max_size = max_w || max_h;
 	
 	platform_window* window = mem_alloc(sizeof(platform_window));
+	if (!window) return window;
 	window->width = width;
 	window->height = height;
 	window->backbuffer.buffer = 0;
