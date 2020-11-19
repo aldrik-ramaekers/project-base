@@ -163,7 +163,7 @@ inline void platform_set_cursor(platform_window *window, cursor_type type)
 	}
 }
 
-bool get_active_directory(char *buffer)
+bool platform_get_active_directory(char *buffer)
 {
 	char cwd[PATH_MAX];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -174,7 +174,7 @@ bool get_active_directory(char *buffer)
 	return true;
 }
 
-bool set_active_directory(char *path)
+bool platform_set_active_directory(char *path)
 {
 	return !chdir(path);
 }
@@ -1528,10 +1528,10 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 	struct dirent *dir;
 	d = opendir(start_dir);
 	if (d) {
-		set_active_directory(start_dir);
+		platform_set_active_directory(start_dir);
 		while ((dir = readdir(d)) != NULL) {
 			if (*is_cancelled) break;
-			set_active_directory(start_dir);
+			platform_set_active_directory(start_dir);
 			
 			if (dir->d_type == DT_DIR)
 			{

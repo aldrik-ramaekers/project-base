@@ -1078,12 +1078,12 @@ void platform_destroy_file_content(file_content *content)
 	mem_free(content->content);
 }
 
-bool get_active_directory(char *buffer)
+bool platform_get_active_directory(char *buffer)
 {
 	return GetCurrentDirectory(MAX_INPUT_LENGTH, buffer);
 }
 
-bool set_active_directory(char *path)
+bool platform_set_active_directory(char *path)
 {
 	return SetCurrentDirectory(path);
 }

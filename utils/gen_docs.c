@@ -64,8 +64,8 @@ void get_item_id(s32 h, char*s, s32 i, char *id_buf, char* link_buf);
 int main(int argc, char **argv) {
     char code_folder[MAX_INPUT_LENGTH];
     char build_folder[MAX_INPUT_LENGTH];
-    get_active_directory(code_folder);
-    get_active_directory(build_folder);
+    platform_get_active_directory(code_folder);
+    platform_get_active_directory(build_folder);
     string_appendn(code_folder, "\\src\\", MAX_INPUT_LENGTH);
     string_appendn(build_folder, "\\build\\", MAX_INPUT_LENGTH);
 

@@ -22,7 +22,7 @@ void settings_write_to_file()
 		string_appendn(buffer, entry_buf, len);
 	}
 	
-	set_active_directory(binary_path);
+	platform_set_active_directory(binary_path);
 	platform_write_file_content(_settings_file.path, "w+", buffer, strlen(buffer));
 	mem_free(buffer);
 }
@@ -85,7 +85,7 @@ void settings_init(char *directory)
 
 	config.settings = array_create(sizeof(config_setting));
 	
-	set_active_directory(binary_path);
+	platform_set_active_directory(binary_path);
 	
 	file_content content = platform_read_file_content(config.path, "rb");
 	
