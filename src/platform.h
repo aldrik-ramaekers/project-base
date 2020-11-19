@@ -211,6 +211,7 @@ camera _global_camera;
 #define platform_open_window(name, width, height, max_w, max_h, min_w, min_h) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0)
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags);
 bool platform_window_is_valid(platform_window *window);
+bool platform_is_graphical();
 void platform_get_focus(platform_window *window);
 void platform_show_window(platform_window *window);
 void platform_hide_window(platform_window *window);

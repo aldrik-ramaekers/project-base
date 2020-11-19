@@ -731,6 +731,18 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 	return 0;
 }
 
+bool platform_is_graphical()
+{
+	Display* display = XOpenDisplay(NULL);
+	if (display) {
+		return false;
+	}
+	else {
+		XCloseDisplay(display);
+		return true;
+	}
+}
+
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
 {
 	if (width < min_w) width = min_w;

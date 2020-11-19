@@ -819,6 +819,11 @@ bool platform_window_is_valid(platform_window *window)
 	return window && window->hdc && window->window_handle;
 }
 
+bool platform_is_graphical()
+{
+	return true;
+}
+
 void platform_destroy_window(platform_window *window)
 {
 	if (platform_window_is_valid(window)) {
