@@ -14,6 +14,8 @@ this file.
 
 /*
 
+- put function and property names on same column with tab
+- get rid of assert and make custom error handler+reporter
 - write C parser as addon
 - write tests for settings_config
 - make sure a valid render config is found on linux
@@ -28,7 +30,6 @@ this file.
 - add comments to each subject
 - rename get_filters to something more obvious and move to respective file
 - prefix private functions with _ like platform_destroy_shared
-- move filter_matches to string utils and rename to string_split
 - make custom popup windows so we can get rid of zenity and windows deps
 - stop linking to libs and use LoadLibrary
 - let the library handle asset destroying
