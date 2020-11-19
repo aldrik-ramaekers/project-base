@@ -734,7 +734,7 @@ int _x11_error_handler(Display *display, XErrorEvent *event)
 bool platform_is_graphical()
 {
 	Display* display = XOpenDisplay(NULL);
-	if (display) {
+	if (!display) {
 		return false;
 	}
 	else {
