@@ -35,7 +35,7 @@ inline static bool is_big_endian()
 
 void assets_stop_if_done()
 {
-	if (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets)
+	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
 		global_asset_collection.done_loading_assets = true;
 		
@@ -63,6 +63,8 @@ void assets_stop_if_done()
 
 bool assets_do_post_process()
 {
+	if (!global_asset_collection.valid) return false;
+
 	assets_stop_if_done();
 	
 	bool result = false;
@@ -407,16 +409,19 @@ void assets_destroy_font(font *font_to_destroy)
 void assets_destroy()
 {
 	global_asset_collection.valid = false;
-	global_asset_collection.done_loading_assets = false;
-	
-	array_destroy(&global_asset_collection.images);
-	array_destroy(&global_asset_collection.fonts);
-	
-	array_destroy(&global_asset_collection.queue.queue);
-	array_destroy(&global_asset_collection.post_process_queue);
-	
-	mem_free(binary_path);
-	
+	global_asset_collection.done_loading_assets = true;
+	thread_sleep(30000); // wait 30ms for all asset threads to finish.
+	mutex_lock(&asset_mutex);
+	{
+		if (array_exists(&global_asset_collection.images)) array_destroy(&global_asset_collection.images);
+		if (array_exists(&global_asset_collection.fonts)) array_destroy(&global_asset_collection.fonts);
+		
+		if (array_exists(&global_asset_collection.queue.queue)) array_destroy(&global_asset_collection.queue.queue);
+		if (array_exists(&global_asset_collection.post_process_queue)) array_destroy(&global_asset_collection.post_process_queue);
+
+		mem_free(binary_path);
+	}
+	mutex_unlock(&asset_mutex);
 	mutex_destroy(&asset_mutex);
 }
 
