@@ -11,7 +11,7 @@
 
 //	:/Title Array
 //	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
-//			This implementation provides basic functionality for adding, deleting and changing data.
+//			This implementation provides functionality for adding, deleting and changing data.
 
 typedef struct t_array
 {

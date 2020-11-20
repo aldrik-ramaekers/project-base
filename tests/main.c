@@ -1,4 +1,5 @@
 #include <projectbase/project_base.h>
+#include <projectbase/addons/c_parser.h>
 
 #define error_if(e) if (e) { printf("       --! ERROR AT: %s\n", #e); return 1; };
 #define success return 0;
@@ -9,6 +10,7 @@
 #include "threads.c"
 #include "window.c"
 #include "array.c"
+#include "c_parser.c"
 
 bool failure = false;
 void print_h1(char *str) {
@@ -42,6 +44,9 @@ int main(int argc, char** argv) {
     print_result("Read", array_read());
     print_result("Delete", array_delete());
     print_result("Swap", array_swap_());
+
+    print_h1("C Parser");
+    print_result("Tokenize", c_parser_test());
 
     if (failure) exit(EXIT_FAILURE);
     return 0;
