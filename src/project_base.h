@@ -14,9 +14,9 @@ this file.
 
 /*
 
+- write tests for array multi threaded usage
 - put function and property names on same column with tab
 - get rid of assert and make custom error handler+reporter
-- write C parser as addon
 - write tests for settings_config
 - make sure a valid render config is found on linux
 - replace all int with s32
