@@ -73,10 +73,15 @@ build:
 	make $(install_lib_command)
 
 install_windows:
-	echo "$(include_dir)"
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file)-parser.a" "$(lib_dir)-parser.a" 2>/dev/null || :
+
+	# github action shite
+	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
+	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file)-parser.a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file)-parser.a" 2>/dev/null || :
 
 install_linux:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
