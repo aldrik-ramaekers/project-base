@@ -5,8 +5,11 @@ main_file = src/main.c
 output_file = libprojectbase
 flags = -m64 -c -Wall -O3
 
+gcc_install_dir := $(shell which "gcc")
+gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
+
 ifeq ($(OS), Windows_NT)
-	install_dir = C:/mingw/mingw64/x86_64-w64-mingw32/
+	install_dir = $(gcc_install_dir)../x86_64-w64-mingw32/
 	permissions = 
 	libs = -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp
 
@@ -31,6 +34,7 @@ endif
 
 include_dir = $(install_dir)include/projectbase
 lib_dir = $(install_dir)lib/$(output_file)
+
 
 all:
 	make $(install_deps_command)
@@ -72,12 +76,6 @@ install_windows:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file)-parser.a" "$(lib_dir)-parser.a" 2>/dev/null || :
-
-	# github action shite
-	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
-	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
-	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
-	$(permissions) cp "build/$(output_file)-parser.a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file)-parser.a" 2>/dev/null || :
 
 install_linux:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
