@@ -73,6 +73,7 @@ build:
 	make $(install_lib_command)
 
 install_windows:
+	echo "$(include_dir)"
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file)-parser.a" "$(lib_dir)-parser.a" 2>/dev/null || :
