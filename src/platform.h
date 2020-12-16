@@ -8,6 +8,7 @@
 #define INCLUDE_PLATFORM
 
 typedef struct t_platform_window platform_window;
+typedef struct t_backbuffer backbuffer;
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -176,19 +177,6 @@ typedef struct t_backbuffer_pixel
 	s32 color;
 	u8 depth; 
 } backbuffer_pixel;
-
-typedef struct t_backbuffer
-{
-	s32 width;
-	s32 height;
-	u8 *buffer; // 4bytes color + 1byte depth
-#ifdef OS_WIN
-	BITMAPINFO bitmapInfo;
-#endif
-#ifdef OS_LINUX
-	XImage * s_image;
-#endif
-} backbuffer;
 
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 typedef enum t_window_flags

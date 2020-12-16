@@ -4,6 +4,8 @@
 *  All rights reserved.
 */
 
+#include <sys/times.h>
+#include <sys/vtimes.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +25,14 @@
 #include <X11/cursorfont.h>
 
 #define GET_ATOM(X) window->X = XInternAtom(window->display, #X, False)
+
+typedef struct t_backbuffer
+{
+	s32 width;
+	s32 height;
+	u8 *buffer; // 4bytes color + 1byte depth
+	XImage * s_image;
+} backbuffer;
 
 struct t_platform_window
 {

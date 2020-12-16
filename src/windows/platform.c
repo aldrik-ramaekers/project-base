@@ -4,6 +4,8 @@
 *  All rights reserved.
 */
 
+#include <windows.h>
+#include <time.h>
 #include <locale.h>
 #include <GL/gl.h>
 #include <GL/glcorearb.h>
@@ -12,6 +14,14 @@
 #include <gdiplus.h>
 #include <shlobj.h>
 #include "../external/LooplessSizeMove.c"
+
+struct t_backbuffer
+{
+	s32 width;
+	s32 height;
+	u8 *buffer; // 4bytes color + 1byte depth
+	BITMAPINFO bitmapInfo;
+};
 
 struct t_platform_window
 {
@@ -587,7 +597,7 @@ void platform_setup_backbuffer(platform_window *window)
 		
 		//debug_print_elapsed(startup_stamp, "pixel format");
 		
-		window->gl_context = wglCreateContext(window->hdc);
+		window->gl_context = IMP_wglCreateContext(window->hdc);
 		
 		//debug_print_elapsed(startup_stamp, "gl context");
 		

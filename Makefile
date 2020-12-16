@@ -11,7 +11,7 @@ gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
 ifeq ($(OS), Windows_NT)
 	install_dir = $(gcc_install_dir)../x86_64-w64-mingw32/
 	permissions = 
-	libs = -lopengl32 -lkernel32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp
+	libs = -lopengl32 -lglu32 -lgdi32 -lcomdlg32 -ldbghelp
 
 	# Commands
 	install_deps_command = empty
@@ -112,9 +112,5 @@ examples_linux:
 	$(permissions) gcc -m64 -g examples/example_window.c -o build/example_window -lprojectbase $(libs)
 	$(permissions) chmod +x build/example_window
 
-# Docs (Windows)
-docs:
-	$(permissions) mkdir -p "docs/"
-	gcc -m64 -g utils/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
-	./build/gen_docs.exe
-	htmldoc -f docs/Documentation.pdf -t pdf build/docs.html --embedfonts --encryption --headfootsize 8 --charset utf-8 --titlefile build/docs_title.html --toctitle Content --footer t.1 --header ..h --numbered --left 0.4in --right 0.4in --textcolor 222222 --fontsize 10
+cloc:
+	cloc-1.88.exe --exclude-dir=external src/

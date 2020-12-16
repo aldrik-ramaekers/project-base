@@ -5,37 +5,31 @@
 */
 
 /*
-:docs:
-This is that entry point of the project_base library. This is the only file you
-will have to include to use this library. All files will be imported by including
-this file.
-
+//	:/Title Project-base entry-point
+    :/Text  This is that entry point of the project_base library. This is the only file you
+            will have to include to use this library. All files will be imported by including
+            this file.
 */
 
 /*
-
-- write tests for array multi threaded usage
-- put function and property names on same column with tab
-- get rid of assert and make custom error handler+reporter
-- write tests for settings_config
-- make sure a valid render config is found on linux
-- replace all int with s32
-- move platform dependent includes in project_base.h to respective files
-- make a pdf writer as addon
-- remove all unused functions
-- remove unused code from memory.h, and move usefull code to memory.c
-- add :private: tag and hide everything that comes after it from documentation
-- make project_base the first chapter in documentation
-- add examples to documentation
-- add comments to each subject
-- rename get_filters to something more obvious and move to respective file
-- prefix private functions with _ like platform_destroy_shared
-- make custom popup windows so we can get rid of zenity and windows deps
-- stop linking to libs and use LoadLibrary
-- let the library handle asset destroying
-- make settings pages use settings_config directly
-- get rid of text-search code in platform.h
-
+    :/Title TODO's
+    :/Text  - write tests for array multi threaded usage
+            - put function and property names on same column with tab
+            - get rid of assert and make custom error handler+reporterm
+            - write tests for settings_config
+            - make sure a valid render config is found on linux
+            - replace all int with s32
+            - move platform dependent includes in project_base.h to respective files
+            - remove all unused functions
+            - remove unused code from memory.h, and move usefull code to memory.c
+            - make project_base the first chapter in documentation
+            - rename get_filters to something more obvious and move to respective file
+            - prefix private functions with _ like platform_destroy_shared
+            - make custom popup windows so we can get rid of zenity and windows deps
+            - stop linking to libs and use LoadLibrary
+            - let the library handle asset destroying
+            - make settings pages use settings_config directly
+            - get rid of text-search code in platform.h
 */
 
 #ifndef INCLUDE_PROJECT_BASE
@@ -52,13 +46,9 @@ this file.
 
 #ifdef _WIN32
 #define OS_WIN
-#include <windows.h>
-#include <time.h>
 #endif
 #ifdef __linux__
 #define OS_LINUX
-#include <sys/times.h>
-#include <sys/vtimes.h>
 #endif
 #ifdef __APPLE__
 #define OS_OSX
@@ -117,6 +107,7 @@ this file.
 #include "external/stb_truetype.h"
 #pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 
+#include "lib_loader.h"
 #include "external/utf8.h"
 #include "input.h"
 #include "timer.h"
@@ -134,9 +125,11 @@ this file.
 #ifdef OS_LINUX
 #include "linux/thread.c"
 #include "linux/platform.c"
+#include "linux/lib_loader.c"
 #endif
 
 #ifdef OS_WIN
+#include "windows/lib_loader.c"
 #include "windows/thread.c"
 #include "windows/platform.c"
 #endif

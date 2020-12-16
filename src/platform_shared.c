@@ -245,10 +245,14 @@ void platform_destroy_shared()
 	assets_destroy();
 
 	keyboard_input_destroy(&_global_keyboard);
+
+	_lib_loader_destroy();
 }
 
 void platform_init_shared(int argc, char **argv)
 {
+	_lib_loader_init();
+
 	_global_keyboard = keyboard_input_create();
 	_global_mouse = mouse_input_create();
 	_global_camera = (camera){0.0f,0.0f,0.0f};
