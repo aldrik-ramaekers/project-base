@@ -17,7 +17,6 @@
             - add parameter to platform_open_file_dialog for args->default_save_file_extension
             - put function and property names on same column with tab
             - get rid of assert and make custom error handler+reporterm
-            - write tests for settings_config
             - make sure a valid render config is found on linux
             - replace all int with s32
             - move platform dependent includes in project_base.h to respective files
@@ -26,7 +25,6 @@
             - prefix private functions with _ like platform_destroy_shared
             - make custom popup windows so we can get rid of zenity and windows deps
             - stop linking to libs and use LoadLibrary
-            - let the library handle asset destroying
             - make settings pages use settings_config directly
             - get rid of text-search code in platform.h
 */

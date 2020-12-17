@@ -11,6 +11,7 @@
 #include "window.c"
 #include "array.c"
 #include "c_parser.c"
+#include "settings_config.c"
 
 bool failure = false;
 void print_h1(char *str) {
@@ -48,6 +49,10 @@ int main(int argc, char** argv) {
 
     print_h1("C Parser");
     print_result("Tokenize", c_parser_test());
+
+    print_h1("Settings Config");
+    print_result("Write", _settings_config_write(argc, argv));
+    print_result("Read", _settings_config_read(argc, argv));
 
     if (failure) exit(EXIT_FAILURE);
     return 0;
