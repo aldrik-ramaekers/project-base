@@ -177,19 +177,19 @@ LRESULT WINAPI SnapHelperWinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         {
             SIZEMOVEDATA *sizemove = LSMGet();
             HDC hDC = GetDC(hwnd);
-            HPEN hPen = CreatePen(PS_INSIDEFRAME, 1, GetSysColor(COLOR_HIGHLIGHT));
+            HPEN hPen = IMP_CreatePen(PS_INSIDEFRAME, 1, GetSysColor(COLOR_HIGHLIGHT));
             LOGBRUSH blog = { BS_HOLLOW, 0, 0 };
-            HBRUSH hBrush = CreateBrushIndirect(&blog);
+            HBRUSH hBrush = IMP_CreateBrushIndirect(&blog);
             if(!sizemove || !hDC || !hPen || !hBrush)
                 break;
 			
-            SelectObject(hDC, hPen);
-            SelectObject(hDC, hBrush);
+            IMP_SelectObject(hDC, hPen);
+            IMP_SelectObject(hDC, hBrush);
 			
-            Rectangle(hDC, 0, 0, RECTWIDTH(sizemove->snap.rcWork), RECTHEIGHT(sizemove->snap.rcWork));
+            IMP_Rectangle(hDC, 0, 0, RECTWIDTH(sizemove->snap.rcWork), RECTHEIGHT(sizemove->snap.rcWork));
 			
-            DeleteObject(hBrush);
-            DeleteObject(hPen);
+            IMP_DeleteObject(hBrush);
+            IMP_DeleteObject(hPen);
             break;
         }
 		default:

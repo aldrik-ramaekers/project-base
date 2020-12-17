@@ -13,7 +13,7 @@
 
 /*
     :/Title TODO's
-    :/Text  - write tests for array multi threaded usage
+    :/Text
             - add parameter to platform_open_file_dialog for args->default_save_file_extension
             - put function and property names on same column with tab
             - get rid of assert and make custom error handler+reporterm
@@ -22,8 +22,6 @@
             - replace all int with s32
             - move platform dependent includes in project_base.h to respective files
             - remove all unused functions
-            - remove unused code from memory.h, and move usefull code to memory.c
-            - make project_base the first chapter in documentation
             - rename get_filters to something more obvious and move to respective file
             - prefix private functions with _ like platform_destroy_shared
             - make custom popup windows so we can get rid of zenity and windows deps
@@ -59,13 +57,6 @@
 #include "stdint.h"
 #include "string.h"
 #include "assert.h"
-
-#include <GL/gl.h>
-#ifdef OS_LINUX
-#include <GL/glx.h>
-#endif
-#include <GL/glu.h>
-#include <GL/glext.h>
 
 #define s8 int8_t
 #define s16 int16_t

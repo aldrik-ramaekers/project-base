@@ -45,3 +45,27 @@ s32 array_swap_() {
 
     success;
 }
+
+void *array_thread_write_imp(void *temp) {
+    s32 num = 3;
+
+    for (s32 i = 0; i < 2000; i++) {
+        array_push((array*)temp, &num);
+    }
+
+    return 0;
+}
+
+s32 array_thread_write() {
+    array temp = array_create(sizeof(s32));
+
+    thread t1 = thread_start(array_thread_write_imp, &temp);
+    thread t2 = thread_start(array_thread_write_imp, &temp);
+
+    thread_join(&t1);
+    thread_join(&t2);
+
+    error_if(temp.length != 4000);
+
+    success;
+}

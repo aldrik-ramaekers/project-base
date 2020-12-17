@@ -11,7 +11,7 @@ gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
 ifeq ($(OS), Windows_NT)
 	install_dir = $(gcc_install_dir)../x86_64-w64-mingw32/
 	permissions = 
-	libs = -lgdi32
+	libs = 
 
 	# Commands
 	install_deps_command = empty

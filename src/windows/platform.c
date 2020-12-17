@@ -7,9 +7,6 @@
 #include <windows.h>
 #include <time.h>
 #include <locale.h>
-//#include <GL/gl.h>
-//#include <GL/glcorearb.h>
-//#include <GL/wglext.h>
 #include <wingdi.h>
 #include <gdiplus.h>
 #include <shlobj.h>
@@ -589,10 +586,10 @@ void platform_setup_backbuffer(platform_window *window)
 			format.cAlphaBits = 8;
 			format.cDepthBits = 16;
 			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
-			s32 suggested_format_index = ChoosePixelFormat(window->hdc, &format); // SLOW AF??
+			s32 suggested_format_index = IMP_ChoosePixelFormat(window->hdc, &format); // SLOW AF??
 			
-			DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
-			SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
+			IMP_DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
+			IMP_SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
 		}
 		
 		//debug_print_elapsed(startup_stamp, "pixel format");
@@ -968,14 +965,14 @@ void platform_window_swap_buffers(platform_window *window)
 			memcpy(window->backbuffer.buffer + (i*4), buffer_entry, 4);
 		}
 		
-		StretchDIBits(window->hdc,0,0,window->width,window->height+1,
+		IMP_StretchDIBits(window->hdc,0,0,window->width,window->height+1,
 					  0,window->backbuffer.height,window->backbuffer.width,
 					  -window->backbuffer.height,
 					  window->backbuffer.buffer, &window->backbuffer.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
 	}
 	else
 	{
-		SwapBuffers(window->hdc);
+		IMP_SwapBuffers(window->hdc);
 	}
 }
 

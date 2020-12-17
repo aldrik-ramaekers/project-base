@@ -4,6 +4,8 @@
 
 int main(int argc, char **argv)
 {
+    global_use_gpu = false;
+    
     platform_init(argc, argv);
     settings_init(CONFIG_DIRECTORY);
 

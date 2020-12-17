@@ -1,5 +1,6 @@
 HMODULE libOpengl32 = 0;
 HMODULE libComdlg32 = 0;
+HMODULE libGdi32 = 0;
 
 #define __load_lib_or_exit(_var, _name) _var = LoadLibraryA(_name); if (!_var) { printf("Failed to load %s\n", _name); exit(0); }
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load %s\n", #_ptr); exit(0); }
@@ -41,6 +42,17 @@ __def_proc( void, glOrtho, (GLdouble left,GLdouble right,GLdouble bottom,GLdoubl
 __def_proc( WINBOOL, GetSaveFileNameA, (LPOPENFILENAMEA))
 __def_proc( WINBOOL, GetOpenFileNameA, (LPOPENFILENAMEA))
 
+__def_proc( HPEN, CreatePen, (int iStyle,int cWidth,COLORREF color))
+__def_proc( HBRUSH, CreateBrushIndirect, (CONST LOGBRUSH *plbrush))
+__def_proc( HGDIOBJ, SelectObject, (HDC hdc,HGDIOBJ h))
+__def_proc( WINBOOL, Rectangle, (HDC hdc,int left,int top,int right,int bottom))
+__def_proc( WINBOOL, DeleteObject, (HGDIOBJ ho))
+__def_proc( int, ChoosePixelFormat, (HDC hdc,CONST PIXELFORMATDESCRIPTOR *ppfd))
+__def_proc( int, DescribePixelFormat, (HDC hdc,int iPixelFormat,UINT nBytes,LPPIXELFORMATDESCRIPTOR ppfd))
+__def_proc( WINBOOL, SetPixelFormat, (HDC hdc,int format,CONST PIXELFORMATDESCRIPTOR *ppfd))
+__def_proc( int, StretchDIBits, (HDC ,int ,int ,int ,int ,int ,int ,int ,int ,CONST VOID *,CONST BITMAPINFO *,UINT ,DWORD ))
+__def_proc( WINBOOL, SwapBuffers, (HDC))
+
 void _lib_loader_init()
 {
     __load_lib_or_exit(libOpengl32, "opengl32");
@@ -77,9 +89,21 @@ void _lib_loader_init()
     __load_fnc_or_exit(glTranslatef, libOpengl32);
     __load_fnc_or_exit(glOrtho, libOpengl32);
 
-    __load_lib_or_exit(libOpengl32, "comdlg32");
-    __load_fnc_or_exit(GetSaveFileNameA, libOpengl32);
-    __load_fnc_or_exit(GetOpenFileNameA, libOpengl32);
+    __load_lib_or_exit(libComdlg32, "comdlg32");
+    __load_fnc_or_exit(GetSaveFileNameA, libComdlg32);
+    __load_fnc_or_exit(GetOpenFileNameA, libComdlg32);
+
+    __load_lib_or_exit(libGdi32, "gdi32");
+    __load_fnc_or_exit(CreatePen, libGdi32);
+    __load_fnc_or_exit(CreateBrushIndirect, libGdi32);
+    __load_fnc_or_exit(SelectObject, libGdi32);
+    __load_fnc_or_exit(Rectangle, libGdi32);
+    __load_fnc_or_exit(DeleteObject, libGdi32);
+    __load_fnc_or_exit(ChoosePixelFormat, libGdi32);
+    __load_fnc_or_exit(DescribePixelFormat, libGdi32);
+    __load_fnc_or_exit(SetPixelFormat, libGdi32);
+    __load_fnc_or_exit(StretchDIBits, libGdi32);
+    __load_fnc_or_exit(SwapBuffers, libGdi32);
 }
 
 void _lib_loader_destroy()
@@ -88,4 +112,6 @@ void _lib_loader_destroy()
     // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya#remarks
 
     FreeLibrary(libOpengl32);
+    FreeLibrary(libComdlg32);
+    FreeLibrary(libGdi32);
 }

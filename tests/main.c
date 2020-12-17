@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
     print_result("Read", array_read());
     print_result("Delete", array_delete());
     print_result("Swap", array_swap_());
+    print_result("Multi-threaded Write", array_thread_write());
 
     print_h1("C Parser");
     print_result("Tokenize", c_parser_test());
