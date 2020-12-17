@@ -117,8 +117,8 @@ inline void render_clear(platform_window *window)
 {
 	if (global_use_gpu)
 	{
-		glClearColor(255/255.0, 255/255.0, 255/255.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		IMP_glClearColor(255/255.0, 255/255.0, 255/255.0, 1.0);
+		IMP_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	else
 	{
@@ -136,7 +136,7 @@ inline void render_clear(platform_window *window)
 
 inline void render_set_rotation(float32 rotation, float32 x, float32 y, s32 depth)
 {
-	glRotatef(rotation, x, y, depth);
+	IMP_glRotatef(rotation, x, y, depth);
 }
 
 inline void set_render_depth(s32 depth)
@@ -152,17 +152,17 @@ void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 	{
 		if (image->loaded)
 		{
-			glBindTexture(GL_TEXTURE_2D, image->textureID);
-			glEnable(GL_TEXTURE_2D);
-			glBegin(GL_QUADS);
-			glColor4f(1., 1., 1., 1.);
-			glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
-			glEnd();
+			IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
+			IMP_glEnable(GL_TEXTURE_2D);
+			IMP_glBegin(GL_QUADS);
+			IMP_glColor4f(1., 1., 1., 1.);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x, y, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x, y+height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x+width, y+height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x+width, y, render_depth);
+			IMP_glEnd();
 			
-			glDisable(GL_TEXTURE_2D);
+			IMP_glDisable(GL_TEXTURE_2D);
 		}
 	}
 	else
@@ -189,17 +189,17 @@ void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color 
 	{
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, image->textureID);
-			glEnable(GL_TEXTURE_2D);
-			glBegin(GL_QUADS);
-			glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-			glTexCoord2i(0, 0); glVertex3i(x, y, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x, y+height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x+width, y+height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x+width, y, render_depth);
-			glEnd();
+			IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
+			IMP_glEnable(GL_TEXTURE_2D);
+			IMP_glBegin(GL_QUADS);
+			IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x, y, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x, y+height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x+width, y+height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x+width, y, render_depth);
+			IMP_glEnd();
 			
-			glDisable(GL_TEXTURE_2D);
+			IMP_glDisable(GL_TEXTURE_2D);
 		}
 		else
 		{
@@ -215,8 +215,8 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 	
 	if (global_use_gpu)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 	}
 	
 	char *ellipse = "...";
@@ -246,15 +246,15 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 		
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, g.textureID);
-			glBegin(GL_QUADS);
+			IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+			IMP_glBegin(GL_QUADS);
 			
-			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x_to_render,y_, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
 			
-			glEnd();
+			IMP_glEnd();
 		}
 		else
 		{
@@ -281,7 +281,7 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 	}
 	
 	if (global_use_gpu)
-		glDisable(GL_TEXTURE_2D);
+		IMP_glDisable(GL_TEXTURE_2D);
 	
 	return maxw;
 }
@@ -293,8 +293,8 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 	
 	if (global_use_gpu)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 	}
 	
 	s32 x_ = x;
@@ -320,15 +320,15 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 		
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, g.textureID);
-			glBegin(GL_QUADS);
+			IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+			IMP_glBegin(GL_QUADS);
 			
-			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x_to_render,y_, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
 			
-			glEnd();
+			IMP_glEnd();
 		}
 		else
 		{
@@ -359,7 +359,7 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 	}
 	
 	if (global_use_gpu)
-		glDisable(GL_TEXTURE_2D);
+		IMP_glDisable(GL_TEXTURE_2D);
 	
 	render_rectangle(selection_start_x, y-3, selection_end_x-selection_start_x, TEXTBOX_HEIGHT - 10, rgba(66, 134, 244, 120));
 	
@@ -373,8 +373,8 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 	
 	if (global_use_gpu)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 	}
 	
 	float x_ = x;
@@ -399,15 +399,15 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 		
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, g.textureID);
-			glBegin(GL_QUADS);
+			IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+			IMP_glBegin(GL_QUADS);
 			
-			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x_to_render,y_, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
 			
-			glEnd();
+			IMP_glEnd();
 		}
 		else
 		{
@@ -434,7 +434,7 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 	}
 	
 	if (global_use_gpu)
-		glDisable(GL_TEXTURE_2D);
+		IMP_glDisable(GL_TEXTURE_2D);
 	
 	render_rectangle(cursor_x, y-3, 2, TEXTBOX_HEIGHT - 10, global_ui_context.style.textbox_foreground);
 	
@@ -448,8 +448,8 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 	
 	if (global_use_gpu)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 	}
 	
 	s32 x_ = x;
@@ -473,15 +473,15 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 		
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, g.textureID);
-			glBegin(GL_QUADS);
+			IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+			IMP_glBegin(GL_QUADS);
 			
-			glTexCoord2i(0, 0); glVertex3i(x_to_render,y_, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x_to_render,y_+g.height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y_, render_depth);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x_to_render,y_, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
 			
-			glEnd();
+			IMP_glEnd();
 		}
 		else
 		{
@@ -502,7 +502,7 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 	}
 	
 	if (global_use_gpu)
-		glDisable(GL_TEXTURE_2D);
+		IMP_glDisable(GL_TEXTURE_2D);
 	
 	return x_ - x;
 }
@@ -514,8 +514,8 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 	
 	if (global_use_gpu)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 	}
 	
 	s32 x_ = x;
@@ -558,15 +558,15 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 		
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, g.textureID);
-			glBegin(GL_QUADS);
+			IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+			IMP_glBegin(GL_QUADS);
 			
-			glTexCoord2i(0, 0); glVertex3i(x_to_render,y__, render_depth);
-			glTexCoord2i(0, 1); glVertex3i(x_to_render,y__+g.height, render_depth);
-			glTexCoord2i(1, 1); glVertex3i(x_to_render+g.width,y__+g.height, render_depth);
-			glTexCoord2i(1, 0); glVertex3i(x_to_render+g.width,y__, render_depth);
+			IMP_glTexCoord2i(0, 0); IMP_glVertex3i(x_to_render,y__, render_depth);
+			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y__+g.height, render_depth);
+			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y__+g.height, render_depth);
+			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y__, render_depth);
 			
-			glEnd();
+			IMP_glEnd();
 		}
 		else
 		{
@@ -594,7 +594,7 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 	}
 	
 	if (global_use_gpu)
-		glDisable(GL_TEXTURE_2D);
+		IMP_glDisable(GL_TEXTURE_2D);
 	
 	return (y_ - y) + font->size;
 	
@@ -737,33 +737,33 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 {
 	if (global_use_gpu)
 	{
-		glBegin(GL_TRIANGLES);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glBegin(GL_TRIANGLES);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 		
 		if (dir == TRIANGLE_DOWN)
 		{
-			glVertex3i(x+(w/2), y+h, render_depth);
-			glVertex3i(x, y, render_depth);
-			glVertex3i(x+w, y, render_depth);
+			IMP_glVertex3i(x+(w/2), y+h, render_depth);
+			IMP_glVertex3i(x, y, render_depth);
+			IMP_glVertex3i(x+w, y, render_depth);
 		}
 		else if (dir == TRIANGLE_UP)
 		{
-			glVertex3i(x+(w/2), y, render_depth);
-			glVertex3i(x+w, y+h, render_depth);
-			glVertex3i(x, y+h, render_depth);
+			IMP_glVertex3i(x+(w/2), y, render_depth);
+			IMP_glVertex3i(x+w, y+h, render_depth);
+			IMP_glVertex3i(x, y+h, render_depth);
 		}
 		else if (dir == TRIANGLE_LEFT)
 		{
-			glVertex3i(x, y+(w/2), render_depth);
-			glVertex3i(x+h, y, render_depth);
-			glVertex3i(x+h, y+w, render_depth);
+			IMP_glVertex3i(x, y+(w/2), render_depth);
+			IMP_glVertex3i(x+h, y, render_depth);
+			IMP_glVertex3i(x+h, y+w, render_depth);
 		}
 		else if (dir == TRIANGLE_RIGHT)
 		{
 			assert(0 && "not implemented"); // TODO(Aldrik): implement
 		}
 		
-		glEnd();
+		IMP_glEnd();
 	}
 	else
 	{
@@ -835,13 +835,13 @@ void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
 	if (global_use_gpu)
 	{
-		glBegin(GL_QUADS);
-		glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
-		glVertex3i(x, y, render_depth);
-		glVertex3i(x, y+height, render_depth);
-		glVertex3i(x+width, y+height, render_depth);
-		glVertex3i(x+width, y, render_depth);
-		glEnd();
+		IMP_glBegin(GL_QUADS);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glVertex3i(x, y, render_depth);
+		IMP_glVertex3i(x, y+height, render_depth);
+		IMP_glVertex3i(x+width, y+height, render_depth);
+		IMP_glVertex3i(x+width, y, render_depth);
+		IMP_glEnd();
 	}
 	else
 	{
@@ -873,8 +873,8 @@ void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 {
 	if (global_use_gpu)
 	{
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(x-1, window->height-h-y-1, w+1, h+1);
+		IMP_glEnable(GL_SCISSOR_TEST);
+		IMP_glScissor(x-1, window->height-h-y-1, w+1, h+1);
 	}
 	else
 	{
@@ -887,7 +887,7 @@ vec4 render_get_scissor(platform_window *window)
 	if (global_use_gpu)
 	{
 		vec4 vec;
-		glGetIntegerv(GL_SCISSOR_BOX, (GLint*)(&vec));
+		IMP_glGetIntegerv(GL_SCISSOR_BOX, (GLint*)(&vec));
 		vec.x += 1;
 		vec.w -= 1;
 		vec.h -= 1;
@@ -904,7 +904,7 @@ void render_reset_scissor()
 {
 	if (global_use_gpu)
 	{
-		glDisable(GL_SCISSOR_TEST);
+		IMP_glDisable(GL_SCISSOR_TEST);
 	}
 	else
 	{

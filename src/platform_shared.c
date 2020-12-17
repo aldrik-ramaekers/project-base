@@ -195,6 +195,7 @@ void platform_open_file_dialog(file_dialog_type type, char *buffer, char *file_f
 	args->type = type;
 	args->file_filter = file_filter;
 	args->start_path = start_path;
+	args->default_save_file_extension = "";
 	
 	thread thr;
 	thr.valid = false;

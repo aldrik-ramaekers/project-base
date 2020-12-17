@@ -7,9 +7,9 @@
 #include <windows.h>
 #include <time.h>
 #include <locale.h>
-#include <GL/gl.h>
-#include <GL/glcorearb.h>
-#include <GL/wglext.h>
+//#include <GL/gl.h>
+//#include <GL/glcorearb.h>
+//#include <GL/wglext.h>
 #include <wingdi.h>
 #include <gdiplus.h>
 #include <shlobj.h>
@@ -607,16 +607,16 @@ void platform_setup_backbuffer(platform_window *window)
 		}
 		else
 		{
-			wglShareLists(share_list, window->gl_context);
+			IMP_wglShareLists(share_list, window->gl_context);
 		}
 		
-		wglMakeCurrent(window->hdc, window->gl_context);
+		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 	}
 	else
 	{
 		share_list = 0;
-		wglMakeCurrent(NULL, NULL);
-		wglDeleteContext(window->gl_context);
+		IMP_wglMakeCurrent(NULL, NULL);
+		IMP_wglDeleteContext(window->gl_context);
 		window->gl_context = 0;
 		
 		_allocate_backbuffer(window);
@@ -629,27 +629,27 @@ void platform_setup_renderer()
 	if (global_use_gpu)
 	{
 		////// GL SETUP
-		glDepthMask(GL_TRUE);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDepthFunc(GL_LEQUAL);
-		glEnable(GL_DEPTH_TEST);
-		glAlphaFunc(GL_GREATER, 0.0f);
-		glEnable(GL_ALPHA_TEST);
-		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-		glEnable(GL_SAMPLE_ALPHA_TO_ONE);
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_SCISSOR_TEST);
-		glEnable(GL_BLEND);
-		//glEnable(GL_FRAMEBUFFER_SRGB);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_MULTISAMPLE_ARB);
+		IMP_glDepthMask(GL_TRUE);
+		IMP_glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		IMP_glDepthFunc(GL_LEQUAL);
+		IMP_glEnable(GL_DEPTH_TEST);
+		IMP_glAlphaFunc(GL_GREATER, 0.0f);
+		IMP_glEnable(GL_ALPHA_TEST);
+		IMP_glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		IMP_glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+		IMP_glEnable(GL_MULTISAMPLE);
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glEnable(GL_SCISSOR_TEST);
+		IMP_glEnable(GL_BLEND);
+		//IMP_glEnable(GL_FRAMEBUFFER_SRGB);
+		IMP_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		IMP_glEnable(GL_MULTISAMPLE_ARB);
 		
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		IMP_glMatrixMode(GL_TEXTURE);
+		IMP_glLoadIdentity();
 		
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		IMP_glMatrixMode(GL_MODELVIEW);
+		IMP_glLoadIdentity();
 	}
 }
 
@@ -827,8 +827,8 @@ void platform_destroy_window(platform_window *window)
 	if (platform_window_is_valid(window)) {
 		if (global_use_gpu)
 		{
-			wglMakeCurrent(NULL, NULL);
-			wglDeleteContext(window->gl_context);
+			IMP_wglMakeCurrent(NULL, NULL);
+			IMP_wglDeleteContext(window->gl_context);
 		}
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 		
@@ -934,7 +934,7 @@ void platform_handle_events(platform_window *window)
 	}
 	
 	if (global_use_gpu)
-		glViewport(0, 0, window->width, window->height);
+		IMP_glViewport(0, 0, window->width, window->height);
 }
 
 void platform_window_swap_buffers(platform_window *window)
@@ -1278,7 +1278,7 @@ static void* platform_open_file_dialog_implementation(void *data)
 	if (args->type == SAVE_FILE)
 	{
 		info.Flags = OFN_EXTENSIONDIFFERENT | OFN_OVERWRITEPROMPT;
-		GetSaveFileNameA(&info);
+		IMP_GetSaveFileNameA(&info);
 		string_copyn(args->buffer, info.lpstrFile, MAX_INPUT_LENGTH);
 	}
 	else if (args->type == OPEN_DIRECTORY)
@@ -1292,7 +1292,7 @@ static void* platform_open_file_dialog_implementation(void *data)
 	else if (args->type == OPEN_FILE)
 	{
 		info.Flags = OFN_FILEMUSTEXIST;
-		GetOpenFileNameA(&info);
+		IMP_GetOpenFileNameA(&info);
 		string_copyn(args->buffer, info.lpstrFile, MAX_INPUT_LENGTH);
 	}
 	
@@ -1331,7 +1331,7 @@ void platform_run_command(char *command)
 void platform_window_make_current(platform_window *window)
 {
 	if (global_use_gpu)
-		wglMakeCurrent(window->hdc, window->gl_context);
+		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 }
 
 void platform_init(int argc, char **argv)

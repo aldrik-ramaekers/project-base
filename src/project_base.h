@@ -14,6 +14,7 @@
 /*
     :/Title TODO's
     :/Text  - write tests for array multi threaded usage
+            - add parameter to platform_open_file_dialog for args->default_save_file_extension
             - put function and property names on same column with tab
             - get rid of assert and make custom error handler+reporterm
             - write tests for settings_config

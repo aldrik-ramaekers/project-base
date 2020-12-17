@@ -27,6 +27,9 @@ int main(int argc, char **argv)
                         if (ui_push_menu_item("Poop", "Ctrl + O")) 
                         { 
                             push_notification("Poop!");
+
+                            char buffer[4000];
+                            platform_open_file_dialog(SAVE_FILE, buffer, 0, 0);
                         }
                     }
                 }

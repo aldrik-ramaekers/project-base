@@ -81,23 +81,23 @@ bool assets_do_post_process()
 			{
 				if (!global_use_gpu) { task->image->loaded = true; goto done; }
 				
-				glGenTextures(1, &task->image->textureID);
-				glBindTexture(GL_TEXTURE_2D, task->image->textureID);
+				IMP_glGenTextures(1, &task->image->textureID);
+				IMP_glBindTexture(GL_TEXTURE_2D, task->image->textureID);
 				
 				s32 flag = is_big_endian() ? GL_UNSIGNED_INT_8_8_8_8 : 
 				GL_UNSIGNED_INT_8_8_8_8_REV;
 				
 				if (task->type == ASSET_IMAGE)
-					glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
+					IMP_glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_RGBA, flag, task->image->data);
 				else
-					glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
+					IMP_glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_BGRA, flag, task->image->data);
 				
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				task->image->loaded = true;
-				glBindTexture(GL_TEXTURE_2D, 0);
+				IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			}
 		}
 		else if (task->type == ASSET_FONT)
@@ -110,15 +110,15 @@ bool assets_do_post_process()
 				{
 					glyph *g = &task->font->glyphs[i];
 					
-					glGenTextures(1, &g->textureID);
-					glBindTexture(GL_TEXTURE_2D, g->textureID);
+					IMP_glGenTextures(1, &g->textureID);
+					IMP_glBindTexture(GL_TEXTURE_2D, g->textureID);
 					
-					glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-					glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-                    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-                    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-					glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-					glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, g->width,g->height,
+					IMP_glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+					IMP_glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+                    IMP_glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+                    IMP_glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+					IMP_glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+					IMP_glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, g->width,g->height,
 								 0, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap );
 				}
 				
@@ -333,8 +333,8 @@ void assets_destroy_image(image *image_to_destroy)
 	{
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glDeleteTextures(1, &image_to_destroy->textureID);
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
+			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
 		}
 		
 		image_to_destroy->references = 0;
@@ -393,8 +393,8 @@ void assets_destroy_font(font *font_to_destroy)
 			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 			{
 				glyph g = font_to_destroy->glyphs[i];
-				glBindTexture(GL_TEXTURE_2D, 0);
-				glDeleteTextures(1, &g.textureID);
+				IMP_glBindTexture(GL_TEXTURE_2D, 0);
+				IMP_glDeleteTextures(1, &g.textureID);
 			}
 		}
 		
@@ -469,8 +469,8 @@ void assets_destroy_bitmap(image *image_to_destroy)
 	{
 		if (global_use_gpu)
 		{
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glDeleteTextures(1, &image_to_destroy->textureID);
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
+			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
 		}
 		
 		image_to_destroy->references = 0;
@@ -498,8 +498,8 @@ void assets_switch_render_method()
 		}
 		else
 		{
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glDeleteTextures(1, &img_at->textureID);
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
+			IMP_glDeleteTextures(1, &img_at->textureID);
 		}
 	}
 	
@@ -521,8 +521,8 @@ void assets_switch_render_method()
 			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 			{
 				glyph g = font_at->glyphs[i];
-				glBindTexture(GL_TEXTURE_2D, 0);
-				glDeleteTextures(1, &g.textureID);
+				IMP_glBindTexture(GL_TEXTURE_2D, 0);
+				IMP_glDeleteTextures(1, &g.textureID);
 			}
 		}
 	}
