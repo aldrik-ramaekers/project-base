@@ -239,12 +239,12 @@ bool platform_directory_exists(char *path);
 void platform_create_directory(char *path);
 bool platform_file_exists(char *path);
 void platform_show_alert(char *title, char *message);
-char *get_config_save_location(char *buffer, char *directory);
-char *get_file_extension(char *path);
-void get_name_from_path(char *buffer, char *path);
-void get_directory_from_path(char *buffer, char *path);
+char *platform_get_config_save_location(char *buffer, char *directory);
+char *platform_get_file_extension(char *path);
+void platform_get_name_from_path(char *buffer, char *path);
+void platform_get_directory_from_path(char *buffer, char *path);
 vec2 platform_get_window_size(platform_window *window);
-s32 filter_matches(array *filters, char *string, char **matched_filter);
+s32 platform_filter_matches(array *filters, char *string, char **matched_filter);
 bool platform_delete_file(char *path);
 
 bool platform_keep_running(platform_window *window);

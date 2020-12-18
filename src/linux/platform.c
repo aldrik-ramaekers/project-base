@@ -158,7 +158,7 @@ void platform_create_config_directory(char *directory)
 	}
 }
 
-char* get_config_save_location(char *buffer, char *directory)
+char* platform_get_config_save_location(char *buffer, char *directory)
 {
 	char *env = getenv("HOME");
 	snprintf(buffer, PATH_MAX, "%s/%s%s", env, directory, "/config.txt");
@@ -1550,7 +1550,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 				
 				if (include_directories)
 				{
-					if ((len = filter_matches(&filters, dir->d_name, 
+					if ((len = platform_filter_matches(&filters, dir->d_name, 
 											  &matched_filter)) && len != -1)
 					{
 						char *buf;
@@ -1596,7 +1596,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 				if (info) info->file_count++;
 				
 				// check if name matches pattern
-				if ((len = filter_matches(&filters, dir->d_name, 
+				if ((len = platform_filter_matches(&filters, dir->d_name, 
 										  &matched_filter)) && len != -1)
 				{
 					char *buf;

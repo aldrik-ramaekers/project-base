@@ -4,7 +4,7 @@
 *  All rights reserved.
 */
 
-void get_name_from_path(char *buffer, char *path)
+void platform_get_name_from_path(char *buffer, char *path)
 {
 	buffer[0] = 0;
 	
@@ -31,7 +31,7 @@ void get_name_from_path(char *buffer, char *path)
 	string_copyn(buffer, path_end+1, MAX_INPUT_LENGTH);
 }
 
-void get_directory_from_path(char *buffer, char *path)
+void platform_get_directory_from_path(char *buffer, char *path)
 {
 	buffer[0] = 0;
 	
@@ -66,8 +66,8 @@ void platform_autocomplete_path(char *buffer, bool want_dir)
 {
 	char dir[MAX_INPUT_LENGTH]; 
 	char name[MAX_INPUT_LENGTH]; 
-	get_directory_from_path(dir, buffer);
-	get_name_from_path(name, buffer);
+	platform_get_directory_from_path(dir, buffer);
+	platform_get_name_from_path(name, buffer);
 	
 	// nothing to autocomplete
 	if (name[0] == 0)
@@ -180,7 +180,7 @@ void destroy_found_file_array(array *found_files)
 	array_destroy(found_files);
 }
 
-char *get_file_extension(char *path)
+char *platform_get_file_extension(char *path)
 {
 	while(*path != '.' && *path)
 	{
@@ -189,7 +189,7 @@ char *get_file_extension(char *path)
 	return path;
 }
 
-s32 filter_matches(array *filters, char *string, char **matched_filter)
+s32 platform_filter_matches(array *filters, char *string, char **matched_filter)
 {
 	for (s32 i = 0; i < filters->length; i++)
 	{
@@ -226,7 +226,7 @@ void platform_init_shared(int argc, char **argv)
 	binary_path = platform_get_full_path(argv[0]);
 	
 	char buf[MAX_PATH_LENGTH];
-	get_directory_from_path(buf, binary_path);
+	platform_get_directory_from_path(buf, binary_path);
 	string_copyn(binary_path, buf, MAX_INPUT_LENGTH);
 
 	assets_create();

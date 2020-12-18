@@ -81,7 +81,7 @@ void settings_init(char *directory)
 	platform_create_config_directory(directory);
 
 	config.path = mem_alloc(MAX_INPUT_LENGTH);
-	get_config_save_location(config.path, directory);
+	platform_get_config_save_location(config.path, directory);
 
 	config.settings = array_create(sizeof(config_setting));
 	

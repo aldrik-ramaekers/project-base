@@ -300,7 +300,7 @@ void platform_create_config_directory(char *directory)
 	}
 }
 
-char* get_config_save_location(char *buffer, char *directory)
+char* platform_get_config_save_location(char *buffer, char *directory)
 {
 	if(SUCCEEDED(SHGetFolderPathA(0, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, NULL, 0, buffer)))
 	{
@@ -1149,7 +1149,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 			
 			if (include_directories)
 			{
-				if ((len = filter_matches(&filters, name, 
+				if ((len = platform_filter_matches(&filters, name, 
 										  &matched_filter)) && len != -1)
 				{
 					// is file
@@ -1197,7 +1197,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 		{
 			if (info) info->file_count++;
 			
-			if ((len = filter_matches(&filters, name, 
+			if ((len = platform_filter_matches(&filters, name, 
 									  &matched_filter)) && len != -1)
 			{
 				// is file

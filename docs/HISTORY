@@ -1,4 +1,5 @@
 2.0.0
+   - Prepend all platform functions with platform_
    - Rename get_filters to string_split
    - Better logging and assert reporting
    - Fix crash with platform_open_file_dialog when choosing the save file option
