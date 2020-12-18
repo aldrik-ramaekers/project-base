@@ -146,7 +146,7 @@ inline void set_render_depth(s32 depth)
 
 void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 {
-	assert(image);
+	log_assert_m(image);
 	
 	if (global_use_gpu)
 	{
@@ -184,7 +184,7 @@ void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 
 void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color tint)
 {
-	assert(image);
+	log_assert_m(image);
 	if (image->loaded)
 	{
 		if (global_use_gpu)
@@ -203,7 +203,7 @@ void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color 
 		}
 		else
 		{
-			assert(0 && "not implemented");
+			log_assert_m(0 && "not implemented");
 		}
 	}
 }
@@ -760,7 +760,7 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 		}
 		else if (dir == TRIANGLE_RIGHT)
 		{
-			assert(0 && "not implemented"); // TODO(Aldrik): implement
+			log_assert_m(0 && "not implemented"); // TODO(Aldrik): implement
 		}
 		
 		IMP_glEnd();
@@ -825,7 +825,7 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 		}
 		else if (dir == TRIANGLE_RIGHT)
 		{
-			assert(0 && "not implemented"); // TODO(Aldrik): implement
+			log_assert_m(0 && "not implemented"); // TODO(Aldrik): implement
 		}
 		
 	}

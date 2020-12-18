@@ -75,8 +75,8 @@ inline checkbox_state ui_create_checkbox(bool selected)
 
 inline textbox_state ui_create_textbox(u16 max_len)
 {
-	assert(max_len > 0);
-	assert(max_len <= MAX_INPUT_LENGTH);
+	log_assert_m(max_len > 0);
+	log_assert_m(max_len <= MAX_INPUT_LENGTH);
 	
 	textbox_state state;
 	state.max_len = max_len;
@@ -1307,7 +1307,7 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 		state->hovered = false;
 	}
 	
-	assert(global_ui_context.submenus.count <= 4);
+	log_assert_m(global_ui_context.submenus.count <= 4);
 	global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count++] = state;
 	
 	if (result) state->open = false;
@@ -1951,7 +1951,7 @@ void ui_push_tooltip(char *text)
 			else if (global_ui_context.tooltip.x > 
 					 global_ui_context.active_window->width-(total_w/2))
 			{
-				assert(0 && "not implemented"); // TODO(Aldrik): implement
+				log_assert_m(0 && "not implemented"); // TODO(Aldrik): implement
 			}
 			// align bottom
 			else

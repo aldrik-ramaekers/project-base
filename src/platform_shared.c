@@ -79,7 +79,7 @@ void platform_autocomplete_path(char *buffer, bool want_dir)
 	string_appendn(name, "*", MAX_INPUT_LENGTH);
 	
 	array files = array_create(sizeof(found_file));
-	array filters = get_filters(name);
+	array filters = string_split(name);
 	bool is_cancelled = false;
 	platform_list_files_block(&files, dir, filters, false, 0, want_dir, &is_cancelled, 0);
 	
@@ -119,47 +119,11 @@ void platform_autocomplete_path(char *buffer, bool want_dir)
 	array_destroy(&files);
 }
 
-array get_filters(char *pattern)
-{
-	array result = array_create(MAX_INPUT_LENGTH);
-	
-	char current_filter[MAX_INPUT_LENGTH];
-	s32 filter_len = 0;
-	while(*pattern)
-	{
-		char ch = *pattern;
-		
-		if (ch == ',')
-		{
-			current_filter[filter_len] = 0;
-			array_push(&result, current_filter);
-			filter_len = 0;
-		}
-		else
-		{
-			if(filter_len < MAX_INPUT_LENGTH-1)
-			{
-				current_filter[filter_len++] = ch;
-			}
-			else
-			{
-				current_filter[filter_len] = ch;
-			}
-		}
-		
-		pattern++;
-	}
-	current_filter[filter_len] = 0;
-	array_push(&result, current_filter);
-	
-	return result;
-}
-
 void *platform_list_files_thread(void *args)
 {
 	list_file_args *info = args;
 	
-	array filters = get_filters(info->pattern);
+	array filters = string_split(info->pattern);
 	platform_list_files_block(info->list, info->start_dir, filters, info->recursive, info->bucket, info->include_directories, info->is_cancelled, info->info);
 	
 	mutex_lock(&info->list->mutex);
@@ -188,14 +152,14 @@ void platform_list_files(array *list, char *start_dir, char *filter, bool recurs
 	thread_detach(&thr);
 }
 
-void platform_open_file_dialog(file_dialog_type type, char *buffer, char *file_filter, char *start_path)
+void platform_open_file_dialog(file_dialog_type type, char *buffer, char *file_filter, char *start_path, char *save_file_extension)
 {
 	struct open_dialog_args *args = mem_alloc(sizeof(struct open_dialog_args));
 	args->buffer = buffer;
 	args->type = type;
 	args->file_filter = file_filter;
 	args->start_path = start_path;
-	args->default_save_file_extension = "";
+	args->default_save_file_extension = save_file_extension;
 	
 	thread thr;
 	thr.valid = false;

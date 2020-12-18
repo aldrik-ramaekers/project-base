@@ -7,8 +7,6 @@
 #ifndef INCLUDE_ARRAY
 #define INCLUDE_ARRAY
 
-#define ASSERT(e_) {if(!(e_)){*(int*)0=0;}}
-
 //	:/Title Array
 //	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
 //			This implementation provides functionality for adding, deleting and changing data.

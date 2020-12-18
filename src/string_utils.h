@@ -60,42 +60,50 @@ typedef struct t_text_match
 } text_match;
 
 #define string_contains(big, small) string_contains_ex(big, small, 0, 0)
+
 bool string_match(char *first, char *second);
-bool string_contains_ex(char *big, char *small, array *text_matches, bool *cancel_search);
-void string_trim(char *string);
 bool string_equals(char *first, char *second);
-s32 string_length(char *buffer);
+bool string_contains_ex(char *big, char *small, array *text_matches, bool *cancel_search);
+
+s32 	string_length(char *buffer);
+array 	string_split(char *text);
+void 	string_copyn(char *buffer, char *text, s32 bufferlen);
+
+void string_trim(char *string);
 void string_append(char *buffer, char *text);
-bool string_is_asteriks(char *text);
-void string_copyn(char *buffer, char *text, s32 bufferlen);
 void string_appendn(char *buffer, char *text, s32 bufferlen);
 void string_appendf(char *buffer, char *text);
 bool string_remove(char **buffer, char *text);
-char* string_get_json_literal(char **buffer, char *tmp);
-s32 string_get_json_number(char **buffer);
-s32 string_get_json_ulong_number(char **buffer);
-char *string_get_next(char *list, char *buffer, char seperator);
-bool string_is_whitespace(char *text);
-utf8_int32_t utf8_str_at(char *str, s32 index);
-void utf8_str_remove_at(char *str, s32 at);
-void utf8_str_remove_range(char *str, s32 from, s32 to);
-void utf8_str_insert_at(char *str, s32 at, utf8_int32_t newval);
-void utf8_str_insert_utf8str(char *str, s32 at, char *toinsert);
-void utf8_str_replace_at(char *str, s32 at, utf8_int32_t newval);
-char* utf8_str_upto(char *str, s32 index);
-char *utf8_str_copy_upto(char *str, s32 roof, char *buffer);
-char *utf8_str_copy_range(char *str, s32 floor, s32 roof, char *buffer);
-bool string_is_numeric(char *str);
 void string_convert_crlf_to_lf(char *buffer);
-u64 string_to_u64(char *str);
-u32 string_to_u32(char *str);
-u16 string_to_u16(char *str);
-u8 string_to_u8(char *str);
-s64 string_to_s64(char *str);
-s32 string_to_s32(char *str);
-s16 string_to_s16(char *str);
-s8 string_to_s8(char *str);
-f32 string_to_f32(char *str);
-f64 string_to_f64(char *str);
+
+char* 	string_get_json_literal(char **buffer, char *tmp); // @Unused
+s32 	string_get_json_number(char **buffer); // @Unused
+s32 	string_get_json_ulong_number(char **buffer); // @Unused
+char*	string_get_next(char *list, char *buffer, char seperator); // @Unused
+
+bool string_is_asteriks(char *text);
+bool string_is_whitespace(char *text);
+bool string_is_numeric(char *str);
+
+utf8_int32_t 	utf8_str_at(char *str, s32 index);
+void 			utf8_str_remove_at(char *str, s32 at);
+void 			utf8_str_remove_range(char *str, s32 from, s32 to);
+void 			utf8_str_insert_at(char *str, s32 at, utf8_int32_t newval);
+void 			utf8_str_insert_utf8str(char *str, s32 at, char *toinsert);
+void 			utf8_str_replace_at(char *str, s32 at, utf8_int32_t newval);
+char* 			utf8_str_upto(char *str, s32 index);
+char*			utf8_str_copy_upto(char *str, s32 roof, char *buffer);
+char*			utf8_str_copy_range(char *str, s32 floor, s32 roof, char *buffer);
+
+u64 	string_to_u64(char *str);
+u32 	string_to_u32(char *str);
+u16 	string_to_u16(char *str);
+u8 		string_to_u8(char *str);
+s64 	string_to_s64(char *str);
+s32 	string_to_s32(char *str);
+s16 	string_to_s16(char *str);
+s8 		string_to_s8(char *str);
+f32 	string_to_f32(char *str);
+f64 	string_to_f64(char *str);
 
 #endif

@@ -656,3 +656,39 @@ inline f64 string_to_f64(char *str)
 {
 	return (f64)strtod(str, NULL);
 }
+
+array string_split(char *text)
+{	
+	array result = array_create(MAX_INPUT_LENGTH);
+	
+	char current_filter[MAX_INPUT_LENGTH];
+	s32 filter_len = 0;
+	while(*text)
+	{
+		char ch = *text;
+		
+		if (ch == ',')
+		{
+			current_filter[filter_len] = 0;
+			array_push(&result, current_filter);
+			filter_len = 0;
+		}
+		else
+		{
+			if(filter_len < MAX_INPUT_LENGTH-1)
+			{
+				current_filter[filter_len++] = ch;
+			}
+			else
+			{
+				current_filter[filter_len] = ch;
+			}
+		}
+		
+		text++;
+	}
+	current_filter[filter_len] = 0;
+	array_push(&result, current_filter);
+	
+	return result;
+}

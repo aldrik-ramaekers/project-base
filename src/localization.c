@@ -43,7 +43,7 @@ void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 
 char* locale_get_name()
 {
-	assert(global_localization.loaded);
+	log_assert_m(global_localization.loaded);
 
 	if (!global_localization.active_localization)
 	{
@@ -55,7 +55,7 @@ char* locale_get_name()
 
 char* locale_get_id()
 {
-	assert(global_localization.loaded);
+	log_assert_m(global_localization.loaded);
 	
 	if (!global_localization.active_localization)
 	{
@@ -67,7 +67,7 @@ char* locale_get_id()
 
 bool set_locale(char *country_id)
 {
-	assert(global_localization.loaded);
+	log_assert_m(global_localization.loaded);
 
 	if (country_id == 0 && global_localization.mo_files.length)
 	{
@@ -96,7 +96,7 @@ bool set_locale(char *country_id)
 
 char* localize(const char *identifier)
 {
-	assert(global_localization.loaded);
+	log_assert_m(global_localization.loaded);
 
 	if (!global_localization.active_localization)
 	{
@@ -127,7 +127,7 @@ void localization_init()
 
 void localization_destroy()
 {
-	assert(global_localization.loaded);
+	log_assert_m(global_localization.loaded);
 
 	for (s32 i = 0; i < global_localization.mo_files.length; i++)
 	{

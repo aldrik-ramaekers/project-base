@@ -5,7 +5,7 @@
 */
 
 /*
-//	:/Title Project-base entry-point
+    :/Title Project-base entry-point
     :/Text  This is that entry point of the project_base library. This is the only file you
             will have to include to use this library. All files will be imported by including
             this file.
@@ -13,24 +13,33 @@
 
 /*
     :/Title TODO's
-    :/Text
-            - add parameter to platform_open_file_dialog for args->default_save_file_extension
+    :/Text  Project-base
             - put function and property names on same column with tab
-            - get rid of assert and make custom error handler+reporterm
             - make sure a valid render config is found on linux
             - replace all int with s32
             - move platform dependent includes in project_base.h to respective files
-            - remove all unused functions
-            - rename get_filters to something more obvious and move to respective file
+            - remove all unused functions @Unused
             - prefix private functions with _ like platform_destroy_shared
             - make custom popup windows so we can get rid of zenity and windows deps
-            - stop linking to libs and use LoadLibrary
+            - stop linking to libs and use dlopen on linux
+            - add messages to all asserts
+
+    :/Text  Text-search
             - make settings pages use settings_config directly
             - get rid of text-search code in platform.h
 */
 
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
+
+#pragma GCC push_options
+
+#if defined(MODE_DEBUG)
+#pragma GCC optimize("Og")
+#else
+#pragma GCC optimize("O3")
+#define NDEBUG
+#endif
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
@@ -54,7 +63,6 @@
 
 #include "stdint.h"
 #include "string.h"
-#include "assert.h"
 
 #define s8 int8_t
 #define s16 int16_t
@@ -82,6 +90,7 @@
 #define true 1
 #define false 0
 
+#include "logging.h"
 #include "resources.h"
 #include "thread.h"
 #include "array.h"
@@ -139,5 +148,7 @@
 #include "localization.c"
 #include "memory_bucket.c"
 #include "external/cJSON.c"
+
+#pragma GCC pop_options
 
 #endif

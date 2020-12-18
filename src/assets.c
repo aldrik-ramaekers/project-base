@@ -274,7 +274,7 @@ void *assets_queue_worker()
 			
 			mutex_lock(&asset_mutex);
 			
-			assert(global_asset_collection.post_process_queue.reserved_length > 
+			log_assert_m(global_asset_collection.post_process_queue.reserved_length > 
 				   global_asset_collection.post_process_queue.length);
 			
 			array_push(&global_asset_collection.post_process_queue, &buf);
@@ -312,7 +312,7 @@ image *assets_load_image(u8 *start_addr, u8 *end_addr)
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
-	assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
+	log_assert_m(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
 	
 	int index = array_push(&global_asset_collection.images, &new_image);
 	
@@ -347,7 +347,7 @@ void assets_destroy_image(image *image_to_destroy)
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 {
-	//assert(!(size % 4));
+	//log_assert_m(!(size % 4));
 	for (int i = 0; i < global_asset_collection.fonts.length; i++)
 	{
 		font *font_at = array_at(&global_asset_collection.fonts, i);
@@ -369,7 +369,7 @@ font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 	
 	// NOTE(Aldrik): we should never realloc the font array because pointers will be 
 	// invalidated.
-	assert(global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length);
+	log_assert_m(global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length);
 	
 	int index = array_push(&global_asset_collection.fonts, &new_font);
 	
@@ -448,7 +448,7 @@ image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
-	assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
+	log_assert_m(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
 	
 	int index = array_push(&global_asset_collection.images, &new_image);
 	

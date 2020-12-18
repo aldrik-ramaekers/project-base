@@ -123,7 +123,7 @@ void settings_init(char *directory)
 
 config_setting* settings_get_setting(char *name)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 	
 	for (s32 i = 0; i < _settings_file.settings.length; i++)
 	{
@@ -138,7 +138,7 @@ config_setting* settings_get_setting(char *name)
 
 char* settings_get_string(char *name)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	config_setting* setting = settings_get_setting(name);
 	if (setting)
@@ -149,7 +149,7 @@ char* settings_get_string(char *name)
 
 s64 settings_get_number(char *name)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	config_setting* setting = settings_get_setting(name);
 	if (setting && setting->value)
@@ -160,7 +160,7 @@ s64 settings_get_number(char *name)
 
 s64 settings_get_number_or_default(char *name, s64 def)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	config_setting* setting = settings_get_setting(name);
 	if (setting && setting->value)
@@ -171,7 +171,7 @@ s64 settings_get_number_or_default(char *name, s64 def)
 
 void settings_set_string(char *name, char *value)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	config_setting* setting = settings_get_setting(name);
 	if (setting)
@@ -202,7 +202,7 @@ void settings_set_string(char *name, char *value)
 
 void settings_set_number(char *name, s64 value)
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	config_setting* setting = settings_get_setting(name);
 	if (setting)
@@ -237,7 +237,7 @@ void settings_set_number(char *name, s64 value)
 
 void settings_destroy()
 {
-	assert(_settings_file.loaded);
+	log_assert_m(_settings_file.loaded);
 
 	for (s32 i = 0; i < _settings_file.settings.length; i++)
 	{

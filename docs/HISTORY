@@ -1,4 +1,6 @@
 2.0.0
+   - Fix crash with platform_open_file_dialog when choosing the save file option
+   - refactor platform_open_file_dialog
    - Error handling for platform_open_window
    - Fix crash when assets_destroy gets called while loading assets
    - Return value for platform_delete_file

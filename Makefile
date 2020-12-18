@@ -3,7 +3,7 @@ MAKEFLAGS += --always-make
 
 main_file = src/main.c
 output_file = libprojectbase
-flags = -m64 -c -Wall -O3
+flags = -m64 -c -Wall -DMODE_DEBUG -g
 
 gcc_install_dir := $(shell which "gcc")
 gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
@@ -106,10 +106,10 @@ examples:
 	make $(create_examples_command)
 
 examples_windows:
-	gcc -m64 -g examples/example_window.c -o build/example_window.exe -lprojectbase $(libs)
+	gcc -m64 -g -DMODE_DEBUG examples/example_window.c -o build/example_window.exe -lprojectbase $(libs)
 
 examples_linux:
-	$(permissions) gcc -m64 -g examples/example_window.c -o build/example_window -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c -o build/example_window -lprojectbase $(libs)
 	$(permissions) chmod +x build/example_window
 
 cloc:

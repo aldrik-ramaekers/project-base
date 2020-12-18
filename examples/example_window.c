@@ -31,7 +31,7 @@ int main(int argc, char **argv)
                             push_notification("Poop!");
 
                             char buffer[4000];
-                            platform_open_file_dialog(SAVE_FILE, buffer, 0, 0);
+                            platform_open_file_dialog(SAVE_FILE, buffer, 0, 0, "jpg");
                         }
                     }
                 }

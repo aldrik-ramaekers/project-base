@@ -6,7 +6,7 @@
 
 inline memory_bucket memory_bucket_init(s32 bucket_size)
 {
-	assert(bucket_size >= MAX_INPUT_LENGTH);
+	log_assert_m(bucket_size >= MAX_INPUT_LENGTH);
 	
 	memory_bucket collection;
 	collection.bucket_mutex = mutex_create();

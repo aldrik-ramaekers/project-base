@@ -343,7 +343,7 @@ file_content platform_read_file_content(char *path, const char *mode)
 
 inline void platform_destroy_file_content(file_content *content)
 {
-	assert(content);
+	log_assert_m(content);
 	mem_free(content->content);
 }
 
@@ -760,12 +760,12 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	if (width > max_w) width = max_w;
 	if (height > max_h) width = max_h;
 
-	assert(width > 0);
-	assert(height > 0);
-	assert(max_w >= 0);
-	assert(max_h >= 0);
-	assert(min_w > 0);
-	assert(min_h > 0);
+	log_assert_m(width > 0);
+	log_assert_m(height > 0);
+	log_assert_m(max_w >= 0);
+	log_assert_m(max_h >= 0);
+	log_assert_m(min_w > 0);
+	log_assert_m(min_h > 0);
 
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
@@ -1523,7 +1523,7 @@ void *platform_open_file_dialog_block(void *arg)
 
 void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled, search_info *info)
 {
-	assert(list);
+	log_assert_m(list);
 	
 	s32 len = 0;
 	char *matched_filter = 0;
