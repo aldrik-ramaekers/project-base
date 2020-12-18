@@ -1,4 +1,6 @@
 2.0.0
+   - Rename get_filters to string_split
+   - Better logging and assert reporting
    - Fix crash with platform_open_file_dialog when choosing the save file option
    - refactor platform_open_file_dialog
    - Error handling for platform_open_window
