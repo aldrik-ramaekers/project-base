@@ -47,14 +47,14 @@ struct t_mutex
 typedef struct t_thread thread;
 typedef struct t_mutex mutex;
 
-thread thread_start(void *(*start_routine) (void *), void *arg);
-void thread_join(thread *thread);
-bool thread_tryjoin(thread *thread);
-void thread_detach(thread *thread);
-void thread_stop(thread *thread);
-u32 thread_get_id();
-void thread_sleep(u64 microseconds);
-void thread_exit();
+thread 	thread_start(void *(*start_routine) (void *), void *arg);
+void 	thread_join(thread *thread);
+bool 	thread_tryjoin(thread *thread);
+void 	thread_detach(thread *thread);
+void 	thread_stop(thread *thread);
+u32 	thread_get_id();
+void 	thread_sleep(u64 microseconds);
+void 	thread_exit();
 
 mutex mutex_create_recursive();
 mutex mutex_create();

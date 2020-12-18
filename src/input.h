@@ -219,8 +219,8 @@ bool keyboard_is_shortcut_down(s32 shortcut_keys[2]);
 typedef struct t_platform_window platform_window;
 void keyboard_handle_input_string(platform_window *window, keyboard_input *keyboard, char *text);
 
-mouse_input mouse_input_create();
-keyboard_input keyboard_input_create();
-void keyboard_input_destroy(keyboard_input *keyboard);
+mouse_input 	mouse_input_create();
+keyboard_input 	keyboard_input_create();
+void 			keyboard_input_destroy(keyboard_input *keyboard);
 
 #endif

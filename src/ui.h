@@ -202,12 +202,12 @@ void ui_set_textbox_text(textbox_state *textbox, char *text);
 void ui_set_textbox_active(textbox_state *textbox);
 
 // widget initialization
-checkbox_state ui_create_checkbox(bool selected);
-textbox_state ui_create_textbox(u16 max_len);
-button_state ui_create_button();
-scroll_state ui_create_scroll(s32 scroll);
-dropdown_state ui_create_dropdown();
-submenu_state ui_create_submenu();
+checkbox_state 	ui_create_checkbox(bool selected);
+textbox_state 	ui_create_textbox(u16 max_len);
+button_state 	ui_create_button();
+scroll_state 	ui_create_scroll(s32 scroll);
+dropdown_state 	ui_create_dropdown();
+submenu_state 	ui_create_submenu();
 
 void ui_destroy_textbox(textbox_state *state);
 

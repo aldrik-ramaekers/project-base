@@ -99,27 +99,21 @@ typedef struct t_assets {
 	bool done_loading_assets;
 } assets;
 
-char *binary_path;
+char*	binary_path;
+mutex 	asset_mutex;
+assets 	global_asset_collection;
 
-mutex asset_mutex;
-assets global_asset_collection;
-
-void assets_create();
-void assets_destroy();
-
-bool assets_do_post_process();
-void *assets_queue_worker();
-
-image *assets_load_image(u8 *start_addr, u8 *end_addr);
-void assets_destroy_image(image *image);
-
-image *assets_load_bitmap(u8 *start_addr, u8 *end_addr);
-void assets_destroy_bitmap(image *image);
-
-font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
-void assets_destroy_font(font *font);
-
-void assets_switch_render_method();
+void 	assets_create();
+void 	assets_destroy();
+bool 	assets_do_post_process();
+void*	assets_queue_worker();
+image*	assets_load_image(u8 *start_addr, u8 *end_addr);
+void 	assets_destroy_image(image *image);
+image*	assets_load_bitmap(u8 *start_addr, u8 *end_addr);
+void 	assets_destroy_bitmap(image *image);
+font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
+void 	assets_destroy_font(font *font);
+void 	assets_switch_render_method();
 
 #define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
 #define load_font(_name, _size) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _size)

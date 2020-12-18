@@ -20,7 +20,7 @@ typedef struct t_memory_bucket
 	array buckets;
 } memory_bucket;
 
-memory_bucket memory_bucket_init(s32 bucket_size);
-void* memory_bucket_reserve(memory_bucket *bucket, s32 reserve_length);
-void memory_bucket_reset(memory_bucket *bucket);
-void memory_bucket_destroy(memory_bucket *bucket);
+memory_bucket 	memory_bucket_init(s32 bucket_size);
+void* 			memory_bucket_reserve(memory_bucket *bucket, s32 reserve_length);
+void 			memory_bucket_reset(memory_bucket *bucket);
+void 			memory_bucket_destroy(memory_bucket *bucket);

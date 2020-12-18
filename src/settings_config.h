@@ -31,9 +31,9 @@ void settings_write_to_file();
 void settings_destroy();
 
 config_setting* settings_get_setting(char *name);
-char* settings_get_string(char *name);
-s64 settings_get_number(char *name);
-s64 settings_get_number_or_default(char *name, s64 def);
+char* 			settings_get_string(char *name);
+s64 			settings_get_number(char *name);
+s64 			settings_get_number_or_default(char *name, s64 def);
 
 void settings_set_string(char *name, char *value);
 void settings_set_number(char *name, s64 value);
