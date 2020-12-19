@@ -201,7 +201,6 @@ void set_active_textbox(textbox_state *textbox);
 void ui_set_textbox_text(textbox_state *textbox, char *text);
 void ui_set_textbox_active(textbox_state *textbox);
 
-// widget initialization
 checkbox_state 	ui_create_checkbox(bool selected);
 textbox_state 	ui_create_textbox(u16 max_len);
 button_state 	ui_create_button();
@@ -210,8 +209,6 @@ dropdown_state 	ui_create_dropdown();
 submenu_state 	ui_create_submenu();
 
 void ui_destroy_textbox(textbox_state *state);
-
-// widgets
 void ui_begin_menu_bar();
 bool ui_push_menu(char *title);
 bool ui_push_menu_item(char *title, char *shortcut);

@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 #include <time.h>
 #include <X11/XKBlib.h>
@@ -608,12 +607,6 @@ static void create_key_tables(platform_window* window)
 
 inline void platform_init(int argc, char **argv)
 {
-#if 0
-	dlerror(); // clear error
-	void *x11 = dlopen("libX11.so.6", RTLD_NOW | RTLD_GLOBAL);
-	void *randr = dlopen("libXrandr.so", RTLD_NOW | RTLD_GLOBAL);
-#endif
-	
 	setlocale(LC_ALL, "en_US.UTF-8");
 	
 	XInitThreads();
@@ -633,7 +626,7 @@ inline void platform_destroy()
 inline void platform_window_make_current(platform_window *window)
 {
 	if (global_use_gpu)
-		glXMakeCurrent(window->display, window->window, window->gl_context);
+		IMP_glXMakeCurrent(window->display, window->window, window->gl_context);
 }
 
 static void _allocate_backbuffer(platform_window *window)
@@ -682,12 +675,12 @@ void platform_setup_backbuffer(platform_window *window)
 		static GLXContext share_list = 0;
 		
 		// get opengl context
-		window->gl_context = glXCreateContext(window->display, window->visual_info, 
+		window->gl_context = IMP_glXCreateContext(window->display, window->visual_info, 
 											  share_list, GL_TRUE);
 		
 		if (share_list == 0)
 			share_list = window->gl_context;
-		glXMakeCurrent(window->display, window->window, window->gl_context);
+		IMP_glXMakeCurrent(window->display, window->window, window->gl_context);
 		
 	}
 	else
@@ -701,33 +694,33 @@ void platform_setup_renderer()
 	if (global_use_gpu)
 	{
 		////// GL SETUP
-		glDepthMask(GL_TRUE);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDepthFunc(GL_LEQUAL);
-		glEnable(GL_DEPTH_TEST);
-		glAlphaFunc(GL_GREATER, 0.0f);
-		glEnable(GL_ALPHA_TEST);
-		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-		glEnable(GL_SAMPLE_ALPHA_TO_ONE);
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_SCISSOR_TEST);
-		glEnable(GL_BLEND);
-		//glEnable(GL_FRAMEBUFFER_SRGB);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_MULTISAMPLE_ARB);
+		IMP_glDepthMask(GL_TRUE);
+		IMP_glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		IMP_glDepthFunc(GL_LEQUAL);
+		IMP_glEnable(GL_DEPTH_TEST);
+		IMP_glAlphaFunc(GL_GREATER, 0.0f);
+		IMP_glEnable(GL_ALPHA_TEST);
+		IMP_glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		IMP_glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+		IMP_glEnable(GL_MULTISAMPLE);
+		IMP_glEnable(GL_TEXTURE_2D);
+		IMP_glEnable(GL_SCISSOR_TEST);
+		IMP_glEnable(GL_BLEND);
+		//IMP_glEnable(GL_FRAMEBUFFER_SRGB);
+		IMP_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		IMP_glEnable(GL_MULTISAMPLE_ARB);
 		
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		IMP_glMatrixMode(GL_TEXTURE);
+		IMP_glLoadIdentity();
 		
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		IMP_glMatrixMode(GL_MODELVIEW);
+		IMP_glLoadIdentity();
 		
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		IMP_glMatrixMode(GL_PROJECTION);
+		IMP_glLoadIdentity();
 		//glOrtho(0, width, height, 0, -1, 1);
 		
-		glMatrixMode(GL_MODELVIEW);
+		IMP_glMatrixMode(GL_MODELVIEW);
 		
 	}
 }
@@ -812,19 +805,19 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->parent = DefaultRootWindow(window->display);
 	
 	int fbcount;
-	GLXFBConfig* fbc = glXChooseFBConfig(window->display, DefaultScreen(window->display), att, &fbcount);
+	GLXFBConfig* fbc = IMP_glXChooseFBConfig(window->display, DefaultScreen(window->display), att, &fbcount);
 	if (!fbc) goto exit_failure;
 	int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
 	
 	int i;
 	for (i=0; i<fbcount; ++i)
 	{
-		XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, fbc[i] );
+		XVisualInfo *vi = IMP_glXGetVisualFromFBConfig(window->display, fbc[i] );
 		if (vi)
 		{
 			int samp_buf, samples;
-			glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
-			glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLES       , &samples  );
+			IMP_glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
+			IMP_glXGetFBConfigAttrib(window->display, fbc[i], GLX_SAMPLES       , &samples  );
 			
 			if ( best_fbc < 0 || (samp_buf && samples > best_num_samp))
 				best_fbc = i, best_num_samp = samples;
@@ -837,23 +830,23 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	GLXFBConfig bestFbc = fbc[best_fbc];
 	XFree(fbc);
 	
-	XVisualInfo *vi = glXGetVisualFromFBConfig(window->display, bestFbc );
+	XVisualInfo *vi = IMP_glXGetVisualFromFBConfig(window->display, bestFbc );
 	window->visual_info = vi;
 	if (!window->visual_info) goto exit_failure;
 	
 	window->cmap = XCreateColormap(window->display, window->parent, window->visual_info->visual, AllocNone);
 	
 	// calculate window center
-	XRRScreenResources *screens = XRRGetScreenResources(window->display, window->parent);
+	XRRScreenResources *screens = IMP_XRRGetScreenResources(window->display, window->parent);
 	if (!screens) goto exit_failure;
-	XRRCrtcInfo *info = XRRGetCrtcInfo(window->display, screens, screens->crtcs[0]);
+	XRRCrtcInfo *info = IMP_XRRGetCrtcInfo(window->display, screens, screens->crtcs[0]);
 	if (!info) goto exit_failure;
 
 	s32 center_x = (info->width / 2) - (width / 2);
 	s32 center_y = (info->height / 2) - (height / 2);
 	
-	XRRFreeCrtcInfo(info);
-	XRRFreeScreenResources(screens);
+	IMP_XRRFreeCrtcInfo(info);
+	IMP_XRRFreeScreenResources(screens);
 	
 	XSetWindowAttributes window_attributes;
 	window_attributes.colormap = window->cmap;
@@ -1020,8 +1013,8 @@ void platform_destroy_window(platform_window *window)
 	if (platform_window_is_valid(window)) {
 		if (global_use_gpu)
 		{
-			glXMakeCurrent(window->display, None, NULL);
-			glXDestroyContext(window->display, window->gl_context);
+			IMP_glXMakeCurrent(window->display, None, NULL);
+			IMP_glXDestroyContext(window->display, window->gl_context);
 		}
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 		
@@ -1125,7 +1118,7 @@ void platform_handle_events(platform_window *window)
 			if (!global_use_gpu)
 				_allocate_backbuffer(window);
 			else
-				glViewport(0, 0, window->width, window->height);
+				IMP_glViewport(0, 0, window->width, window->height);
 		}
 		else if (window->event.type == FocusIn)
 		{
@@ -1375,7 +1368,7 @@ inline void platform_window_swap_buffers(platform_window *window)
 	}
 	else
 	{
-		glXSwapBuffers(window->display, window->window);
+		IMP_glXSwapBuffers(window->display, window->window);
 	}
 }
 

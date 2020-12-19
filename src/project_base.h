@@ -7,17 +7,15 @@
 /*
     :/Title Project-base entry-point
     :/Text  This is that entry point of the project_base library. This is the only file you
-            will have to include to use this library. All files will be imported by including
-            this file.
+            will have to include to use this library. All functionality will be available 
+            by including this file.
 */
 
 /*
     :/Title TODO's
     :/Text  Project-base
-            - put function and property names on same column with tab
             - make sure a valid render config is found on linux
             - replace all int with s32
-            - move platform dependent includes in project_base.h to respective files
             - remove all unused functions @Unused
             - prefix private functions with _ like platform_destroy_shared
             - make custom popup windows so we can get rid of zenity and windows deps
@@ -122,9 +120,9 @@
 #include "localization.h"
 
 #ifdef OS_LINUX
+#include "linux/lib_loader.c"
 #include "linux/thread.c"
 #include "linux/platform.c"
-#include "linux/lib_loader.c"
 #endif
 
 #ifdef OS_WIN

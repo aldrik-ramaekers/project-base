@@ -2,8 +2,8 @@ HMODULE libOpengl32 = 0;
 HMODULE libComdlg32 = 0;
 HMODULE libGdi32 = 0;
 
-#define __load_lib_or_exit(_var, _name) _var = LoadLibraryA(_name); if (!_var) { printf("Failed to load %s\n", _name); exit(0); }
-#define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load %s\n", #_ptr); exit(0); }
+#define __load_lib_or_exit(_var, _name) _var = LoadLibraryA(_name); if (!_var) { printf("Failed to load library %s\n", _name); exit(0); }
+#define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __def_proc(_return, _name, _params) typedef _return APIENTRY (*DEF_##_name)_params; DEF_##_name IMP_##_name;
 
 __def_proc( HGLRC, wglCreateContext, (HDC));
