@@ -1,7 +1,3 @@
-HMODULE libOpengl32 = 0;
-HMODULE libComdlg32 = 0;
-HMODULE libGdi32 = 0;
-
 #define __load_lib_or_exit(_var, _name) _var = LoadLibraryA(_name); if (!_var) { printf("Failed to load library %s\n", _name); exit(0); }
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __def_proc(_return, _name, _params) typedef _return APIENTRY (*DEF_##_name)_params; DEF_##_name IMP_##_name;
@@ -55,6 +51,10 @@ __def_proc( WINBOOL, SwapBuffers, (HDC))
 
 void _lib_loader_init()
 {
+    HMODULE libOpengl32 = 0;
+    HMODULE libComdlg32 = 0;
+    HMODULE libGdi32 = 0;
+
     __load_lib_or_exit(libOpengl32, "opengl32");
     __load_fnc_or_exit(wglCreateContext, libOpengl32);
     __load_fnc_or_exit(wglShareLists, libOpengl32);
@@ -104,14 +104,4 @@ void _lib_loader_init()
     __load_fnc_or_exit(SetPixelFormat, libGdi32);
     __load_fnc_or_exit(StretchDIBits, libGdi32);
     __load_fnc_or_exit(SwapBuffers, libGdi32);
-}
-
-void _lib_loader_destroy()
-{
-    // Libraries will be freed automatically on program exit.
-    // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya#remarks
-
-    FreeLibrary(libOpengl32);
-    FreeLibrary(libComdlg32);
-    FreeLibrary(libGdi32);
 }

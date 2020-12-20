@@ -17,7 +17,4 @@
 // :/Info 	Load all required dynamic libraries. Will exit the application when a library or function is missing.
 void _lib_loader_init();
 
-// :/Info 	Free all loaded dynamic libraries.
-void _lib_loader_destroy();
-
 #endif

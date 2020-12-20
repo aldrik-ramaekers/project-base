@@ -1,9 +1,6 @@
 #include <dlfcn.h>
 #include <X11/extensions/Xrandr.h>
 
-void* libX11 = 0;
-void* libXRandr = 0;
-
 #define __load_lib(_var, _name) _var = dlopen(_name, RTLD_LAZY);
 #define __load_lib_or_exit(_var, _name) _var = dlopen(_name, RTLD_LAZY); if (!_var) { printf("Failed to load library %s\n", _name); exit(0); }
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)dlsym(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
@@ -52,8 +49,30 @@ __def_proc( void, XRRFreeCrtcInfo, (XRRCrtcInfo *crtcInfo))
 __def_proc( void, XRRFreeScreenResources, (XRRScreenResources *resources))
 __def_proc( XRRScreenResources*, XRRGetScreenResources, (Display *dpy, Window window))
 
+__def_proc( int, pthread_create, (pthread_t *__restrict __newthread, const pthread_attr_t *__restrict __attr, void *(*__start_routine) (void *), void *__restrict __arg))
+__def_proc( void, pthread_exit, (void *__retval))
+__def_proc( int, pthread_join, (pthread_t __th, void **__thread_return))
+__def_proc( int, pthread_tryjoin_np, (pthread_t __th, void **__thread_return))
+__def_proc( int, pthread_detach, (pthread_t __th))
+__def_proc( int, pthread_mutexattr_init, (pthread_mutexattr_t *__attr))
+__def_proc( int, pthread_mutexattr_destroy, (pthread_mutexattr_t *__attr))
+__def_proc( int, pthread_mutexattr_settype, (pthread_mutexattr_t *__attr, int __kind))
+
+__def_proc( int, pthread_attr_init, (pthread_attr_t *__attr))
+__def_proc( int, pthread_attr_destroy, (pthread_attr_t *__attr))
+__def_proc( int, pthread_cancel, (pthread_t __th))
+__def_proc( int, pthread_mutex_init, (pthread_mutex_t *__mutex, const pthread_mutexattr_t *__mutexattr))
+__def_proc( int, pthread_mutex_lock, (pthread_mutex_t *__mutex))
+__def_proc( int, pthread_mutex_trylock, (pthread_mutex_t *__mutex))
+__def_proc( int, pthread_mutex_unlock, (pthread_mutex_t *__mutex))
+__def_proc( int, pthread_mutex_destroy, (pthread_mutex_t *__mutex))
+
 void _lib_loader_init()
 {
+    void* libX11 = 0;
+    void* libXRandr = 0;
+    void* libpthread = 0;
+
     __load_lib(libX11, "libGL.so");
     if (!libX11) {
         __load_lib_or_exit(libX11, "libGL.so.1");
@@ -100,10 +119,25 @@ void _lib_loader_init()
     __load_fnc_or_exit(XRRFreeCrtcInfo, libXRandr);
     __load_fnc_or_exit(XRRFreeScreenResources, libXRandr);
     __load_fnc_or_exit(XRRGetScreenResources, libXRandr);
-}
 
-void _lib_loader_destroy()
-{
-    dlclose(libX11);
-    dlclose(libXRandr);
+    __load_lib(libpthread, "libpthread.so");
+    if (!libX11) {
+        __load_lib_or_exit(libpthread, "libpthread.so.0");
+    }
+    __load_fnc_or_exit(pthread_create, libpthread);
+    __load_fnc_or_exit(pthread_exit, libpthread);
+    __load_fnc_or_exit(pthread_join, libpthread);
+    __load_fnc_or_exit(pthread_tryjoin_np, libpthread);
+    __load_fnc_or_exit(pthread_detach, libpthread);
+    __load_fnc_or_exit(pthread_mutexattr_init, libpthread);
+    __load_fnc_or_exit(pthread_mutexattr_destroy, libpthread);
+    __load_fnc_or_exit(pthread_mutexattr_settype, libpthread);
+    __load_fnc_or_exit(pthread_attr_init, libpthread);
+    __load_fnc_or_exit(pthread_attr_destroy, libpthread);
+    __load_fnc_or_exit(pthread_cancel, libpthread);
+    __load_fnc_or_exit(pthread_mutex_init, libpthread);
+    __load_fnc_or_exit(pthread_mutex_lock, libpthread);
+    __load_fnc_or_exit(pthread_mutex_trylock, libpthread);
+    __load_fnc_or_exit(pthread_mutex_unlock, libpthread);
+    __load_fnc_or_exit(pthread_mutex_destroy, libpthread);
 }

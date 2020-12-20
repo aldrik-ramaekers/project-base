@@ -21,6 +21,7 @@
             - make custom popup windows so we can get rid of zenity and windows deps
             - stop linking to libs and use dlopen on linux
             - add messages to all asserts
+            - get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
 
     :/Text  Text-search
             - make settings pages use settings_config directly

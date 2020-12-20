@@ -22,7 +22,7 @@ ifeq ($(OS), Windows_NT)
 else
 	install_dir = /usr/
 	permissions = sudo
-	libs = -lX11 -lm -lpthread -ldl
+	libs = -lX11 -lm -ldl
 
 	# Commands
 	install_deps_command = install_deps

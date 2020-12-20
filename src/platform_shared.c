@@ -210,8 +210,6 @@ void platform_destroy_shared()
 	assets_destroy();
 
 	keyboard_input_destroy(&_global_keyboard);
-
-	_lib_loader_destroy();
 }
 
 void platform_init_shared(int argc, char **argv)
