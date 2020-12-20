@@ -1,8 +1,6 @@
 #include <projectbase/project_base.h>
 #include <projectbase/addons/c_parser.h>
-
-#define error_if(e) if (e) { printf("       --! ERROR AT: %s\n", #e); return 1; };
-#define success return 0;
+#include <projectbase/addons/test_helper.h>
 
 #define CONFIG_DIRECTORY "test_program_config"
 
@@ -13,29 +11,14 @@
 #include "c_parser.c"
 #include "settings_config.c"
 
-bool failure = false;
-void print_h1(char *str) {
-    printf("# %s\n", str);
-}
-
-void print_result(char *str, s32 result) {
-    if (!result) {
-        printf("    %s\n", str);
-    }
-    else {
-        printf("    %s - FAILURE\n", str);
-        failure = true;
-    }
-}
-
 int main(int argc, char** argv) {
 
     print_h1("String utils");
     print_result("String to number", string_to_number());
 
     print_h1("Threads");
-    print_result("Detached thread", detached_thread());
-    print_result("Joined thread", joined_thread());
+    print_result("Detached thread", detached_thread(argc, argv));
+    print_result("Joined thread", joined_thread(argc, argv));
 
     print_h1("Platform");
     print_result("Open window", open_window(argc, argv));
