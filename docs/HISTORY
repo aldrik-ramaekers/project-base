@@ -1,4 +1,6 @@
 2.0.0
+   - Addon for helping with tests
+   - Dependencies are now dynamically loaded
    - Prepend all platform functions with platform_
    - Rename get_filters to string_split
    - Better logging and assert reporting

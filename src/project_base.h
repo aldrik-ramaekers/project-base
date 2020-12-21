@@ -12,6 +12,16 @@
 */
 
 /*
+    :/Title Source-code tags
+    :/Text  Throughout the source code tags prefixed with @ can be found marking the code
+            below it.
+            - @Hardcoded: hardcoded buffer sizes. Should be fixed.
+            - @Unused: Unused function that should be removed.
+            - @Speed: Slow code that should be rewritten eventually.
+
+*/
+
+/*
     :/Title TODO's
     :/Text  Project-base
             - make sure a valid render config is found on linux
