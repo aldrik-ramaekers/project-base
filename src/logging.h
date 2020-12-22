@@ -9,19 +9,21 @@
 
 #if defined(MODE_DEBUG)
 
+#include <string.h>
+#define __FILENAME__ (strrchr("/" __FILE__, '/') + 1)
+
 #ifdef OS_LINUX
-#define log_assert(_cond, _message) if (!(_cond)) { printf("ERROR: %s, Assertion failed at %s, line %d.\n", _message, __FILE__, __LINE__); exit(0); }
-#define log_info(_message) { printf("INFO: %s, at %s, line %d.\n", _message,  __FILE__, __LINE__, ); }
+#define log_assert(_cond, _message) if (!(_cond)) { printf("ERROR: %s, Assertion failed at %s, line %d. In %s\n", _message, __FILENAME__, __LINE__, __func__); exit(0); }
+#define log_info(_message) { printf("INFO: %s, at %s, line %d. In %s\n", _message,  __FILENAME__, __LINE__, __func__); }
 #endif
 
 #ifdef OS_WIN
 #define log_assert(_cond, _message) if (!(_cond)) \
-{ char __buf[500]; \
-sprintf(__buf, "ERROR: %s, Assertion failed at %s, line %d.\n", _message, __FILE__, __LINE__); \
-printf(__buf); \
-MessageBox(0, __buf, "Error", MB_OK); exit(0); }
-
-#define log_info(_message) { printf("INFO: %s, at %s, line %d.\n", _message,  __FILE__, __LINE__, ); }
+    {   char __buf[500]; \
+        sprintf(__buf, "%s, Assertion failed at %s, line %d. In %s\n", _message, __FILENAME__, __LINE__, __func__); \
+        printf(__buf); \
+        MessageBox(0, __buf, "Error", MB_OK); exit(0); }
+#define log_info(_message) { printf("INFO: %s, at %s, line %d. In %s\n", _message,  __FILENAME__, __LINE__, __func__); }
 #endif
 
 #else

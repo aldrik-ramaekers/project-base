@@ -24,9 +24,9 @@ bool array_exists(array *array)
 
 int array_push(array *array, void *data)
 {
-	log_assert_m(array);
-	log_assert_m(data);
-	log_assert_m(array->reserve_jump >= 1);
+	log_assert(array, "Array cannot be null");
+	log_assert(data, "Data to insert cannot be null");
+	log_assert(array->reserve_jump >= 1, "Array reserve_jump cannot be less than 1. Array is invalid.");
 	
 	mutex_lock(&array->mutex);
 	array->length++;
@@ -53,10 +53,10 @@ int array_push(array *array, void *data)
 
 int array_push_size(array *array, void *data, s32 entry_size)
 {
-	log_assert_m(array);
-	log_assert_m(data);
-	log_assert_m(entry_size <= array->entry_size);
-	log_assert_m(array->reserve_jump >= 1);
+	log_assert(array, "Array cannot be null");
+	log_assert(data, "Data to insert cannot be null");
+	log_assert(entry_size <= array->entry_size, "Size of data to insert cannot be larger than the entry size passed to array_create()");
+	log_assert(array->reserve_jump >= 1, "Array reserve_jump cannot be less than 1. Array is invalid.");
 	
 	mutex_lock(&array->mutex);
 	array->length++;
@@ -91,7 +91,7 @@ int array_push_size(array *array, void *data, s32 entry_size)
 
 void array_reserve(array *array, u32 reserve_count)
 {
-	log_assert_m(array);
+	log_assert(array, "Array cannot be null");
 	
 	mutex_lock(&array->mutex);
 	u32 reserved_count = array->reserved_length - array->length;
@@ -115,9 +115,9 @@ void array_reserve(array *array, u32 reserve_count)
 
 void array_remove_at(array *array, u32 at)
 {
-	log_assert_m(array);
-	log_assert_m(at >= 0);
-	log_assert_m(at < array->length);
+	log_assert(array, "Array cannot be null");
+	log_assert(at >= 0, "Index to remove cannot be smaller than 0.");
+	log_assert(at < array->length, "Index to remove is out of bounds.");
 	
 	mutex_lock(&array->mutex);
 	if (array->length > 1)
@@ -146,7 +146,7 @@ void array_remove(array *array, void *ptr)
 
 void array_remove_by(array *array, void *data)
 {
-	log_assert_m(array);
+	log_assert(array, "Array cannot be null");
 	
 	mutex_lock(&array->mutex);
 	for (int i = 0; i < array->length; i++)
@@ -164,9 +164,9 @@ void array_remove_by(array *array, void *data)
 void *array_at(array *array, u32 at)
 {
 	mutex_lock(&array->mutex);
-	log_assert_m(array);
-	log_assert_m(at >= 0);
-	log_assert_m(at < array->length);
+	log_assert(array, "Array cannot be null");
+	log_assert(at >= 0, "Index to return cannot be smaller than 0.");
+	log_assert(at < array->length, "Index to return is out of bounds.");
 	
 	void *result =  array->data + (at * array->entry_size);
 	mutex_unlock(&array->mutex);
@@ -175,7 +175,7 @@ void *array_at(array *array, u32 at)
 
 void array_destroy(array *array)
 {
-	log_assert_m(array);
+	log_assert(array, "Array cannot be null");
 	mem_free(array->data);
 	mutex_destroy(&array->mutex);
 	array->entry_size = 0;
@@ -183,9 +183,11 @@ void array_destroy(array *array)
 
 void array_swap(array *array, u32 swap1, u32 swap2)
 {
-	log_assert_m(array);
-	log_assert_m(swap2 >= 0);
-	log_assert_m(swap2 < array->length);
+	log_assert(array, "Array cannot be null");
+	log_assert(swap1 >= 0, "Source index to swap cannot be smaller than 0.");
+	log_assert(swap1 < array->length, "Source index to swap is out of bounds.");
+	log_assert(swap2 >= 0, "Destination index to swap cannot be smaller than 0.");
+	log_assert(swap2 < array->length, "Destination index to swap is out of bounds.");
 	if (swap1 == swap2) return;
 	
 	void *swap1_at = array_at(array, swap1);

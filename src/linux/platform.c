@@ -753,12 +753,12 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	if (width > max_w) width = max_w;
 	if (height > max_h) width = max_h;
 
-	log_assert_m(width > 0);
-	log_assert_m(height > 0);
-	log_assert_m(max_w >= 0);
-	log_assert_m(max_h >= 0);
-	log_assert_m(min_w > 0);
-	log_assert_m(min_h > 0);
+	log_assert(width > 0, "Width of window should be greater than 0");
+	log_assert(height > 0, "Height of window should be greater than 0");
+	log_assert(max_w >= 0, "Maximum width should be greater or equal to 0, where 0 means no limit");
+	log_assert(max_h >= 0, "Maximum height should be greater or equal to 0, where 0 means no limit");
+	log_assert(min_w > 0, "Minimum width should be greater than 0");
+	log_assert(min_h > 0, "Minimum height should be greater than 0");
 
 	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
