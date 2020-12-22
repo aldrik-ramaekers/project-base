@@ -69,50 +69,50 @@ __def_proc( int, pthread_mutex_destroy, (pthread_mutex_t *__mutex))
 
 void _lib_loader_init()
 {
-    void* libX11 = 0;
+    void* libGL = 0;
     void* libXRandr = 0;
     void* libpthread = 0;
 
-    __load_lib(libX11, "libGL.so");
-    if (!libX11) {
-        __load_lib_or_exit(libX11, "libGL.so.1");
+    __load_lib(libGL, "libGL.so");
+    if (!libGL) {
+        __load_lib_or_exit(libGL, "libGL.so.1");
     }
-    __load_fnc_or_exit(glXMakeCurrent, libX11);
-    __load_fnc_or_exit(glXCreateContext, libX11);
-    __load_fnc_or_exit(glXDestroyContext, libX11);
-    __load_fnc_or_exit(glXChooseFBConfig, libX11);
-    __load_fnc_or_exit(glXGetFBConfigAttrib, libX11);
-    __load_fnc_or_exit(glXGetVisualFromFBConfig, libX11);
-    __load_fnc_or_exit(glXSwapBuffers, libX11);
-    __load_fnc_or_exit(glDepthMask, libX11);
-    __load_fnc_or_exit(glColorMask, libX11);
-    __load_fnc_or_exit(glDepthFunc, libX11);
-    __load_fnc_or_exit(glEnable, libX11);
-    __load_fnc_or_exit(glAlphaFunc, libX11);
-    __load_fnc_or_exit(glBlendFunc, libX11);
-    __load_fnc_or_exit(glMatrixMode, libX11);
-    __load_fnc_or_exit(glLoadIdentity, libX11);
-    __load_fnc_or_exit(glViewport, libX11);
-    __load_fnc_or_exit(glClearColor, libX11);
-    __load_fnc_or_exit(glClear, libX11);
-    __load_fnc_or_exit(glRotatef, libX11);
-    __load_fnc_or_exit(glBindTexture, libX11);
-    __load_fnc_or_exit(glBegin, libX11);
-    __load_fnc_or_exit(glColor4f, libX11);
-    __load_fnc_or_exit(glTexCoord2i, libX11);
-    __load_fnc_or_exit(glVertex3i, libX11);
-    __load_fnc_or_exit(glEnd, libX11);
-    __load_fnc_or_exit(glDisable, libX11);
-    __load_fnc_or_exit(glPixelStorei, libX11);
-    __load_fnc_or_exit(glScissor, libX11);
-    __load_fnc_or_exit(glGetIntegerv, libX11);
-    __load_fnc_or_exit(glGenTextures, libX11);
-    __load_fnc_or_exit(glTexImage2D, libX11);
-    __load_fnc_or_exit(glTexParameteri, libX11);
-    __load_fnc_or_exit(glDeleteTextures, libX11);
-    __load_fnc_or_exit(glTranslatef, libX11);
-    __load_fnc_or_exit(glOrtho, libX11);
-    __load_fnc_or_exit(glViewport, libX11);
+    __load_fnc_or_exit(glXMakeCurrent, libGL);
+    __load_fnc_or_exit(glXCreateContext, libGL);
+    __load_fnc_or_exit(glXDestroyContext, libGL);
+    __load_fnc_or_exit(glXChooseFBConfig, libGL);
+    __load_fnc_or_exit(glXGetFBConfigAttrib, libGL);
+    __load_fnc_or_exit(glXGetVisualFromFBConfig, libGL);
+    __load_fnc_or_exit(glXSwapBuffers, libGL);
+    __load_fnc_or_exit(glDepthMask, libGL);
+    __load_fnc_or_exit(glColorMask, libGL);
+    __load_fnc_or_exit(glDepthFunc, libGL);
+    __load_fnc_or_exit(glEnable, libGL);
+    __load_fnc_or_exit(glAlphaFunc, libGL);
+    __load_fnc_or_exit(glBlendFunc, libGL);
+    __load_fnc_or_exit(glMatrixMode, libGL);
+    __load_fnc_or_exit(glLoadIdentity, libGL);
+    __load_fnc_or_exit(glViewport, libGL);
+    __load_fnc_or_exit(glClearColor, libGL);
+    __load_fnc_or_exit(glClear, libGL);
+    __load_fnc_or_exit(glRotatef, libGL);
+    __load_fnc_or_exit(glBindTexture, libGL);
+    __load_fnc_or_exit(glBegin, libGL);
+    __load_fnc_or_exit(glColor4f, libGL);
+    __load_fnc_or_exit(glTexCoord2i, libGL);
+    __load_fnc_or_exit(glVertex3i, libGL);
+    __load_fnc_or_exit(glEnd, libGL);
+    __load_fnc_or_exit(glDisable, libGL);
+    __load_fnc_or_exit(glPixelStorei, libGL);
+    __load_fnc_or_exit(glScissor, libGL);
+    __load_fnc_or_exit(glGetIntegerv, libGL);
+    __load_fnc_or_exit(glGenTextures, libGL);
+    __load_fnc_or_exit(glTexImage2D, libGL);
+    __load_fnc_or_exit(glTexParameteri, libGL);
+    __load_fnc_or_exit(glDeleteTextures, libGL);
+    __load_fnc_or_exit(glTranslatef, libGL);
+    __load_fnc_or_exit(glOrtho, libGL);
+    __load_fnc_or_exit(glViewport, libGL);
 
     __load_lib_or_exit(libXRandr, "libXrandr.so");
     __load_fnc_or_exit(XRRGetCrtcInfo, libXRandr);
@@ -121,7 +121,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(XRRGetScreenResources, libXRandr);
 
     __load_lib(libpthread, "libpthread.so");
-    if (!libX11) {
+    if (!libpthread) {
         __load_lib_or_exit(libpthread, "libpthread.so.0");
     }
     __load_fnc_or_exit(pthread_create, libpthread);

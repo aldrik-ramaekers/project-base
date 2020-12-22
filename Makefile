@@ -4,6 +4,7 @@ MAKEFLAGS += --always-make
 main_file = src/main.c
 output_file = libprojectbase
 flags = -m64 -c -Wall -DMODE_DEBUG -g
+release_flags = -m64 -c -Wall -O3
 
 gcc_install_dir := $(shell which "gcc")
 gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
