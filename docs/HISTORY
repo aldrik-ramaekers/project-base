@@ -1,4 +1,5 @@
 2.0.0
+   - Added error messages to all asserts
    - Addon for helping with tests
    - Dependencies are now dynamically loaded
    - Prepend all platform functions with platform_

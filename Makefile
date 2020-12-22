@@ -24,6 +24,7 @@ else
 	install_dir = /usr/
 	permissions = sudo
 	libs = -lX11 -lm -ldl
+	# -Wl,-Bstatic -ldl -Wl,-Bdynamic
 
 	# Commands
 	install_deps_command = install_deps

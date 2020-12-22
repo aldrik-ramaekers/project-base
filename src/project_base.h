@@ -18,7 +18,6 @@
             - @Hardcoded: hardcoded buffer sizes. Should be fixed.
             - @Unused: Unused function that should be removed.
             - @Speed: Slow code that should be rewritten eventually.
-
 */
 
 /*
@@ -31,6 +30,7 @@
             - make custom popup windows so we can get rid of zenity and windows deps
             - stop linking to libs and use dlopen on linux
             - get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
+            - try crashing the lib and make asserts for the crashes
 
     :/Text  Text-search
             - make settings pages use settings_config directly
