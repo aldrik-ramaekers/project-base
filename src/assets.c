@@ -274,8 +274,8 @@ void *assets_queue_worker()
 			
 			mutex_lock(&asset_mutex);
 			
-			log_assert_m(global_asset_collection.post_process_queue.reserved_length > 
-				   global_asset_collection.post_process_queue.length);
+			log_assert(global_asset_collection.post_process_queue.reserved_length > 
+				   global_asset_collection.post_process_queue.length, "Attempted to process more assets than specified with constant ASSET_QUEUE_COUNT");
 			
 			array_push(&global_asset_collection.post_process_queue, &buf);
 			mutex_unlock(&asset_mutex);
@@ -312,7 +312,7 @@ image *assets_load_image(u8 *start_addr, u8 *end_addr)
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
-	log_assert_m(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
+	log_assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length,  "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
 	
 	int index = array_push(&global_asset_collection.images, &new_image);
 	
@@ -347,7 +347,6 @@ void assets_destroy_image(image *image_to_destroy)
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 {
-	//log_assert_m(!(size % 4));
 	for (int i = 0; i < global_asset_collection.fonts.length; i++)
 	{
 		font *font_at = array_at(&global_asset_collection.fonts, i);
@@ -369,7 +368,7 @@ font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 	
 	// NOTE(Aldrik): we should never realloc the font array because pointers will be 
 	// invalidated.
-	log_assert_m(global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length);
+	log_assert(global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length, "Attempted to process more fonts than specified with constant ASSET_FONT_COUNT");
 	
 	int index = array_push(&global_asset_collection.fonts, &new_font);
 	
@@ -448,7 +447,7 @@ image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 	
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
 	// invalidated.
-	log_assert_m(global_asset_collection.images.reserved_length > global_asset_collection.images.length);
+	log_assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length, "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
 	
 	int index = array_push(&global_asset_collection.images, &new_image);
 	

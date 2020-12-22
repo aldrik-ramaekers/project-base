@@ -75,8 +75,8 @@ inline checkbox_state ui_create_checkbox(bool selected)
 
 inline textbox_state ui_create_textbox(u16 max_len)
 {
-	log_assert_m(max_len > 0);
-	log_assert_m(max_len <= MAX_INPUT_LENGTH);
+	log_assert(max_len > 0, "max_len should be greater than 0");
+	log_assert(max_len <= MAX_INPUT_LENGTH, "max_len should be less than or equal to MAX_INPUT_LENGTH");
 	
 	textbox_state state;
 	state.max_len = max_len;
@@ -1307,7 +1307,7 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 		state->hovered = false;
 	}
 	
-	log_assert_m(global_ui_context.submenus.count <= 4);
+	log_assert(global_ui_context.submenus.count <= 4, "Submenu count cannot be greater than 4"); // @Hardcoded why is this?
 	global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count++] = state;
 	
 	if (result) state->open = false;
@@ -1951,7 +1951,7 @@ void ui_push_tooltip(char *text)
 			else if (global_ui_context.tooltip.x > 
 					 global_ui_context.active_window->width-(total_w/2))
 			{
-				log_assert_m(0 && "not implemented"); // TODO(Aldrik): implement
+				log_assert(0, "Alligning pointer to the left is not implemented"); // TODO(Aldrik): implement
 			}
 			// align bottom
 			else

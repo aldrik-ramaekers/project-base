@@ -6,7 +6,8 @@
 
 inline memory_bucket memory_bucket_init(s32 bucket_size)
 {
-	log_assert_m(bucket_size >= MAX_INPUT_LENGTH);
+	// @Hardcoded why is this necessary?
+	log_assert(bucket_size >= MAX_INPUT_LENGTH, "bucket_size should be larger than MAX_INPUT_LENGTH");
 	
 	memory_bucket collection;
 	collection.bucket_mutex = mutex_create();

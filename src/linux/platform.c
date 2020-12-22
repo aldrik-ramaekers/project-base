@@ -342,7 +342,7 @@ file_content platform_read_file_content(char *path, const char *mode)
 
 inline void platform_destroy_file_content(file_content *content)
 {
-	log_assert_m(content);
+	log_assert(content, "Content is null");
 	mem_free(content->content);
 }
 
@@ -1516,7 +1516,7 @@ void *platform_open_file_dialog_block(void *arg)
 
 void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket, bool include_directories, bool *is_cancelled, search_info *info)
 {
-	log_assert_m(list);
+	log_assert(list, "List is null");
 	
 	s32 len = 0;
 	char *matched_filter = 0;

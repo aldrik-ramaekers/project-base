@@ -43,7 +43,7 @@ void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 
 char* locale_get_name()
 {
-	log_assert_m(global_localization.loaded);
+	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 
 	if (!global_localization.active_localization)
 	{
@@ -55,7 +55,7 @@ char* locale_get_name()
 
 char* locale_get_id()
 {
-	log_assert_m(global_localization.loaded);
+	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 	
 	if (!global_localization.active_localization)
 	{
@@ -67,7 +67,7 @@ char* locale_get_id()
 
 bool set_locale(char *country_id)
 {
-	log_assert_m(global_localization.loaded);
+	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 
 	if (country_id == 0 && global_localization.mo_files.length)
 	{
@@ -96,7 +96,7 @@ bool set_locale(char *country_id)
 
 char* localize(const char *identifier)
 {
-	log_assert_m(global_localization.loaded);
+	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 
 	if (!global_localization.active_localization)
 	{
@@ -127,7 +127,7 @@ void localization_init()
 
 void localization_destroy()
 {
-	log_assert_m(global_localization.loaded);
+	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 
 	for (s32 i = 0; i < global_localization.mo_files.length; i++)
 	{
@@ -141,15 +141,3 @@ void localization_destroy()
 	}
 	array_destroy(&global_localization.mo_files);
 }
-
-	// mo_file en = load_localization_file(_binary____data_translations_en_English_mo_start,
-	// 									_binary____data_translations_en_English_mo_end,
-	// 									_binary____data_imgs_en_bmp_start,
-	// 									_binary____data_imgs_en_bmp_end,
-	// 									"en", "English");
-	
-	// mo_file nl = load_localization_file(_binary____data_translations_nl_Dutch_mo_start,
-	// 									_binary____data_translations_nl_Dutch_mo_end,
-	// 									_binary____data_imgs_nl_bmp_start,
-	// 									_binary____data_imgs_nl_bmp_end,
-	// 									"nl", "Dutch");

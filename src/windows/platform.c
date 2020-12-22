@@ -1081,7 +1081,7 @@ bool platform_write_file_content(char *path, const char *mode, char *buffer, s32
 
 void platform_destroy_file_content(file_content *content)
 {
-	log_assert_m(content);
+	log_assert(content, "Content is null");
 	mem_free(content->content);
 }
 
@@ -1097,7 +1097,7 @@ bool platform_set_active_directory(char *path)
 
 void platform_list_files_block(array *list, char *start_dir, array filters, bool recursive, memory_bucket *bucket,  bool include_directories, bool *is_cancelled, search_info *info)
 {
-	log_assert_m(list);
+	log_assert(list, "List is null");
 	s32 len = 0;
 	char *matched_filter = 0;
 	
