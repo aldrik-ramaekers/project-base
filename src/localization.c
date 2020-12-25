@@ -21,6 +21,9 @@ void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 		if (img_start) {
 			mo.icon = assets_load_bitmap(img_start, img_end);
 		}
+		else {
+			mo.icon = 0;
+		}
 		
 		char *buffer = (char*)start_addr;
 		mo_entry *identifiers = (mo_entry*)(buffer + mo.header.identifier_table_offset);

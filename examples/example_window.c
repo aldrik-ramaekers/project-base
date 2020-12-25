@@ -31,7 +31,6 @@ void update_render_main(platform_window* window)
                 if (ui_push_menu_item("New Window", "Ctrl + O")) 
                 { 
                     platform_window *s = platform_open_window(localize("window_title_sub"), 500, 500, 800, 600, 500, 500, update_render_sub);
-                    platform_window_swap_buffers(s);
                 }
             }
         }
