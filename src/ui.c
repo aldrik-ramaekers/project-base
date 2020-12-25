@@ -20,7 +20,7 @@ void ui_set_hovered(u32 id, s32 x, s32 y, s32 w, s32 h)
 	global_ui_context.item_hovered_id = id;
 }
 
-inline void ui_begin(s32 id, platform_window *window)
+inline void ui_begin(platform_window *window)
 {
 	platform_window_make_current(window);
 	platform_set_cursor(window, CURSOR_DEFAULT);
@@ -30,7 +30,7 @@ inline void ui_begin(s32 id, platform_window *window)
 
 	global_ui_context.active_window = window;
 	global_ui_context.item_hovered = false;
-	global_ui_context.next_id = id * 100;
+	global_ui_context.next_id = (u64)window;
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.offset_y = 0;
 	global_ui_context.layout.width = global_ui_context.active_window->width;
@@ -284,6 +284,7 @@ inline void ui_begin_menu_bar()
 	
 	render_rectangle(0, y, w, MENU_BAR_HEIGHT, global_ui_context.style.menu_background);
 	render_rectangle(0, y, w, 1, global_ui_context.style.border);
+	render_rectangle(0, y+MENU_BAR_HEIGHT, w, 1, global_ui_context.style.border);
 	global_ui_context.layout.menu_offset_y = 0;
 }
 

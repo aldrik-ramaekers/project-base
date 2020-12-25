@@ -1,4 +1,8 @@
 2.0.0
+   - Switching between render methods is not handled by library and can be changed by settings the USE_GPU setting
+   - Window destroying is not handled by library
+   - Drawing loop is now handled by library
+   - Fix issue with menu bar not rendering bottom border
    - Added error messages to all asserts
    - Addon for helping with tests
    - Dependencies are now dynamically loaded

@@ -173,7 +173,7 @@ typedef struct t_ui_context
 	ui_layout layout;
 	font *font_small;
 	s32 active_menu_id;
-	u32 next_id;
+	u64 next_id;
 	s32 menu_item_count;
 	dropdown_state *active_dropdown;
 	u32 confirming_button_id;
@@ -191,7 +191,7 @@ u32 ui_get_id();
 void ui_init(font *font_small);
 void ui_set_active_window(platform_window *window);
 void ui_destroy();
-void ui_begin(s32 id, platform_window *window);
+void ui_begin(platform_window *window);
 void ui_end();
 bool ui_is_menu_active(u32 id);
 char* name_of_day(s32 day);

@@ -196,9 +196,9 @@ keyboard_input _global_keyboard;
 mouse_input _global_mouse;
 camera _global_camera;
 
-#define platform_open_window(name, width, height, max_w, max_h, min_w, min_h) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0)
+#define platform_open_window(name, width, height, max_w, max_h, min_w, min_h, update_func) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, update_func)
 
-platform_window* 	platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags);
+platform_window* 	platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window));
 file_content 		platform_read_file_content(char *path, const char *mode);
 
 bool 	platform_window_is_valid(platform_window *window);
@@ -211,7 +211,8 @@ bool 	platform_get_clipboard(platform_window *window, char *buffer);
 void 	platform_window_set_size(platform_window *window, u16 width, u16 height);
 void 	platform_window_set_position(platform_window *window, u16 x, u16 y);
 void 	platform_destroy_window(platform_window *window);
-void 	platform_handle_events(platform_window *window);
+void 	platform_handle_events();
+void 	_platform_handle_events_for_window(platform_window *window);
 void 	platform_window_swap_buffers(platform_window *window);
 void 	platform_set_cursor(platform_window *window, cursor_type type);
 void 	platform_window_set_title(platform_window *window, char *name);

@@ -760,8 +760,6 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(min_w > 0, "Minimum width should be greater than 0");
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
 
-	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
-
 	bool has_max_size = max_w || max_h;
 	
 	platform_window* window = mem_alloc(sizeof(platform_window));
@@ -1047,7 +1045,7 @@ void platform_hide_window_taskbar_icon(platform_window *window)
 	XFlush(window->display);
 }
 
-void platform_handle_events(platform_window *window)
+void _platform_handle_events_for_window(platform_window *window)
 {
 	mouse_input *mouse = &_global_mouse;
 	keyboard_input *keyboard = &_global_keyboard;

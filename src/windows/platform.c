@@ -22,6 +22,7 @@ struct t_backbuffer
 
 struct t_platform_window
 {
+	void (*update_func)(platform_window*);
 	HWND window_handle;
 	HDC hdc;
 	HGLRC gl_context;
@@ -650,7 +651,7 @@ void platform_setup_renderer()
 	}
 }
 
-platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window))
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) width = min_h;
@@ -663,8 +664,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(max_h >= 0, "Maximum height should be greater or equal to 0, where 0 means no limit");
 	log_assert(min_w > 0, "Minimum width should be greater than 0");
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
-	
-	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
+	log_assert(update_func, "Update function cannot be 0");
 
 	debug_print_elapsed_title("window creation");
 	debug_print_elapsed_indent();
@@ -676,6 +676,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	platform_window* window = mem_alloc(sizeof(platform_window));
 	if (!window) return window;
 	window->has_focus = true;
+	window->update_func = update_func;
 	window->window_handle = 0;
 	window->hdc = 0;
 	window->width = width;
@@ -840,7 +841,7 @@ void platform_destroy_window(platform_window *window)
 	}
 }
 
-void platform_handle_events(platform_window *window)
+void _platform_handle_events_for_window(platform_window *window)
 {
 	mouse_input *mouse = &_global_mouse;
 	keyboard_input *keyboard = &_global_keyboard;

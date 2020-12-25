@@ -31,6 +31,8 @@
             - stop linking to libs and use dlopen on linux
             - get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
             - try crashing the lib and make asserts for the crashes
+            - rename set_locale to localization_set_locale()
+            - settings writes null = null to file??
 
     :/Text  Text-search
             - make settings pages use settings_config directly

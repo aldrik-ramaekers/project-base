@@ -105,13 +105,14 @@ tests_linux:
 
 ## Examples (Windows + Linux)
 examples:
+	$(permissions) ld -r -b binary -o build/data.o examples/en.mo
 	make $(create_examples_command)
 
 examples_windows:
-	gcc -m64 -g -DMODE_DEBUG examples/example_window.c -o build/example_window.exe -lprojectbase $(libs)
+	gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window.exe -lprojectbase $(libs)
 
 examples_linux:
-	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c -o build/example_window -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window -lprojectbase $(libs)
 	$(permissions) chmod +x build/example_window
 
 cloc:

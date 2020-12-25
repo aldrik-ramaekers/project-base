@@ -272,3 +272,39 @@ void _platform_register_window(platform_window* window) {
 void _platform_unregister_window(platform_window* window) {
 	array_remove_by(&window_registry, &window);
 }
+
+void _switch_render_method(bool use_gpu) 
+{
+	global_use_gpu = use_gpu;
+
+	for (s32 i = 0; i < window_registry.length; i++) {
+		platform_window* w = *(platform_window**)array_at(&window_registry, i);
+		platform_setup_backbuffer(w);
+	}
+	platform_setup_renderer();
+	assets_switch_render_method();
+}
+
+void platform_handle_events()
+{
+	bool _use_gpu = settings_get_number_or_default("USE_GPU", 1);
+
+	// USE_GPU setting changed outside of update loop.. change render method quickly.
+	if (global_use_gpu != _use_gpu) {
+		_switch_render_method(_use_gpu);
+	}
+
+	for (s32 i = 0; i < window_registry.length; i++) {
+		platform_window* w = *(platform_window**)array_at(&window_registry, i);
+		_platform_handle_events_for_window(w);
+
+		if (w->do_draw) {
+            w->update_func(w);
+		    platform_window_swap_buffers(w);
+        }
+
+		if (!w->is_open) {
+			platform_destroy_window(w);
+		}
+	}
+}
