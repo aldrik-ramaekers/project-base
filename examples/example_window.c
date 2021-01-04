@@ -7,11 +7,30 @@ extern unsigned char _binary_examples_en_mo_end[];
 
 void update_render_sub(platform_window* window)
 {
+    ui_begin(window);
+    {
+        ui_begin_menu_bar();
+        {
 
+        }
+    }
+    ui_end();
 }
 
 void update_render_main(platform_window* window) 
 {
+#if 0
+    static ui *main_el = 0;
+    
+    if (!main_el) {
+        main_el = ui_create(window);
+        ui_element* menu = ui_menu_create((ui_element*)main_el);
+        ui_menu_add_tab(menu, "File");
+        ui_menu_add_tab(menu, "Help");
+    }
+
+    ui_update_render(main_el);
+#else
     ui_begin(window);
     {
         ui_begin_menu_bar();
@@ -36,6 +55,7 @@ void update_render_main(platform_window* window)
         }
     }
     ui_end();
+#endif
 }
 
 int main(int argc, char **argv)

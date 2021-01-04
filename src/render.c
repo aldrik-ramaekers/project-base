@@ -161,7 +161,7 @@ void render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x+width, y+height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x+width, y, render_depth);
 			IMP_glEnd();
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDisable(GL_TEXTURE_2D);
 		}
 	}
@@ -199,7 +199,7 @@ void render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color 
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x+width, y+height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x+width, y, render_depth);
 			IMP_glEnd();
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDisable(GL_TEXTURE_2D);
 		}
 		else
@@ -254,7 +254,7 @@ s32 render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color t
 			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glEnd();
 		}
 		else
@@ -328,7 +328,7 @@ s32 render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint,
 			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glEnd();
 		}
 		else
@@ -407,7 +407,7 @@ s32 render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s3
 			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glEnd();
 		}
 		else
@@ -481,7 +481,7 @@ s32 render_text(font *font, s32 x, s32 y, char *text, color tint)
 			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y_+g.height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y_, render_depth);
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glEnd();
 		}
 		else
@@ -566,7 +566,7 @@ s32 render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cut
 			IMP_glTexCoord2i(0, 1); IMP_glVertex3i(x_to_render,y__+g.height, render_depth);
 			IMP_glTexCoord2i(1, 1); IMP_glVertex3i(x_to_render+g.width,y__+g.height, render_depth);
 			IMP_glTexCoord2i(1, 0); IMP_glVertex3i(x_to_render+g.width,y__, render_depth);
-			
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glEnd();
 		}
 		else
@@ -836,6 +836,7 @@ void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
 	if (global_use_gpu)
 	{
+		IMP_glBindTexture(GL_TEXTURE_2D, 0);
 		IMP_glBegin(GL_QUADS);
 		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 		IMP_glVertex3i(x, y, render_depth);

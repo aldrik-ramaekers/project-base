@@ -33,6 +33,7 @@
             - try crashing the lib and make asserts for the crashes
             - rename set_locale to localization_set_locale()
             - settings writes null = null to file??
+            - get rid of if (global_using_gpu) in render code and split cpu & gpu rendering so we can maybe add other render backends later
 
     :/Text  Text-search
             - make settings pages use settings_config directly
@@ -125,6 +126,7 @@
 #include "camera.h"
 #include "platform.h"
 #include "render.h"
+#include "ui2.h"
 #include "ui.h"
 #include "notification.h"
 #include "string_utils.h"
@@ -151,6 +153,7 @@
 #include "array.c"
 #include "assets.c"
 #include "camera.c"
+#include "ui2.c"
 #include "ui.c"
 #include "notification.c"
 #include "string_utils.c"
