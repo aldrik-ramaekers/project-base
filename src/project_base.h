@@ -23,6 +23,7 @@
 /*
     :/Title TODO's
     :/Text  Project-base
+            - append .config/ before config on linux
             - make sure a valid render config is found on linux
             - replace all int with s32
             - remove all unused functions @Unused
