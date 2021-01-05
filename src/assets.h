@@ -117,8 +117,8 @@ void assets_destroy_font(font *font);
 
 void assets_switch_render_method();
 
-#define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
-#define load_font(_name, _size) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _size)
-#define load_bitmap(_name) assets_load_bitmap(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
+#define load_image(_name, _inmem) assets_load_image(_binary_data_imgs_##_name##_start,_binary_data_imgs_##_name##_end)
+#define load_font(_name, _size) assets_load_font(_binary_data_fonts_##_name##_start,_binary_data_fonts_##_name##_end, _size)
+#define load_bitmap(_name) assets_load_bitmap(_binary_data_imgs_##_name##_start,_binary_data_imgs_##_name##_end)
 
 #endif
