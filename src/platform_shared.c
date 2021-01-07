@@ -208,17 +208,11 @@ void platform_destroy_shared()
 	localization_destroy();
 	ui_destroy();
 	assets_destroy();
-
-	keyboard_input_destroy(&_global_keyboard);
 }
 
 void platform_init_shared(int argc, char **argv)
 {
 	_lib_loader_init();
-
-	_global_keyboard = keyboard_input_create();
-	_global_mouse = mouse_input_create();
-	_global_camera = (camera){0.0f,0.0f,0.0f};
 
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
@@ -250,12 +244,6 @@ bool platform_keep_running(platform_window *window)
 	}
 
 	__last_stamp = platform_get_time(TIME_FULL, TIME_US);
-
-	if (assets_do_post_process())
-		window->do_draw = true;
-		
-	if (window->has_focus)
-		window->do_draw = true;
 
 	return window->is_open;
 }
@@ -289,19 +277,43 @@ void platform_handle_events()
 {
 	bool _use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
-	// USE_GPU setting changed outside of update loop.. change render method quickly.
+	// USE_GPU setting changed..
 	if (global_use_gpu != _use_gpu) {
 		_switch_render_method(_use_gpu);
 	}
 
+	bool redraw_all = false;
+
+	if (assets_do_post_process())
+		redraw_all = true;
+	
 	for (s32 i = 0; i < window_registry.length; i++) {
 		platform_window* w = *(platform_window**)array_at(&window_registry, i);
+
+		_global_keyboard = w->keyboard;
+		_global_mouse = w->mouse;
+		_global_camera = w->camera;
+
+		if (redraw_all) w->do_draw = true;
+
 		_platform_handle_events_for_window(w);
 
 		if (w->do_draw) {
             w->update_func(w);
+			if (i == 0) update_render_notifications();
+
+#if 0
+			char test[100];
+			sprintf(test, "DRAW %d", platform_get_time(TIME_FULL, TIME_US));
+			render_text(global_ui_context.font_small, 0, 300, test, rgb(200,0,0));
+#endif
+
 		    platform_window_swap_buffers(w);
         }
+
+		w->keyboard = _global_keyboard;
+		w->mouse = _global_mouse;
+		w->camera = _global_camera;
 
 		if (!w->is_open) {
 			platform_destroy_window(w);

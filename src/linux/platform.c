@@ -68,6 +68,9 @@ struct t_platform_window
 	Atom _NET_WM_STATE;
 	
 	// shared window properties
+	keyboard_input keyboard;
+	mouse_input mouse;
+	camera camera;
 	bool icon_loaded;
 	bool do_draw;
 	backbuffer backbuffer;
@@ -776,6 +779,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->clipboard_strlen = 0;
 	window->do_draw = true;
 	window->backbuffer.s_image = 0;
+
+	window->keyboard = keyboard_input_create();
+	window->mouse = mouse_input_create();
+	window->camera = (camera){0.0f,0.0f,0.0f};
 	
 	static int att[] =
 	{
@@ -1023,6 +1030,7 @@ void platform_destroy_window(platform_window *window)
 		_platform_unregister_window(window);
 		window->window = 0;
 		window->display = 0;
+		keyboard_input_destroy(&window->keyboard);
 	}
 }
 
@@ -1334,6 +1342,8 @@ inline void platform_show_alert(char *title, char *message)
 
 inline void platform_window_swap_buffers(platform_window *window)
 {
+	window->do_draw = false;
+	
 	// set cursor if changed
 	if (window->curr_cursor_type != window->next_cursor_type)
 	{
@@ -1348,8 +1358,6 @@ inline void platform_window_swap_buffers(platform_window *window)
 		Cursor cursor = XCreateFontCursor(window->display, cursor_shape);
 		XDefineCursor(window->display, window->window, cursor);
 		window->curr_cursor_type = window->next_cursor_type;
-
-		window->do_draw = false;
 	}
 	
 	if (!global_use_gpu)

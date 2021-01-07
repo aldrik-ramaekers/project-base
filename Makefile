@@ -70,7 +70,7 @@ build:
 	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
 	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
-	$(permissions) gcc $(flags) src/addons/c_parser.c -o build/$(output_file)-parser.a
+	#$(permissions) gcc $(flags) src/addons/c_parser.c -o build/$(output_file)-parser.a
 
 	make $(install_lib_command)
 

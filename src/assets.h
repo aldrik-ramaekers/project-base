@@ -12,7 +12,7 @@
 #endif
 
 #ifndef ASSET_FONT_COUNT
-#define ASSET_FONT_COUNT 10
+#define ASSET_FONT_COUNT 1
 #endif
 
 #ifndef ASSET_QUEUE_COUNT

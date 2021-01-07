@@ -35,6 +35,9 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	keyboard_input keyboard;
+	mouse_input mouse;
+	camera camera;
 	bool icon_loaded;
 	bool do_draw;
 	backbuffer backbuffer;
@@ -354,6 +357,8 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		
 		if (!global_use_gpu)
 			_allocate_backbuffer(current_window_to_handle);
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_CHAR)
 	{
@@ -391,8 +396,10 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 			}
 			
 			if (ch != 0)
-				keyboard_handle_input_string(current_window_to_handle, current_keyboard_to_handle, ch);
+				keyboard_handle_input_string(current_window_to_handle, ch);
 		}
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_KILLFOCUS)
 	{
@@ -419,14 +426,17 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		current_keyboard_to_handle->input_keys[keycode_map[key]] = true;
 		
 		if (current_keyboard_to_handle->take_input)
-			keyboard_handle_input_string(current_window_to_handle, 
-										 current_keyboard_to_handle, 0);
+			keyboard_handle_input_string(current_window_to_handle, 0);
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_KEYUP)
 	{
 		s32 key = wparam;
 		current_keyboard_to_handle->keys[keycode_map[key]] = false;
 		current_keyboard_to_handle->input_keys[keycode_map[key]] = false;
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_LBUTTONDOWN || 
 			 message == WM_RBUTTONDOWN ||
@@ -473,6 +483,8 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 			current_mouse_to_handle->right_state |= MOUSE_DOWN;
 			current_mouse_to_handle->right_state |= MOUSE_CLICK;
 		}
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_LBUTTONUP || 
 			 message == WM_RBUTTONUP ||
@@ -490,6 +502,8 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		{
 			current_mouse_to_handle->right_state = MOUSE_RELEASE;
 		}
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_MOUSEMOVE)
 	{
@@ -500,6 +514,8 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		track.dwFlags = TME_LEAVE;
 		track.hwndTrack = current_window_to_handle->window_handle;
 		TrackMouseEvent(&track);
+
+		current_window_to_handle->do_draw = true;
 	}
 	else if (message == WM_GETMINMAXINFO)
 	{
@@ -525,8 +541,6 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	{
 		result = LSMProc(window, message, wparam, lparam);
 	}
-	
-	current_window_to_handle->do_draw = true;
 	
 	return result;
 }
@@ -618,7 +632,6 @@ void platform_setup_backbuffer(platform_window *window)
 		window->gl_context = 0;
 		
 		_allocate_backbuffer(window);
-		//debug_print_elapsed(startup_stamp, "backbuffer");
 	}
 }
 
@@ -691,6 +704,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->do_draw = true;
 	window->gl_context = 0;
 	window->icon_loaded = false;
+
+	window->keyboard = keyboard_input_create();
+	window->mouse = mouse_input_create();
+	window->camera = (camera){0.0f,0.0f,0.0f};
 	
 	current_window_to_handle = window;
 	
@@ -838,6 +855,7 @@ void platform_destroy_window(platform_window *window)
 		window->hdc = 0;
 		window->gl_context = 0;
 		window->window_handle = 0;
+		keyboard_input_destroy(&window->keyboard);
 	}
 }
 
@@ -937,6 +955,8 @@ void _platform_handle_events_for_window(platform_window *window)
 
 void platform_window_swap_buffers(platform_window *window)
 {
+	window->do_draw = false;
+
 	// set cursor if changed
 	if (window->curr_cursor_type != window->next_cursor_type)
 	{
@@ -953,8 +973,6 @@ void platform_window_swap_buffers(platform_window *window)
 		
 		window->curr_cursor_type = window->next_cursor_type;
 		SetCursor(cursor);
-
-		window->do_draw = false;
 	}
 	
 	if (!global_use_gpu)

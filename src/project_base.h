@@ -29,10 +29,9 @@
             - remove all unused functions @Unused
             - prefix private functions with _ like platform_destroy_shared
             - make custom popup windows so we can get rid of zenity and windows deps
-            - stop linking to libs and use dlopen on linux
             - get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
             - try crashing the lib and make asserts for the crashes
-            - rename set_locale to localization_set_locale()
+            - rename localization_set_locale to localization_localization_set_locale()
             - settings writes null = null to file??
             - get rid of if (global_using_gpu) in render code and split cpu & gpu rendering so we can maybe add other render backends later
 

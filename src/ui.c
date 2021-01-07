@@ -138,7 +138,7 @@ void ui_set_textbox_text(textbox_state *textbox, char *text)
 {
 	if (global_ui_context.current_active_textbox == textbox)
 	{
-		keyboard_set_input_text(global_ui_context.keyboard, text);
+		keyboard_set_input_text(text);
 	}
 	
 	textbox->diff = 0;
@@ -580,7 +580,7 @@ static void ui_set_active_textbox(textbox_state *state)
 void ui_set_textbox_active(textbox_state *textbox)
 {
 	ui_set_active_textbox(textbox);
-	keyboard_set_input_text(global_ui_context.keyboard, textbox->buffer);
+	keyboard_set_input_text(textbox->buffer);
 	textbox->state = true;
 	global_ui_context.mouse->left_state &= ~MOUSE_CLICK;
 	global_ui_context.keyboard->take_input = textbox->state;
@@ -650,7 +650,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		{
 			ui_set_active_textbox(state);
 			
-			keyboard_set_input_text(global_ui_context.keyboard, state->buffer);
+			keyboard_set_input_text(state->buffer);
 			cursor_tick = 0;
 			
 			if (global_ui_context.keyboard->has_selection)
@@ -685,16 +685,16 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (state->state && global_ui_context.keyboard->has_selection && is_left_down(global_ui_context.mouse))
 		is_selecting = true;
 	
-	if (keyboard_is_key_pressed(global_ui_context.keyboard, KEY_ENTER) && state->deselect_on_enter)
+	if (keyboard_is_key_pressed(KEY_ENTER) && state->deselect_on_enter)
 	{
 		global_ui_context.keyboard->has_selection = false;
 		state->state = false;
 	}
-	if (state->state && keyboard_is_key_down(global_ui_context.keyboard, KEY_LEFT_CONTROL) &&
-		keyboard_is_key_pressed(global_ui_context.keyboard, KEY_ENTER) &&
+	if (state->state && keyboard_is_key_down(KEY_LEFT_CONTROL) &&
+		keyboard_is_key_pressed(KEY_ENTER) &&
 		state->accept_newline)
 	{
-		keyboard_handle_input_string(global_ui_context.active_window, global_ui_context.keyboard, "\n");
+		keyboard_handle_input_string(global_ui_context.active_window, "\n");
 	}
 	
 	// calculate scissor rectangle for background
@@ -781,7 +781,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		bool is_lctrl_down = global_ui_context.keyboard->keys[KEY_LEFT_CONTROL];
 		
 		// go to previous state
-		if (is_lctrl_down && keyboard_is_key_pressed(global_ui_context.keyboard, KEY_Z) && state->history.length)
+		if (is_lctrl_down && keyboard_is_key_pressed(KEY_Z) && state->history.length)
 		{
 			textbox_history_entry history_entry;
 			history_entry.text = mem_alloc(strlen(state->buffer)+1);
@@ -793,7 +793,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			
 			textbox_history_entry *old_text = array_at(&state->history, state->history.length-1);
 			string_copyn(state->buffer, old_text->text, MAX_INPUT_LENGTH);
-			keyboard_set_input_text(global_ui_context.keyboard, state->buffer);
+			keyboard_set_input_text(state->buffer);
 			
 			mem_free(old_text->text);
 			array_remove_at(&state->history, state->history.length-1);
@@ -801,7 +801,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			global_ui_context.keyboard->cursor = old_text->cursor_offset;
 		}
 		else if (is_lctrl_down && 
-				 keyboard_is_key_pressed(global_ui_context.keyboard, KEY_Y) && state->future.length)
+				 keyboard_is_key_pressed(KEY_Y) && state->future.length)
 		{
 			textbox_history_entry history_entry;
 			history_entry.text = mem_alloc(strlen(state->buffer)+1);
@@ -813,7 +813,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			
 			textbox_history_entry *old_text = array_at(&state->future, state->future.length-1);
 			string_copyn(state->buffer, old_text->text, MAX_INPUT_LENGTH);
-			keyboard_set_input_text(global_ui_context.keyboard, state->buffer);
+			keyboard_set_input_text(state->buffer);
 			
 			mem_free(old_text->text);
 			array_remove_at(&state->future, state->future.length-1);

@@ -4,57 +4,57 @@
 *  All rights reserved.
 */
 
-inline bool is_left_down(mouse_input *input)
+inline bool is_left_down()
 {
-	return input->left_state & MOUSE_DOWN;
+	return _global_mouse.left_state & MOUSE_DOWN;
 }
 
-inline bool is_left_released(mouse_input *input)
+inline bool is_left_released()
 {
-	return input->left_state & MOUSE_RELEASE;
+	return _global_mouse.left_state & MOUSE_RELEASE;
 }
 
-inline bool is_left_clicked(mouse_input *input)
+inline bool is_left_clicked()
 {
-	return input->left_state & MOUSE_CLICK;
+	return _global_mouse.left_state & MOUSE_CLICK;
 }
 
-inline bool is_left_double_clicked(mouse_input *input)
+inline bool is_left_double_clicked()
 {
-	return input->left_state & MOUSE_DOUBLE_CLICK;
+	return _global_mouse.left_state & MOUSE_DOUBLE_CLICK;
 }
 
-inline bool is_right_down(mouse_input *input)
+inline bool is_right_down()
 {
-	return input->right_state & MOUSE_DOWN;
+	return _global_mouse.right_state & MOUSE_DOWN;
 }
 
-inline bool is_right_released(mouse_input *input)
+inline bool is_right_released()
 {
-	return input->right_state & MOUSE_RELEASE;
+	return _global_mouse.right_state & MOUSE_RELEASE;
 }
 
-inline bool is_right_clicked(mouse_input *input)
+inline bool is_right_clicked()
 {
-	return input->right_state & MOUSE_CLICK;
+	return _global_mouse.right_state & MOUSE_CLICK;
 }
 
-inline bool keyboard_is_key_down(keyboard_input *keyboard, s16 key)
+inline bool keyboard_is_key_down(s16 key)
 {
-	return keyboard->keys[key];
+	return _global_keyboard.keys[key];
 }
 
-inline bool keyboard_is_key_pressed(keyboard_input *keyboard, s16 key)
+inline bool keyboard_is_key_pressed(s16 key)
 {
-	return keyboard->input_keys[key];
+	return _global_keyboard.input_keys[key];
 }
 
-inline void keyboard_set_input_text(keyboard_input *keyboard, char *text)
+inline void keyboard_set_input_text(char *text)
 {
-	string_copyn(keyboard->input_text, text, MAX_INPUT_LENGTH);
-	u32 len = utf8len(keyboard->input_text);
-	keyboard->cursor = len;
-	keyboard->input_text_len = len;
+	string_copyn(_global_keyboard.input_text, text, MAX_INPUT_LENGTH);
+	u32 len = utf8len(_global_keyboard.input_text);
+	_global_keyboard.cursor = len;
+	_global_keyboard.input_text_len = len;
 }
 
 mouse_input mouse_input_create()
@@ -88,55 +88,55 @@ keyboard_input keyboard_input_create()
 	return keyboard;
 }
 
-void keyboard_set_input_mode(keyboard_input *keyboard, keyboard_input_mode mode)
+void keyboard_set_input_mode(keyboard_input_mode mode)
 {
-	keyboard->input_mode = mode;
+	_global_keyboard.input_mode = mode;
 }
 
-inline void keyboard_input_destroy(keyboard_input *keyboard)
+inline void keyboard_input_destroy()
 {
-	mem_free(keyboard->input_text);
+	mem_free(_global_keyboard.input_text);
 }
 
-static void keyboard_handle_input_copy_and_paste(platform_window *window, keyboard_input *keyboard)
+static void keyboard_handle_input_copy_and_paste(platform_window *window)
 {
-	bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+	bool is_lctrl_down = _global_keyboard.keys[KEY_LEFT_CONTROL];
 	
-	if (is_lctrl_down && keyboard_is_key_pressed(keyboard, KEY_V))
+	if (is_lctrl_down && keyboard_is_key_pressed(KEY_V))
 	{
 		char buf[MAX_INPUT_LENGTH];
 		bool result = platform_get_clipboard(window, buf);
 		
-		if (keyboard->input_mode == INPUT_NUMERIC && !string_is_numeric(buf))
+		if (_global_keyboard.input_mode == INPUT_NUMERIC && !string_is_numeric(buf))
 		{
 			return;
 		}
 		
-		if (keyboard->has_selection)
+		if (_global_keyboard.has_selection)
 		{
-			keyboard->cursor = keyboard->selection_begin_offset;
-			utf8_str_remove_range(keyboard->input_text, keyboard->selection_begin_offset,
-								  keyboard->selection_begin_offset + keyboard->selection_length);
-			keyboard->has_selection = false;
-			keyboard->text_changed = true;
+			_global_keyboard.cursor = _global_keyboard.selection_begin_offset;
+			utf8_str_remove_range(_global_keyboard.input_text, _global_keyboard.selection_begin_offset,
+								  _global_keyboard.selection_begin_offset + _global_keyboard.selection_length);
+			_global_keyboard.has_selection = false;
+			_global_keyboard.text_changed = true;
 		}
 		
 		if (result)
 		{
 			s32 len = utf8len(buf);
-			utf8_str_insert_utf8str(keyboard->input_text, keyboard->cursor, buf);
+			utf8_str_insert_utf8str(_global_keyboard.input_text, _global_keyboard.cursor, buf);
 			
-			keyboard->cursor += len;
-			keyboard->input_text_len += len;
-			keyboard->text_changed = true;
+			_global_keyboard.cursor += len;
+			_global_keyboard.input_text_len += len;
+			_global_keyboard.text_changed = true;
 		}
 	}
-	else if (is_lctrl_down && keyboard_is_key_pressed(keyboard, KEY_C))
+	else if (is_lctrl_down && keyboard_is_key_pressed(KEY_C))
 	{
 		char buffer[MAX_INPUT_LENGTH];
-		utf8_str_copy_range(keyboard->input_text, 
-							keyboard->selection_begin_offset,
-							keyboard->selection_begin_offset+keyboard->selection_length,
+		utf8_str_copy_range(_global_keyboard.input_text, 
+							_global_keyboard.selection_begin_offset,
+							_global_keyboard.selection_begin_offset+_global_keyboard.selection_length,
 							buffer);
 		
 		if (!string_equals(buffer, ""))
@@ -144,76 +144,76 @@ static void keyboard_handle_input_copy_and_paste(platform_window *window, keyboa
 	}
 }
 
-void keyboard_handle_input_string(platform_window *window, keyboard_input *keyboard, char *ch)
+void keyboard_handle_input_string(platform_window *window, char *ch)
 {
-	keyboard_handle_input_copy_and_paste(window, keyboard);
+	keyboard_handle_input_copy_and_paste(window);
 	
-	bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+	bool is_lctrl_down = _global_keyboard.keys[KEY_LEFT_CONTROL];
 	
 	if (ch)
 	{
 		if (string_equals(ch, "\n")) is_lctrl_down = false;
 		
-		if (keyboard->input_text_len < MAX_INPUT_LENGTH && !is_lctrl_down)
+		if (_global_keyboard.input_text_len < MAX_INPUT_LENGTH && !is_lctrl_down)
 		{
-			if (keyboard->has_selection)
+			if (_global_keyboard.has_selection)
 			{
-				keyboard->cursor = keyboard->selection_begin_offset;
-				utf8_str_remove_range(keyboard->input_text, keyboard->selection_begin_offset,
-									  keyboard->selection_begin_offset + keyboard->selection_length);
-				keyboard->has_selection = false;
-				keyboard->text_changed = true;
+				_global_keyboard.cursor = _global_keyboard.selection_begin_offset;
+				utf8_str_remove_range(_global_keyboard.input_text, _global_keyboard.selection_begin_offset,
+									  _global_keyboard.selection_begin_offset + _global_keyboard.selection_length);
+				_global_keyboard.has_selection = false;
+				_global_keyboard.text_changed = true;
 			}
 			
-			if (keyboard->input_text_len)
+			if (_global_keyboard.input_text_len)
 			{
-				utf8_str_insert_at(keyboard->input_text, keyboard->cursor, *ch);
-				keyboard->text_changed = true;
+				utf8_str_insert_at(_global_keyboard.input_text, _global_keyboard.cursor, *ch);
+				_global_keyboard.text_changed = true;
 			}
 			else
 			{
-				string_appendn(keyboard->input_text, ch, MAX_INPUT_LENGTH);
-				keyboard->text_changed = true;
+				string_appendn(_global_keyboard.input_text, ch, MAX_INPUT_LENGTH);
+				_global_keyboard.text_changed = true;
 			}
 			
-			keyboard->cursor++;
-			keyboard->input_text_len = utf8len(keyboard->input_text);
+			_global_keyboard.cursor++;
+			_global_keyboard.input_text_len = utf8len(_global_keyboard.input_text);
 		}
 	}
 	else
 	{
-		bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+		bool is_lctrl_down = _global_keyboard.keys[KEY_LEFT_CONTROL];
 		
 		// cursor movement
-		if (keyboard_is_key_down(keyboard, KEY_LEFT) && keyboard->cursor > 0)
+		if (keyboard_is_key_down(KEY_LEFT) && _global_keyboard.cursor > 0)
 		{
 			if (is_lctrl_down)
-				keyboard->cursor = 0;
+				_global_keyboard.cursor = 0;
 			else
-				keyboard->cursor--;
+				_global_keyboard.cursor--;
 		}
-		if (keyboard_is_key_down(keyboard, KEY_RIGHT) && keyboard->cursor < keyboard->input_text_len)
+		if (keyboard_is_key_down(KEY_RIGHT) && _global_keyboard.cursor < _global_keyboard.input_text_len)
 		{
 			if (is_lctrl_down)
-				keyboard->cursor = utf8len(keyboard->input_text);
+				_global_keyboard.cursor = utf8len(_global_keyboard.input_text);
 			else
-				keyboard->cursor++;
+				_global_keyboard.cursor++;
 		}
 	}
 	
-	if (keyboard_is_key_pressed(keyboard, KEY_X))
+	if (keyboard_is_key_pressed(KEY_X))
 	{
-		bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+		bool is_lctrl_down = _global_keyboard.keys[KEY_LEFT_CONTROL];
 		
 		if (is_lctrl_down)
 		{
 			// copy selection
-			if (keyboard->has_selection)
+			if (_global_keyboard.has_selection)
 			{
 				char buffer[MAX_INPUT_LENGTH];
-				utf8_str_copy_range(keyboard->input_text, 
-									keyboard->selection_begin_offset,
-									keyboard->selection_begin_offset+keyboard->selection_length,
+				utf8_str_copy_range(_global_keyboard.input_text, 
+									_global_keyboard.selection_begin_offset,
+									_global_keyboard.selection_begin_offset+_global_keyboard.selection_length,
 									buffer);
 				
 				if (!string_equals(buffer, ""))
@@ -221,77 +221,77 @@ void keyboard_handle_input_string(platform_window *window, keyboard_input *keybo
 			}
 			
 			// delete selection
-			if (keyboard->has_selection)
+			if (_global_keyboard.has_selection)
 			{
-				utf8_str_remove_range(keyboard->input_text, keyboard->selection_begin_offset,
-									  keyboard->selection_begin_offset + keyboard->selection_length);
-				keyboard->has_selection = false;
-				keyboard->text_changed = true;
+				utf8_str_remove_range(_global_keyboard.input_text, _global_keyboard.selection_begin_offset,
+									  _global_keyboard.selection_begin_offset + _global_keyboard.selection_length);
+				_global_keyboard.has_selection = false;
+				_global_keyboard.text_changed = true;
 				
-				if (keyboard->selection_begin_offset < keyboard->cursor)
+				if (_global_keyboard.selection_begin_offset < _global_keyboard.cursor)
 				{
-					keyboard->cursor -= keyboard->selection_length;
+					_global_keyboard.cursor -= _global_keyboard.selection_length;
 				}
 			}
 			
-			keyboard->input_text_len = utf8len(keyboard->input_text);
+			_global_keyboard.input_text_len = utf8len(_global_keyboard.input_text);
 		}
 	}
 	
-	if (keyboard_is_key_down(keyboard, KEY_BACKSPACE))
+	if (keyboard_is_key_down(KEY_BACKSPACE))
 	{
-		keyboard->keys[KEY_BACKSPACE] = false;
+		_global_keyboard.keys[KEY_BACKSPACE] = false;
 		
-		bool is_lctrl_down = keyboard->keys[KEY_LEFT_CONTROL];
+		bool is_lctrl_down = _global_keyboard.keys[KEY_LEFT_CONTROL];
 		
-		if (keyboard->has_selection)
+		if (_global_keyboard.has_selection)
 		{
-			utf8_str_remove_range(keyboard->input_text, keyboard->selection_begin_offset,
-								  keyboard->selection_begin_offset + keyboard->selection_length);
-			keyboard->has_selection = false;
-			keyboard->text_changed = true;
+			utf8_str_remove_range(_global_keyboard.input_text, _global_keyboard.selection_begin_offset,
+								  _global_keyboard.selection_begin_offset + _global_keyboard.selection_length);
+			_global_keyboard.has_selection = false;
+			_global_keyboard.text_changed = true;
 			
-			if (keyboard->selection_begin_offset < keyboard->cursor)
+			if (_global_keyboard.selection_begin_offset < _global_keyboard.cursor)
 			{
-				keyboard->cursor -= keyboard->selection_length;
+				_global_keyboard.cursor -= _global_keyboard.selection_length;
 			}
 		}
 		else if (is_lctrl_down)
 		{
-			char *iter = keyboard->input_text;
+			char *iter = _global_keyboard.input_text;
 			s32 index = 0;
 			s32 found_index = 0;
 			utf8_int32_t br;
-			while((iter = utf8codepoint(iter, &br)) && index < keyboard->cursor && br)
+			while((iter = utf8codepoint(iter, &br)) && index < _global_keyboard.cursor && br)
 			{
 				index++;
-				if (br == ' ' && index+1 < keyboard->cursor)
+				if (br == ' ' && index+1 < _global_keyboard.cursor)
 				{
 					found_index = index;
 				}
 			}
 			
-			for (s32 i = found_index; i < keyboard->cursor; i++)
+			for (s32 i = found_index; i < _global_keyboard.cursor; i++)
 			{
-				utf8_str_remove_at(keyboard->input_text, found_index);
+				utf8_str_remove_at(_global_keyboard.input_text, found_index);
 			}
-			keyboard->cursor = found_index;
-			keyboard->text_changed = true;
+			_global_keyboard.cursor = found_index;
+			_global_keyboard.text_changed = true;
 		}
-		else if (keyboard->cursor > 0)
+		else if (_global_keyboard.cursor > 0)
 		{
-			utf8_str_remove_at(keyboard->input_text, keyboard->cursor-1);
+			utf8_str_remove_at(_global_keyboard.input_text, _global_keyboard.cursor-1);
 			
-			keyboard->cursor--;
-			keyboard->text_changed = true;
+			_global_keyboard.cursor--;
+			_global_keyboard.text_changed = true;
 		}
 		
-		keyboard->input_text_len = utf8len(keyboard->input_text);
+		_global_keyboard.input_text_len = utf8len(_global_keyboard.input_text);
 	}
 }
 
 inline bool keyboard_is_shortcut_down(s32 shortcut_keys[2])
 {
-	return keyboard_is_key_down(global_ui_context.keyboard, shortcut_keys[0]) &&
-		keyboard_is_key_pressed(global_ui_context.keyboard, shortcut_keys[1]);
+	return keyboard_is_key_down(shortcut_keys[0]) &&
+		keyboard_is_key_pressed(shortcut_keys[1]);
 }

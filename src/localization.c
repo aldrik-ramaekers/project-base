@@ -70,7 +70,7 @@ char* locale_get_id()
 	return global_localization.active_localization->locale_id;
 }
 
-bool set_locale(char *country_id)
+bool localization_set_locale(char *country_id)
 {
 	log_assert(global_localization.loaded, "localization_init() should be called before using any localization functions");
 

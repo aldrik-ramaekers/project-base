@@ -7,7 +7,7 @@
 #ifndef INCLUDE_MEMORY
 #define INCLUDE_MEMORY
 
-#define mem_alloc(size) malloc(size)
+#define mem_alloc(size) malloc(size);
 #define mem_free(p) free(p)
 #define mem_realloc(p, size) realloc(p, size)
 #define memory_print_leaks() {}

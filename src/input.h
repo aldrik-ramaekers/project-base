@@ -202,25 +202,25 @@ typedef struct t_keyboard_input
 
 int keycode_map[MAX_KEYCODE];
 
-bool is_left_down(mouse_input *input);
-bool is_left_released(mouse_input *input);
-bool is_left_clicked(mouse_input *input);
-bool is_left_double_clicked(mouse_input *input);
-bool is_right_down(mouse_input *input);
-bool is_right_released(mouse_input *input);
-bool is_right_clicked(mouse_input *input);
+bool is_left_down();
+bool is_left_released();
+bool is_left_clicked();
+bool is_left_double_clicked();
+bool is_right_down();
+bool is_right_released();
+bool is_right_clicked();
 
-bool keyboard_is_key_down(keyboard_input *keyboard, s16 key);
-bool keyboard_is_key_pressed(keyboard_input *keyboard, s16 key);
-void keyboard_set_input_text(keyboard_input *keyboard, char *text);
-void keyboard_set_input_mode(keyboard_input *keyboard, keyboard_input_mode mode);
+bool keyboard_is_key_down(s16 key);
+bool keyboard_is_key_pressed(s16 key);
+void keyboard_set_input_text(char *text);
+void keyboard_set_input_mode(keyboard_input_mode mode);
 bool keyboard_is_shortcut_down(s32 shortcut_keys[2]);
 
 typedef struct t_platform_window platform_window;
-void keyboard_handle_input_string(platform_window *window, keyboard_input *keyboard, char *text);
+void keyboard_handle_input_string(platform_window *window, char *text);
 
 mouse_input 	mouse_input_create();
 keyboard_input 	keyboard_input_create();
-void 			keyboard_input_destroy(keyboard_input *keyboard);
+void 			keyboard_input_destroy();
 
 #endif
