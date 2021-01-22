@@ -832,6 +832,23 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 	}
 }
 
+void render_line(s32 x1, s32 y1, s32 x2, s32 y2, color tint)
+{
+	if (global_use_gpu)
+	{
+		IMP_glBindTexture(GL_TEXTURE_2D, 0);
+		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+		IMP_glBegin(GL_LINES);
+		IMP_glVertex3i(x1, y1, render_depth);
+		IMP_glVertex3i(x2, y2, render_depth);
+		IMP_glEnd();
+	}
+	else
+	{
+		log_assert(0, "Not implemented");
+	}
+}
+
 void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
 	if (global_use_gpu)

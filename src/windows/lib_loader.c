@@ -34,6 +34,7 @@ __def_proc( void, glTexParameteri, (GLenum target,GLenum pname,GLint param))
 __def_proc( void, glDeleteTextures, (GLsizei n,const GLuint *textures))
 __def_proc( void, glTranslatef, (GLfloat x,GLfloat y,GLfloat z))
 __def_proc( void, glOrtho, (GLdouble left,GLdouble right,GLdouble bottom,GLdouble top,GLdouble zNear,GLdouble zFar))
+__def_proc( void, glFinish, (void))
 
 __def_proc( WINBOOL, GetSaveFileNameA, (LPOPENFILENAMEA))
 __def_proc( WINBOOL, GetOpenFileNameA, (LPOPENFILENAMEA))
@@ -88,6 +89,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(glDeleteTextures, libOpengl32);
     __load_fnc_or_exit(glTranslatef, libOpengl32);
     __load_fnc_or_exit(glOrtho, libOpengl32);
+    __load_fnc_or_exit(glFinish, libOpengl32);
 
     __load_lib_or_exit(libComdlg32, "comdlg32");
     __load_fnc_or_exit(GetSaveFileNameA, libComdlg32);

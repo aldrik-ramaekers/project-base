@@ -58,7 +58,7 @@
 #define PROJECT_BASE_VERSION "2.0.0"
 
 #ifndef TARGET_FRAMERATE
-#define TARGET_FRAMERATE (1000/24.0)
+#define TARGET_FRAMERATE (1000/30.0)
 #endif
 
 #ifdef _WIN32

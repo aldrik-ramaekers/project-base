@@ -233,16 +233,6 @@ void platform_init_shared(int argc, char **argv)
 u64 __last_stamp = 0;
 bool platform_keep_running(platform_window *window)
 {
-   u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
-	u64 diff = current_stamp - __last_stamp;
-	float diff_ms = diff / 1000.0f;
-		
-	if (diff_ms < TARGET_FRAMERATE)
-	{
-		double time_to_wait = (TARGET_FRAMERATE) - diff_ms;
-		thread_sleep(time_to_wait*1000);
-	}
-
 	__last_stamp = platform_get_time(TIME_FULL, TIME_US);
 
 	return window->is_open;
@@ -302,11 +292,13 @@ void platform_handle_events()
             w->update_func(w);
 			if (i == 0) update_render_notifications();
 
-#if 0
-			char test[100];
-			sprintf(test, "DRAW %d", platform_get_time(TIME_FULL, TIME_US));
-			render_text(global_ui_context.font_small, 0, 300, test, rgb(200,0,0));
-#endif
+			#if 1
+			IMP_glFinish();
+			u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
+			u64 diff = current_stamp - __last_stamp;
+			float diff_ms = diff / 1000000.0f;
+			frame_delta = diff_ms;
+			#endif
 
 		    platform_window_swap_buffers(w);
         }

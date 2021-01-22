@@ -190,6 +190,7 @@ typedef enum t_window_flags
 } window_flags;
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 
+float frame_delta = 0.0f;
 array window_registry;
 
 keyboard_input _global_keyboard;
