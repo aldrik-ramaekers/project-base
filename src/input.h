@@ -202,6 +202,9 @@ typedef struct t_keyboard_input
 
 int keycode_map[MAX_KEYCODE];
 
+void reset_left_click();
+void reset_right_click();
+
 bool is_left_down();
 bool is_left_released();
 bool is_left_clicked();

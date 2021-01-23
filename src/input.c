@@ -295,3 +295,10 @@ inline bool keyboard_is_shortcut_down(s32 shortcut_keys[2])
 	return keyboard_is_key_down(shortcut_keys[0]) &&
 		keyboard_is_key_pressed(shortcut_keys[1]);
 }
+
+inline void reset_left_click() {
+	_global_mouse.left_state &= ~MOUSE_CLICK;
+}
+inline void reset_right_click() {
+	_global_mouse.right_state &= ~MOUSE_CLICK;
+}
