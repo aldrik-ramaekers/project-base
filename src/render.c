@@ -832,11 +832,12 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 	}
 }
 
-void render_line(s32 x1, s32 y1, s32 x2, s32 y2, color tint)
+void render_line(s32 x1, s32 y1, s32 x2, s32 y2, float thickness, color tint)
 {
 	if (global_use_gpu)
 	{
 		IMP_glBindTexture(GL_TEXTURE_2D, 0);
+		IMP_glLineWidth(thickness);
 		IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
 		IMP_glBegin(GL_LINES);
 		IMP_glVertex3i(x1, y1, render_depth);
@@ -929,4 +930,69 @@ void render_reset_scissor()
 	{
 		current_scissor = (vec4){0,0,drawing_window->width+1,drawing_window->height+1};
 	}
+}
+
+
+//
+// Arc drawing
+//
+float normalizeAngleToSmallestPositive(float angle) {
+    while (angle < 0.0) { angle += M_PI*2; }
+    while (angle >= M_PI*2) { angle -= M_PI*2; }
+    return angle;
+}
+
+const int ARC_VERTEX_COUNT = 100;
+static void _render_arc(float angle1, float angle2, float radius, float x, float y, float useBiggerArc, color tint, float thickness) {
+	// Prepare angles
+    angle1 = normalizeAngleToSmallestPositive(angle1);
+    angle2 = normalizeAngleToSmallestPositive(angle2);
+    if (angle1 > angle2) {
+        float buffer = angle1;
+        angle1 = angle2;
+        angle2 = buffer;
+    }
+    if (useBiggerArc != (angle2-angle1 > M_PI)) {
+        angle1 += M_PI*2;
+    }
+
+	s32 buffer_size = ARC_VERTEX_COUNT * 2;
+
+    // Create opengl geometry
+    GLfloat pos[buffer_size];
+    for (int i = 0; i < ARC_VERTEX_COUNT; i++) {
+        pos[i*2] = sin((float)i / (ARC_VERTEX_COUNT-1) * (angle2 - angle1) + angle1) * radius + x;
+        pos[i*2+1] = cos((float)i / (ARC_VERTEX_COUNT-1) * (angle2 - angle1) + angle1) * radius + y;
+    }
+
+	IMP_glBindTexture(GL_TEXTURE_2D, 0);
+	IMP_glBegin(GL_LINE_STRIP);
+	IMP_glLineWidth(thickness);
+	IMP_glColor4f(tint.r/255.0f, tint.g/255.0f, tint.b/255.0f, tint.a/255.0f); 
+	for (int i = 0; i < buffer_size; i+=2) {
+		//printf("pos: %f %f, --- x: %f y: %f\n", x, y, pos[i], pos[i+1]);
+        IMP_glVertex3i(pos[i], pos[i+1], render_depth);
+    }
+	IMP_glEnd();
+}
+
+void render_arc(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color tint, float thickness)
+{
+    // distance between points
+    float distance = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+    // halfway point
+    float xAverage = (x1+x2)/2.0;
+    float yAverage = (y1+y2)/2.0;
+    // circle center
+    float xCenter = sqrt(radius*radius - distance*distance/4.0) * (y1-y2) / distance;
+    float yCenter = sqrt(radius*radius - distance*distance/4.0) * (x2-x1) / distance;
+    xCenter = xAverage + (arcDirection ? xCenter : -xCenter);
+    yCenter = yAverage + (arcDirection ? yCenter : -yCenter);
+    // angles
+    float angle1 = atan2(x1-xCenter, y1-yCenter);
+    float angle2 = atan2(x2-xCenter, y2-yCenter);
+    // create the arc
+
+	//printf("%f %f %f, %f\n", distance, xCenter, yCenter, (radius*radius - distance*distance/4.0));
+    _render_arc(angle1, angle2, radius, xCenter, yCenter, useBiggerArc, tint, thickness);
 }

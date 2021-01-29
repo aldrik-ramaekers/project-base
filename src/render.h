@@ -62,12 +62,13 @@ s32 calculate_text_width(font *font, char *text);
 s32 calculate_text_width_upto(font *font, char *text, s32 index);
 s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index);
 void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint);
-void render_line(s32 x1, s32 y1, s32 x2, s32 y2, color tint);
+void render_line(s32 x1, s32 y1, s32 x2, s32 y2, float thickness, color tint);
 void render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16 outline_w, color tint);
 void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction dir);
 void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h);
 vec4 render_get_scissor();
 void render_reset_scissor();
 void render_set_rotation(float32 rotation, float32 x, float32 y, s32 depth);
+void render_arc(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color c, float thickness);
 
 #endif
