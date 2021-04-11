@@ -256,6 +256,7 @@ void 	platform_destroy_shared();
 u64 	platform_get_time(time_type time_type, time_precision precision);
 s32 	platform_get_memory_size();
 s32 	platform_get_cpu_count();
+void 	platform_toggle_vsync(bool on);
 
 void _platform_register_window(platform_window* window);
 void _platform_unregister_window(platform_window* window);

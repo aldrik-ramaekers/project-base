@@ -582,6 +582,17 @@ void platform_hide_window(platform_window *window)
 	ShowWindow(window->window_handle, SW_HIDE);
 }
 
+void platform_toggle_vsync(bool on)
+{
+	if (strstr(IMP_wglGetExtensionsStringEXT(), "WGL_EXT_swap_control") == NULL)
+    {
+		// Not supported.
+        return;
+    }
+
+	IMP_wglSwapIntervalEXT(on);
+}
+
 void platform_setup_backbuffer(platform_window *window)
 {
 	static HGLRC share_list = 0;
@@ -623,6 +634,14 @@ void platform_setup_backbuffer(platform_window *window)
 		}
 		
 		IMP_wglMakeCurrent(window->hdc, window->gl_context);
+
+		// Load wgl specific extensions after gl context has been created.
+		if (IMP_wglSwapIntervalEXT == 0) {
+			__load_fnc_wgl_or_exit(wglSwapIntervalEXT);
+    		__load_fnc_wgl_or_exit(wglGetSwapIntervalEXT);
+    		__load_fnc_wgl_or_exit(wglGetExtensionsStringEXT);
+		}
+		platform_toggle_vsync(true);
 	}
 	else
 	{

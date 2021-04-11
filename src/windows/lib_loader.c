@@ -1,11 +1,18 @@
 #define __load_lib_or_exit(_var, _name) _var = LoadLibraryA(_name); if (!_var) { printf("Failed to load library %s\n", _name); exit(0); }
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
+#define __load_fnc_wgl_or_exit(_ptr) IMP_##_ptr = (DEF_##_ptr)IMP_wglGetProcAddress(#_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __def_proc(_return, _name, _params) typedef _return APIENTRY (*DEF_##_name)_params; DEF_##_name IMP_##_name;
 
 __def_proc( HGLRC, wglCreateContext, (HDC));
 __def_proc( WINBOOL, wglShareLists, (HGLRC,HGLRC));
 __def_proc( WINBOOL, wglMakeCurrent, (HDC,HGLRC));
 __def_proc( WINBOOL, wglDeleteContext, (HGLRC));
+
+__def_proc( PROC, wglGetProcAddress, (LPCSTR));
+__def_proc( BOOL, wglSwapIntervalEXT, (int));
+__def_proc( int, wglGetSwapIntervalEXT, (void));
+__def_proc( const char *, wglGetExtensionsStringEXT, (void));
+
 __def_proc( void, glDepthMask, (GLboolean));
 __def_proc( void, glColorMask, (GLboolean,GLboolean,GLboolean,GLboolean));
 __def_proc( void, glDepthFunc, (GLenum));
@@ -64,6 +71,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(wglShareLists, libOpengl32);
     __load_fnc_or_exit(wglMakeCurrent, libOpengl32);
     __load_fnc_or_exit(wglDeleteContext, libOpengl32);
+    __load_fnc_or_exit(wglGetProcAddress, libOpengl32);
     __load_fnc_or_exit(glDepthMask, libOpengl32);
     __load_fnc_or_exit(glColorMask, libOpengl32);
     __load_fnc_or_exit(glDepthFunc, libOpengl32);
