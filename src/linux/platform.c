@@ -628,7 +628,7 @@ inline void platform_destroy()
 
 inline void platform_window_make_current(platform_window *window)
 {
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 		IMP_glXMakeCurrent(window->display, window->window, window->gl_context);
 }
 
@@ -653,7 +653,7 @@ void platform_window_set_size(platform_window *window, u16 width, u16 height)
 {
 	XResizeWindow(window->display, window->window, width, height);
 	
-	if (!global_use_gpu)
+	if (current_render_driver() == DRIVER_CPU)
 		_allocate_backbuffer(window);
 }
 
@@ -673,7 +673,7 @@ vec2 platform_get_window_size(platform_window *window)
 
 void platform_setup_backbuffer(platform_window *window)
 {
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 	{
 		static GLXContext share_list = 0;
 		
@@ -694,7 +694,7 @@ void platform_setup_backbuffer(platform_window *window)
 
 void platform_setup_renderer()
 {
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 	{
 		////// GL SETUP
 		IMP_glDepthMask(GL_TRUE);
@@ -1016,7 +1016,7 @@ inline bool platform_window_is_valid(platform_window *window)
 void platform_destroy_window(platform_window *window)
 {
 	if (platform_window_is_valid(window)) {
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			IMP_glXMakeCurrent(window->display, None, NULL);
 			IMP_glXDestroyContext(window->display, window->gl_context);
@@ -1121,7 +1121,7 @@ void _platform_handle_events_for_window(platform_window *window)
 			window->width = xce.width;
 			window->height = xce.height;
 			
-			if (!global_use_gpu)
+			if (current_render_driver() == DRIVER_CPU)
 				_allocate_backbuffer(window);
 			else
 				IMP_glViewport(0, 0, window->width, window->height);
@@ -1360,7 +1360,7 @@ inline void platform_window_swap_buffers(platform_window *window)
 		window->curr_cursor_type = window->next_cursor_type;
 	}
 	
-	if (!global_use_gpu)
+	if (current_render_driver() == DRIVER_CPU)
 	{
 		s32 pixel_count = window->backbuffer.width * window->backbuffer.height;
 		for (s32 i = 0; i < pixel_count; i++)

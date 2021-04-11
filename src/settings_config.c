@@ -73,10 +73,6 @@ static void get_config_from_string(settings_config *config, char *string)
 	array_push(&config->settings, &current_entry);
 }
 
-void _settings_load_into_globals() {
-	global_use_gpu = settings_get_number_or_default("USE_GPU", 1);
-}
-
 void settings_init(char *directory)
 {
 	settings_config config;
@@ -123,8 +119,6 @@ void settings_init(char *directory)
 	
 	platform_destroy_file_content(&content);
 	_settings_file = config;
-
-	_settings_load_into_globals();
 }
 
 config_setting* settings_get_setting(char *name)

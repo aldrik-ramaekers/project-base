@@ -24,9 +24,9 @@ inline void ui_begin(platform_window *window)
 {
 	platform_window_make_current(window);
 	platform_set_cursor(window, CURSOR_DEFAULT);
-	render_clear(window);
+	renderer->render_clear(window);
 	camera_apply_transformations(window, &_global_camera);
-	render_reset_scissor();
+	renderer->render_reset_scissor();
 
 	global_ui_context.active_window = window;
 	global_ui_context.item_hovered = false;
@@ -242,11 +242,11 @@ static void ui_pop_scissor()
 		s32 x = global_ui_context.layout.scroll->x;
 		s32 y = global_ui_context.layout.scroll->y;
 		
-		render_set_scissor(global_ui_context.active_window, x,y,w,h);
+		renderer->render_set_scissor(global_ui_context.active_window, x,y,w,h);
 	}
 	else
 	{
-		render_reset_scissor();
+		renderer->render_reset_scissor();
 	}
 }
 
@@ -282,9 +282,9 @@ inline void ui_begin_menu_bar()
 	global_ui_context.layout.offset_x = 0;
 	global_ui_context.layout.layout_direction = LAYOUT_HORIZONTAL;
 	
-	render_rectangle(0, y, w, MENU_BAR_HEIGHT, global_ui_context.style.menu_background);
-	render_rectangle(0, y, w, 1, global_ui_context.style.border);
-	render_rectangle(0, y+MENU_BAR_HEIGHT, w, 1, global_ui_context.style.border);
+	renderer->render_rectangle(0, y, w, MENU_BAR_HEIGHT, global_ui_context.style.menu_background);
+	renderer->render_rectangle(0, y, w, 1, global_ui_context.style.border);
+	renderer->render_rectangle(0, y+MENU_BAR_HEIGHT, w, 1, global_ui_context.style.border);
 	global_ui_context.layout.menu_offset_y = 0;
 }
 
@@ -304,7 +304,7 @@ inline void ui_push_separator()
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y;
 	s32 w = global_ui_context.layout.width;
 	
-	render_rectangle(x, y, w, 1, global_ui_context.style.border);
+	renderer->render_rectangle(x, y, w, 1, global_ui_context.style.border);
 	global_ui_context.layout.offset_y += 1 + WIDGET_PADDING;
 }
 
@@ -314,7 +314,7 @@ void ui_push_vertical_dragbar()
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y - WIDGET_PADDING;
 	s32 h = global_ui_context.layout.height;
 	
-	render_rectangle(x, y, 2, h, global_ui_context.style.border);
+	renderer->render_rectangle(x, y, 2, h, global_ui_context.style.border);
 }
 
 inline void ui_push_menu_item_separator()
@@ -377,13 +377,13 @@ bool ui_push_color_button(char *text, bool selected, color c)
 	
 	if (selected)
 	{
-		render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-		render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 4, global_ui_context.style.border);
+		renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+		renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 4, global_ui_context.style.border);
 	}
 	else
 	{
-		render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-		render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
+		renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+		renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
 	}
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
@@ -398,7 +398,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 {
 	bool result = false;
 	
-	set_render_depth(30);
+	renderer->set_render_depth(30);
 	
 	u32 id = ui_get_id();
 	global_ui_context.layout.dropdown_item_count++;
@@ -429,15 +429,15 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	}
 	
 	
-	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
+	renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
 	if (icon)
 	{
-		render_image(icon, x+(BUTTON_HORIZONTAL_TEXT_PADDING/2), 
+		renderer->render_image(icon, x+(BUTTON_HORIZONTAL_TEXT_PADDING/2), 
 					 y + (h - (h-6))/2, h-6, h-6);
 		text_x += h-10;
 	}
-	render_text(global_ui_context.font_small, text_x+(BUTTON_HORIZONTAL_TEXT_PADDING/2)-5, text_y, title, global_ui_context.style.foreground);
+	renderer->render_text(global_ui_context.font_small, text_x+(BUTTON_HORIZONTAL_TEXT_PADDING/2)-5, text_y, title, global_ui_context.style.foreground);
 	
 	
 #if 0
@@ -446,7 +446,7 @@ bool ui_push_dropdown_item(image *icon, char *title, s32 index)
 	else
 		global_ui_context.layout.offset_y += BUTTON_HEIGHT + WIDGET_PADDING;
 #endif
-	set_render_depth(1);
+	renderer->set_render_depth(1);
 	
 	return result;
 }
@@ -492,11 +492,11 @@ bool ui_push_dropdown(dropdown_state *state, char *title)
 		result = true;
 	}
 	
-	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
-	render_triangle(x+total_w - h, y+(h-(h-12))/2, h-12, h-12, global_ui_context.style.border, TRIANGLE_DOWN);
+	renderer->render_triangle(x+total_w - h, y+(h-(h-12))/2, h-12, h-12, global_ui_context.style.border, TRIANGLE_DOWN);
 	global_ui_context.layout.dropdown_x = global_ui_context.layout.offset_x;
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -515,7 +515,7 @@ bool ui_push_menu(char *title)
 	u32 id = ui_get_id();
 	
 	s32 x = global_ui_context.layout.offset_x + global_ui_context.camera->x;
-	s32 w = calculate_text_width(global_ui_context.font_small, title) +
+	s32 w = renderer->calculate_text_width(global_ui_context.font_small, title) +
 		(MENU_HORIZONTAL_PADDING*2);
 	s32 text_h = global_ui_context.font_small->px_h;
 	s32 h = MENU_BAR_HEIGHT-1;
@@ -559,8 +559,8 @@ bool ui_push_menu(char *title)
 		is_open = false;
 	}
 	
-	render_rectangle(x, y, w, h, bg_color);
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_rectangle(x, y, w, h, bg_color);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
 	global_ui_context.layout.prev_offset_x = global_ui_context.layout.offset_x;
 	global_ui_context.layout.offset_x += w;
@@ -705,7 +705,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
-		render_set_scissor(global_ui_context.active_window, scissor_x,
+		renderer->render_set_scissor(global_ui_context.active_window, scissor_x,
 						   scissor_y, scissor_w, scissor_h);
 	}
 	else
@@ -715,20 +715,20 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH;
 		s32 scissor_h = TEXTBOX_HEIGHT;
 		
-		render_set_scissor(global_ui_context.active_window, 
+		renderer->render_set_scissor(global_ui_context.active_window, 
 						   scissor_x, scissor_y, scissor_w, scissor_h);
 	}
 	
 	if (!state->state)
 	{
-		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
-		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.border);
+		renderer->render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
+		renderer->render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.border);
 	}
 	else
 	{
 		cursor_tick++;
-		render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
-		render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.textbox_active_border);
+		renderer->render_rectangle(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, global_ui_context.style.textbox_background);
+		renderer->render_rectangle_outline(x, y, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, 1, global_ui_context.style.textbox_active_border);
 	}
 	
 	// calculate scissor rectangle for text
@@ -739,7 +739,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = global_ui_context.layout.scroll->height - 2;
 		
-		render_set_scissor(global_ui_context.active_window, scissor_x,
+		renderer->render_set_scissor(global_ui_context.active_window, scissor_x,
 						   scissor_y, scissor_w, scissor_h);
 	}
 	else
@@ -749,7 +749,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		s32 scissor_w = TEXTBOX_WIDTH-5;
 		s32 scissor_h = TEXTBOX_HEIGHT;
 		
-		render_set_scissor(global_ui_context.active_window, 
+		renderer->render_set_scissor(global_ui_context.active_window, 
 						   scissor_x, scissor_y, scissor_w, scissor_h);
 	}
 	
@@ -758,7 +758,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	// select first character on click
 	if (clicked_to_set_cursor)
 	{
-		global_ui_context.keyboard->cursor = calculate_cursor_position(global_ui_context.font_small, 
+		global_ui_context.keyboard->cursor = renderer->calculate_cursor_position(global_ui_context.font_small, 
 																	   state->buffer, mouse_x + state->diff - text_x);
 		
 		state->last_click_cursor_index = global_ui_context.keyboard->cursor;
@@ -848,10 +848,10 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			cursor_tick = 0;
 		
 		// draw cursor
-		cursor_text_w = calculate_text_width_upto(global_ui_context.font_small, 
+		cursor_text_w = renderer->calculate_text_width_upto(global_ui_context.font_small, 
 												  state->buffer, global_ui_context.keyboard->cursor);
 		
-		s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
+		s32 text_w = renderer->calculate_text_width(global_ui_context.font_small, state->buffer);
 		
 #if 1
 		// change offset after cursor position change
@@ -893,7 +893,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 #endif
 	}
 	
-	s32 curr_index = calculate_cursor_position(global_ui_context.font_small, 
+	s32 curr_index = renderer->calculate_cursor_position(global_ui_context.font_small, 
 											   state->buffer, mouse_x + state->diff - text_x);
 	
 	//////////////////////////////////
@@ -927,7 +927,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		// move text offset x when selecting so we can select more text than available on screen.
 		if (global_ui_context.mouse->x < x + 10)
 		{
-			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
+			s32 text_w = renderer->calculate_text_width(global_ui_context.font_small, state->buffer);
 			if (text_w > TEXTBOX_WIDTH-10)
 			{
 				state->diff -= TEXTBOX_SCROLL_X_SPEED;
@@ -936,7 +936,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 		}
 		if (global_ui_context.mouse->x > x + TEXTBOX_WIDTH - 10)
 		{
-			s32 text_w = calculate_text_width(global_ui_context.font_small, state->buffer);
+			s32 text_w = renderer->calculate_text_width(global_ui_context.font_small, state->buffer);
 			s32 diff = text_w - TEXTBOX_WIDTH + 10;
 			
 			if (text_w > TEXTBOX_WIDTH-10)
@@ -956,7 +956,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 #if 1
 	if (is_selecting)
 	{
-		s32 index = calculate_cursor_position(global_ui_context.font_small, 
+		s32 index = renderer->calculate_cursor_position(global_ui_context.font_small, 
 											  state->buffer, mouse_x + state->diff - text_x)+1;
 		
 		if (double_clicked_to_select_first)
@@ -988,23 +988,23 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 	if (!has_text)
 	{
 		if (!state->state)
-			render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
+			renderer->render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
 						placeholder, global_ui_context.style.textbox_placeholder_foreground);
 		else
-			render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
+			renderer->render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
 									placeholder, global_ui_context.style.textbox_placeholder_foreground, global_ui_context.keyboard->cursor);
 	}
 	else
 	{
 		if (global_ui_context.keyboard->has_selection && state->state && global_ui_context.keyboard->selection_length)
-			render_text_with_selection(global_ui_context.font_small, text_x - state->diff, text_y, 
+			renderer->render_text_with_selection(global_ui_context.font_small, text_x - state->diff, text_y, 
 									   state->buffer, global_ui_context.style.foreground, global_ui_context.keyboard->selection_begin_offset,
 									   global_ui_context.keyboard->selection_length);
 		else if (state->state)
-			render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
+			renderer->render_text_with_cursor(global_ui_context.font_small, text_x - state->diff, text_y, 
 									state->buffer, global_ui_context.style.foreground, global_ui_context.keyboard->cursor);
 		else
-			render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
+			renderer->render_text(global_ui_context.font_small, text_x - state->diff, text_y, 
 						state->buffer, global_ui_context.style.foreground);
 	}
 	
@@ -1029,7 +1029,7 @@ bool ui_push_hypertext_link(char *text)
 	s32 text_x = x + WIDGET_PADDING;
 	s32 text_h = global_ui_context.font_small->px_h + 10;
 	s32 text_y = y + (BLOCK_HEIGHT/2) - (global_ui_context.font_small->px_h/2) + spacing_y;
-	s32 total_w = calculate_text_width(global_ui_context.font_small, text) +
+	s32 total_w = renderer->calculate_text_width(global_ui_context.font_small, text) +
 		WIDGET_PADDING + WIDGET_PADDING + 10;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
@@ -1049,12 +1049,12 @@ bool ui_push_hypertext_link(char *text)
 		bg_color = global_ui_context.style.hypertext_hover_foreground;
 	}
 	
-	s32 text_width = render_text(global_ui_context.font_small, text_x + 5, text_y + 5, text, bg_color);
+	s32 text_width = renderer->render_text(global_ui_context.font_small, text_x + 5, text_y + 5, text, bg_color);
 	
 	if (result)
-		render_rectangle(text_x, text_y+text_h+2, text_width+10, 1, bg_color);
+		renderer->render_rectangle(text_x, text_y+text_h+2, text_width+10, 1, bg_color);
 	else if (hovered)
-		render_rectangle(text_x, text_y+text_h, text_width+10, 1, bg_color);
+		renderer->render_rectangle(text_x, text_y+text_h, text_width+10, 1, bg_color);
 	
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
@@ -1072,13 +1072,13 @@ void ui_push_textf(font *f, char *text)
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
 	s32 text_x = x + WIDGET_PADDING;
 	s32 text_y = y + (BLOCK_HEIGHT/2) - (f->px_h/2) + spacing_y;
-	s32 total_w = calculate_text_width(f, text) +
+	s32 total_w = renderer->calculate_text_width(f, text) +
 		WIDGET_PADDING + WIDGET_PADDING;
 	
 	if (global_ui_context.layout.block_height < f->px_h)
 		global_ui_context.layout.block_height = f->px_h+5;
 	
-	render_text(f, text_x, text_y, text, global_ui_context.style.foreground);
+	renderer->render_text(f, text_x, text_y, text, global_ui_context.style.foreground);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
@@ -1100,7 +1100,7 @@ void ui_push_textf_width(font *f, char *text, s32 maxw)
 	if (global_ui_context.layout.block_height < f->px_h)
 		global_ui_context.layout.block_height = f->px_h+5;
 	
-	render_text_ellipsed(f, text_x, text_y, maxw, text, global_ui_context.style.foreground);
+	renderer->render_text_ellipsed(f, text_x, text_y, maxw, text, global_ui_context.style.foreground);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
@@ -1116,13 +1116,13 @@ void ui_push_text(char *text)
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
 	s32 text_x = x + WIDGET_PADDING;
 	s32 text_y = y + (BLOCK_HEIGHT/2) - (global_ui_context.font_small->px_h/2) + spacing_y;
-	s32 total_w = calculate_text_width(global_ui_context.font_small, text) +
+	s32 total_w = renderer->calculate_text_width(global_ui_context.font_small, text) +
 		WIDGET_PADDING + WIDGET_PADDING;
 	
 	if (global_ui_context.layout.block_height < global_ui_context.font_small->px_h)
 		global_ui_context.layout.block_height = global_ui_context.font_small->px_h+5;
 	
-	render_text(global_ui_context.font_small, text_x, text_y, text, global_ui_context.style.foreground);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, text, global_ui_context.style.foreground);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
@@ -1154,7 +1154,7 @@ void ui_push_rect(s32 w, color c)
 		global_ui_context.layout.block_height = h;
 	
 	{
-		render_rectangle(x+WIDGET_PADDING,y,w,h,c);
+		renderer->render_rectangle(x+WIDGET_PADDING,y,w,h,c);
 	}
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
@@ -1208,11 +1208,11 @@ bool ui_push_text_width(char *text, s32 maxw, bool active)
 		
 		if (hovered)
 		{
-			render_rectangle_outline(x-1,y+spacing_y,total_w, h, 1, global_ui_context.style.textbox_active_border);
+			renderer->render_rectangle_outline(x-1,y+spacing_y,total_w, h, 1, global_ui_context.style.textbox_active_border);
 		}
 	}
 	
-	render_text_ellipsed(global_ui_context.font_small, text_x, text_y, maxw, text, global_ui_context.style.foreground);
+	renderer->render_text_ellipsed(global_ui_context.font_small, text_x, text_y, maxw, text, global_ui_context.style.foreground);
 	
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
@@ -1233,7 +1233,7 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll() - spacing_y;
 	s32 text_x = x + CHECKBOX_SIZE + WIDGET_PADDING;
 	s32 text_y = y + (BLOCK_HEIGHT/2) - (global_ui_context.font_small->px_h/2) + spacing_y;
-	s32 total_w = calculate_text_width(global_ui_context.font_small, title) +
+	s32 total_w = renderer->calculate_text_width(global_ui_context.font_small, title) +
 		CHECKBOX_SIZE + WIDGET_PADDING + WIDGET_PADDING;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
@@ -1241,7 +1241,7 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	if (global_ui_context.layout.block_height < CHECKBOX_SIZE)
 		global_ui_context.layout.block_height = CHECKBOX_SIZE;
 	
-	render_rectangle_outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, 1, global_ui_context.style.border);
+	renderer->render_rectangle_outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, 1, global_ui_context.style.border);
 	
 	s32 virt_top = y;
 	s32 virt_bottom = y + CHECKBOX_SIZE;
@@ -1270,10 +1270,10 @@ bool ui_push_checkbox(checkbox_state *state, char *title)
 	if (state->state)
 	{
 		s32 spacing = 2;
-		render_rectangle(x+spacing, y+spacing, CHECKBOX_SIZE-(spacing*2), CHECKBOX_SIZE-(spacing*2), global_ui_context.style.border);
+		renderer->render_rectangle(x+spacing, y+spacing, CHECKBOX_SIZE-(spacing*2), CHECKBOX_SIZE-(spacing*2), global_ui_context.style.border);
 	}
 	
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w;
@@ -1316,7 +1316,7 @@ void ui_begin_menu_submenu(submenu_state *state, char *title)
 
 void ui_end_menu_submenu(char* empty_placeholder)
 {
-	set_render_depth(30);
+	renderer->set_render_depth(30);
 	
 	submenu_state *state = global_ui_context.submenus.submenu_stack[global_ui_context.submenus.count-1];
 	
@@ -1340,28 +1340,28 @@ void ui_end_menu_submenu(char* empty_placeholder)
 			s32 text_x = state->x + MENU_HORIZONTAL_PADDING;
 			
 			total_h = h;
-			render_rectangle(state->x, state->y, w, total_h, global_ui_context.style.widget_background);
-			render_rectangle_outline(state->x, state->y, w, total_h, 1, global_ui_context.style.border);
+			renderer->render_rectangle(state->x, state->y, w, total_h, global_ui_context.style.widget_background);
+			renderer->render_rectangle_outline(state->x, state->y, w, total_h, 1, global_ui_context.style.border);
 			
-			render_text(global_ui_context.font_small, text_x, text_y, empty_placeholder, global_ui_context.style.foreground);
+			renderer->render_text(global_ui_context.font_small, text_x, text_y, empty_placeholder, global_ui_context.style.foreground);
 		}
 		else
 		{
-			render_rectangle(state->x, state->y, w, 1, global_ui_context.style.border);
+			renderer->render_rectangle(state->x, state->y, w, 1, global_ui_context.style.border);
 		}
 	}
 	
 	
 	global_ui_context.submenus.count--;
 	
-	set_render_depth(1);
+	renderer->set_render_depth(1);
 }
 
 bool ui_push_menu_item(char *title, char *shortcut)
 {
 	bool result = false;
 	
-	set_render_depth(30);
+	renderer->set_render_depth(30);
 	
 	s32 x = global_ui_context.layout.prev_offset_x + global_ui_context.camera->x;
 	s32 w = MENU_ITEM_WIDTH;
@@ -1393,7 +1393,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 		text_y = y - (text_h / 2) + (h / 2);
 		text_x = x + MENU_HORIZONTAL_PADDING;
 		text_2_x = x + w - MENU_HORIZONTAL_PADDING
-			- calculate_text_width(global_ui_context.font_small, shortcut);
+			- renderer->calculate_text_width(global_ui_context.font_small, shortcut);
 		
 		state->item_count++;
 	}
@@ -1404,7 +1404,7 @@ bool ui_push_menu_item(char *title, char *shortcut)
 		text_y = y - (text_h / 2) + (h / 2);
 		text_x = x + MENU_HORIZONTAL_PADDING;
 		text_2_x = x + w - MENU_HORIZONTAL_PADDING
-			- calculate_text_width(global_ui_context.font_small, shortcut);
+			- renderer->calculate_text_width(global_ui_context.font_small, shortcut);
 	}
 	
 	if ((mouse_x >= x && mouse_x < x + w && mouse_y >= y && mouse_y < y + h))
@@ -1420,22 +1420,22 @@ bool ui_push_menu_item(char *title, char *shortcut)
 		}
 	}
 	
-	render_rectangle(x, y, w, h, bg_color);
-	render_rectangle(x, y+MENU_BAR_HEIGHT, w, 1, global_ui_context.style.border);
+	renderer->render_rectangle(x, y, w, h, bg_color);
+	renderer->render_rectangle(x, y+MENU_BAR_HEIGHT, w, 1, global_ui_context.style.border);
 	
 	// borders
-	render_rectangle(x, y, w, 1,  bg_color);
-	render_rectangle(x, y, 1, MENU_BAR_HEIGHT, global_ui_context.style.border);
-	render_rectangle(x+w, y, 1, MENU_BAR_HEIGHT+1, global_ui_context.style.border);
+	renderer->render_rectangle(x, y, w, 1,  bg_color);
+	renderer->render_rectangle(x, y, 1, MENU_BAR_HEIGHT, global_ui_context.style.border);
+	renderer->render_rectangle(x+w, y, 1, MENU_BAR_HEIGHT+1, global_ui_context.style.border);
 	
 	// shadow
-	render_rectangle(x+w, y, 3, MENU_BAR_HEIGHT, rgba(0,0,0,100));
-	render_rectangle(x+3, y+h, w, 3, rgba(0,0,0,100));
+	renderer->render_rectangle(x+w, y, 3, MENU_BAR_HEIGHT, rgba(0,0,0,100));
+	renderer->render_rectangle(x+3, y+h, w, 3, rgba(0,0,0,100));
 	
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
-	render_text(global_ui_context.font_small, text_2_x, text_y, shortcut, global_ui_context.style.foreground);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_text(global_ui_context.font_small, text_2_x, text_y, shortcut, global_ui_context.style.foreground);
 	
-	set_render_depth(1);
+	renderer->set_render_depth(1);
 	
 	return result;
 }
@@ -1481,8 +1481,8 @@ bool ui_push_image(image *img, s32 w, s32 h, s32 outline, color tint)
 		}
 	}
 	
-	render_image_tint(img,x,y,w,h,global_ui_context.style.image_outline_tint);
-	render_image_tint(img,x+outline,y+outline,w-(outline*2),h-(outline*2),tint);
+	renderer->render_image_tint(img,x,y,w,h,global_ui_context.style.image_outline_tint);
+	renderer->render_image_tint(img,x+outline,y+outline,w-(outline*2),h-(outline*2),tint);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -1501,7 +1501,7 @@ bool ui_push_button(button_state *state, char *title)
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 text_y = y + (BUTTON_HEIGHT/2) - (global_ui_context.font_small->px_h/2);
-	s32 total_w = calculate_text_width(global_ui_context.font_small, title) +
+	s32 total_w = renderer->calculate_text_width(global_ui_context.font_small, title) +
 		BUTTON_HORIZONTAL_TEXT_PADDING + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
@@ -1546,9 +1546,9 @@ bool ui_push_button(button_state *state, char *title)
 		//state->state = 0;
 	}
 	
-	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -1567,7 +1567,7 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 text_y = y + (BUTTON_HEIGHT/2) - (global_ui_context.font_small->px_h/2);
-	s32 text_w = calculate_text_width(global_ui_context.font_small, title);
+	s32 text_w = renderer->calculate_text_width(global_ui_context.font_small, title);
 	s32 total_w = text_w + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
@@ -1675,14 +1675,14 @@ bool ui_push_button_image_with_confirmation(button_state *state, char *title, im
 		state->state = 0;
 	}
 	
-	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, border_color);
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, border_color);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
 	if (img && img->loaded)
-		render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+		renderer->render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
 	else
-		render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
+		renderer->render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -1701,7 +1701,7 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 	s32 y = global_ui_context.layout.offset_y + global_ui_context.camera->y + ui_get_scroll();
 	s32 text_x = x + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 text_y = y + (BUTTON_HEIGHT/2) - (global_ui_context.font_small->px_h/2);
-	s32 text_w = calculate_text_width(global_ui_context.font_small, title);
+	s32 text_w = renderer->calculate_text_width(global_ui_context.font_small, title);
 	s32 total_w = text_w + BUTTON_HORIZONTAL_TEXT_PADDING;
 	s32 mouse_x = global_ui_context.mouse->x + global_ui_context.camera->x;
 	s32 mouse_y = global_ui_context.mouse->y + global_ui_context.camera->y;
@@ -1775,14 +1775,14 @@ bool ui_push_button_image(button_state *state, char *title, image *img)
 		state->state = 0;
 	}
 	
-	render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
-	render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
-	render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
+	renderer->render_rectangle(x, y, total_w, BUTTON_HEIGHT, bg_color);
+	renderer->render_rectangle_outline(x, y, total_w, BUTTON_HEIGHT, 1, global_ui_context.style.border);
+	renderer->render_text(global_ui_context.font_small, text_x, text_y, title, global_ui_context.style.foreground);
 	
 	if (img && img->loaded)
-		render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
+		renderer->render_image(img, x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, img->width, img->height);
 	else
-		render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
+		renderer->render_rectangle(x + total_w - icon_w - BUTTON_IMAGE_SPACING, y + BUTTON_IMAGE_PADDING, icon_w, icon_w, rgb(160,160,160));
 	
 	if (global_ui_context.layout.layout_direction == LAYOUT_HORIZONTAL)
 		global_ui_context.layout.offset_x += total_w + WIDGET_PADDING;
@@ -1827,7 +1827,7 @@ void ui_scroll_begin(scroll_state *state)
 	global_ui_context.layout.scroll->scroll_start_offset_y = global_ui_context.layout.offset_y;
 	
 	//render_rectangle_outline(x, y, w, h, 1, global_ui_context.style.border);
-	render_set_scissor(global_ui_context.active_window, x, y, w, h);
+	renderer->render_set_scissor(global_ui_context.active_window, x, y, w, h);
 }
 
 void ui_scroll_end()
@@ -1901,25 +1901,25 @@ void ui_scroll_end()
 		
 		{
 			// scroll background
-			render_rectangle(scrollbar_pos_x,global_ui_context.layout.scroll->y,
+			renderer->render_rectangle(scrollbar_pos_x,global_ui_context.layout.scroll->y,
 							 scroll_w,global_ui_context.layout.scroll->height,global_ui_context.style.scrollbar_background);
 			
-			render_rectangle_outline(scrollbar_pos_x,global_ui_context.layout.scroll->y-1,
+			renderer->render_rectangle_outline(scrollbar_pos_x,global_ui_context.layout.scroll->y-1,
 									 scroll_w,global_ui_context.layout.scroll->height+2, 1,
 									 global_ui_context.style.border);
 			
 			// scrollbar
-			render_rectangle(scrollbar_pos_x, scrollbar_pos_y-1,
+			renderer->render_rectangle(scrollbar_pos_x, scrollbar_pos_y-1,
 							 scroll_w,scrollbar_height+2,global_ui_context.style.scrollbar_handle_background);
 			
-			render_rectangle_outline(scrollbar_pos_x, scrollbar_pos_y-1,
+			renderer->render_rectangle_outline(scrollbar_pos_x, scrollbar_pos_y-1,
 									 scroll_w,scrollbar_height+2, 1,
 									 global_ui_context.style.border);
 			
 			//render_rectangle(scrollbar_pos_x, scrollbar_pos_y, 10, scrollbar_height, global_ui_context.style.scrollbar_handle_background);
 		}
 	}
-	render_reset_scissor();
+	renderer->render_reset_scissor();
 	global_ui_context.layout.scroll->in_scroll = false;
 }
 
@@ -1929,16 +1929,16 @@ void ui_push_tooltip(char *text)
 	{
 		if (global_ui_context.item_hovered_duration > (1000/TARGET_FRAMERATE)/2)
 		{
-			s32 total_w = calculate_text_width(global_ui_context.font_small, text) +
+			s32 total_w = renderer->calculate_text_width(global_ui_context.font_small, text) +
 				WIDGET_PADDING + WIDGET_PADDING;
 			
 			s32 x = 0;
 			s32 y = 0;
 			s32 triangle_s = 20;
 			
-			render_reset_scissor();
+			renderer->render_reset_scissor();
 			
-			set_render_depth(30);
+			renderer->set_render_depth(30);
 			
 			// align right
 			if (global_ui_context.tooltip.x < (total_w/2))
@@ -1946,7 +1946,7 @@ void ui_push_tooltip(char *text)
 				x = global_ui_context.tooltip.x + global_ui_context.tooltip.w + WIDGET_PADDING+3;
 				y = global_ui_context.tooltip.y;
 				
-				render_triangle(x-9, y+(TEXTBOX_HEIGHT/2)-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_LEFT);
+				renderer->render_triangle(x-9, y+(TEXTBOX_HEIGHT/2)-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_LEFT);
 			}
 			// align left
 			else if (global_ui_context.tooltip.x > 
@@ -1961,14 +1961,14 @@ void ui_push_tooltip(char *text)
 				y = global_ui_context.tooltip.y + global_ui_context.tooltip.h + 
 					WIDGET_PADDING+3;
 				
-				render_triangle(x+(total_w/2)-(triangle_s/2), y-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_UP);
+				renderer->render_triangle(x+(total_w/2)-(triangle_s/2), y-9,triangle_s,triangle_s, rgb(40,40,40), TRIANGLE_UP);
 			}
 			
-			render_rectangle(x, y,total_w,TEXTBOX_HEIGHT, rgb(40,40,40));
+			renderer->render_rectangle(x, y,total_w,TEXTBOX_HEIGHT, rgb(40,40,40));
 			
-			render_text(global_ui_context.font_small, x + WIDGET_PADDING, y + (TEXTBOX_HEIGHT/2)- (global_ui_context.font_small->px_h/2), text, rgb(240,240,240));
+			renderer->render_text(global_ui_context.font_small, x + WIDGET_PADDING, y + (TEXTBOX_HEIGHT/2)- (global_ui_context.font_small->px_h/2), text, rgb(240,240,240));
 			
-			set_render_depth(1);
+			renderer->set_render_depth(1);
 			
 			ui_pop_scissor();
 		}

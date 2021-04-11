@@ -79,7 +79,7 @@ bool assets_do_post_process()
 		{
 			if (task->image->data && task->valid)
 			{
-				if (!global_use_gpu) { task->image->loaded = true; goto done; }
+				if (current_render_driver() == DRIVER_CPU) { task->image->loaded = true; goto done; }
 				
 				IMP_glGenTextures(1, &task->image->textureID);
 				IMP_glBindTexture(GL_TEXTURE_2D, task->image->textureID);
@@ -104,7 +104,7 @@ bool assets_do_post_process()
 		{
 			if (task->valid)
 			{
-				if (!global_use_gpu) { task->font->loaded = true; goto done; }
+				if (current_render_driver() == DRIVER_CPU) { task->font->loaded = true; goto done; }
 				
 				for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 				{
@@ -331,7 +331,7 @@ void assets_destroy_image(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_CPU)
 		{
 			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
@@ -387,7 +387,7 @@ void assets_destroy_font(font *font_to_destroy)
 {
 	if (font_to_destroy->references == 1)
 	{
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 			{
@@ -466,7 +466,7 @@ void assets_destroy_bitmap(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
@@ -486,7 +486,7 @@ void assets_switch_render_method()
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			asset_task task;
 			task.type = ASSET_IMAGE;
@@ -506,7 +506,7 @@ void assets_switch_render_method()
 	{
 		font *font_at = array_at(&global_asset_collection.fonts, i);
 		
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			asset_task task;
 			task.type = ASSET_FONT;

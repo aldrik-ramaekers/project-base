@@ -355,7 +355,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		current_window_to_handle->width = width;
 		current_window_to_handle->height = height;
 		
-		if (!global_use_gpu)
+		if (current_render_driver() == DRIVER_CPU)
 			_allocate_backbuffer(current_window_to_handle);
 
 		current_window_to_handle->do_draw = true;
@@ -585,7 +585,7 @@ void platform_hide_window(platform_window *window)
 void platform_setup_backbuffer(platform_window *window)
 {
 	static HGLRC share_list = 0;
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 	{
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 		
@@ -637,7 +637,7 @@ void platform_setup_backbuffer(platform_window *window)
 
 void platform_setup_renderer()
 {
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 	{
 		////// GL SETUP
 		IMP_glDepthMask(GL_TRUE);
@@ -816,7 +816,7 @@ void platform_window_set_size(platform_window *window, u16 width, u16 height)
 	AdjustWindowRectEx(&rec, style, menu, 0);
 	SetWindowPos(window->window_handle,NULL,rec.left,rec.top,rec.right,rec.bottom,SWP_NOMOVE|SWP_NOZORDER);
 	
-	if (!global_use_gpu)
+	if (current_render_driver() == DRIVER_CPU)
 		_allocate_backbuffer(window);
 }
 
@@ -840,7 +840,7 @@ bool platform_is_graphical()
 void platform_destroy_window(platform_window *window)
 {
 	if (platform_window_is_valid(window)) {
-		if (global_use_gpu)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			IMP_wglMakeCurrent(NULL, NULL);
 			IMP_wglDeleteContext(window->gl_context);
@@ -910,16 +910,6 @@ void _platform_handle_events_for_window(platform_window *window)
 		RECT rec;
 		GetClientRect(window->window_handle, &rec);
 		
-#if 0
-		if ((window->width != rec.right-rec.left || window->height != rec.bottom-rec.top) 
-			&& !global_use_gpu)
-		{
-			window->width = rec.right-rec.left;
-			window->height = rec.bottom-rec.top;
-			_allocate_backbuffer(current_window_to_handle);
-		}
-#endif
-		
 		POINT p;
 		GetCursorPos(&p);
 		ScreenToClient(current_window_to_handle->window_handle, &p);
@@ -949,7 +939,7 @@ void _platform_handle_events_for_window(platform_window *window)
 		DispatchMessage(&message); 
 	}
 	
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 		IMP_glViewport(0, 0, window->width, window->height);
 }
 
@@ -975,7 +965,7 @@ void platform_window_swap_buffers(platform_window *window)
 		SetCursor(cursor);
 	}
 	
-	if (!global_use_gpu)
+	if (current_render_driver() == DRIVER_CPU)
 	{
 		s32 pixel_count = window->backbuffer.width * window->backbuffer.height;
 		for (s32 i = 0; i < pixel_count; i++)
@@ -1346,7 +1336,7 @@ void platform_run_command(char *command)
 
 void platform_window_make_current(platform_window *window)
 {
-	if (global_use_gpu)
+	if (current_render_driver() == DRIVER_GL)
 		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 }
 

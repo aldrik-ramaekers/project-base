@@ -251,9 +251,9 @@ void _platform_unregister_window(platform_window* window) {
 	array_remove_by(&window_registry, &window);
 }
 
-void _switch_render_method(bool use_gpu) 
+void _switch_render_method(bool use_gpu)
 {
-	global_use_gpu = use_gpu;
+	set_render_driver(use_gpu ? DRIVER_GL : DRIVER_CPU);
 
 	for (s32 i = 0; i < window_registry.length; i++) {
 		platform_window* w = *(platform_window**)array_at(&window_registry, i);
@@ -268,7 +268,7 @@ void platform_handle_events()
 	bool _use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
 	// USE_GPU setting changed..
-	if (global_use_gpu != _use_gpu) {
+	if (current_render_driver() != (_use_gpu ? DRIVER_GL : DRIVER_CPU)) {
 		_switch_render_method(_use_gpu);
 	}
 
@@ -292,13 +292,11 @@ void platform_handle_events()
             w->update_func(w);
 			if (i == 0) update_render_notifications();
 
-			#if 1
-			IMP_glFinish();
+			if (current_render_driver() == DRIVER_GL) IMP_glFinish();
 			u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
 			u64 diff = current_stamp - __last_stamp;
 			float diff_ms = diff / 1000000.0f;
 			frame_delta = diff_ms;
-			#endif
 
 		    platform_window_swap_buffers(w);
         }
