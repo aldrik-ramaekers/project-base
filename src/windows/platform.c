@@ -602,7 +602,7 @@ void platform_setup_backbuffer(platform_window *window)
 			format.cDepthBits = 16;
 			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
 			s32 suggested_format_index = IMP_ChoosePixelFormat(window->hdc, &format); // SLOW AF??
-			
+			// https://people.freedesktop.org/~marcheu/extensions/ARB/multisample.html
 			IMP_DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
 			IMP_SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
 		}

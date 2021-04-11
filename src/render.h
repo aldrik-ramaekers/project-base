@@ -41,6 +41,35 @@ typedef enum t_triangle_direction
 	TRIANGLE_RIGHT,
 } triangle_direction;
 
+#if 0
+typedef struct t_render_driver
+{
+	void (*set_render_depth)(s32 depth);
+	void (*render_clear(platform_window *window);
+	void (*render_image(image *image, s32 x, s32 y, s32 width, s32 height);
+	void (*render_image_tint(image *image, s32 x, s32 y, s32 width, s32 height, color tint);
+	s32 (*render_text(font *font, s32 x, s32 y, char *text, color tint);
+	s32 (*render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color tint);
+	s32 (*render_text_cutoff(font *font, s32 x, s32 y, char *text, color tint, u16 cutoff_width);
+	s32 (*render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s32 cursor_pos);
+	s32 (*render_text_with_selection(font *font, s32 x, s32 y, char *text, color tint, s32 selection_start, s32 selection_length);
+	s32 calculate_cursor_position(font *font, char *text, s32 click_x);
+	s32 calculate_text_width(font *font, char *text);
+	s32 calculate_text_width_upto(font *font, char *text, s32 index);
+	s32 calculate_text_width_from_upto(font *font, char *text, s32 from, s32 index);
+	void render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint);
+	void render_line(s32 x1, s32 y1, s32 x2, s32 y2, float thickness, color tint);
+	void render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16 outline_w, color tint);
+	void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction dir);
+	void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h);
+	vec4 render_get_scissor();
+	void render_reset_scissor();
+	void render_set_rotation(float32 rotation, float32 x, float32 y);
+	void render_reset_rotation(float32 rotation, float32 x, float32 y);
+	void render_arc(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color c, float thickness);
+}
+#endif
+
 s32 global_use_gpu = 1;
 u8 render_depth = 1;
 vec4 current_scissor;
@@ -68,7 +97,8 @@ void render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_direction 
 void render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h);
 vec4 render_get_scissor();
 void render_reset_scissor();
-void render_set_rotation(float32 rotation, float32 x, float32 y, s32 depth);
+void render_set_rotation(float32 rotation, float32 x, float32 y);
+void render_reset_rotation(float32 rotation, float32 x, float32 y);
 void render_arc(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color c, float thickness);
 
 #endif

@@ -8,6 +8,9 @@
 #define INCLUDE_LIB_LOADER
 
 #include <GL/gl.h>
+#ifdef OS_WIN
+#include <GL/wglext.h>
+#endif
 #ifdef OS_LINUX
 #include <GL/glx.h>
 #endif
