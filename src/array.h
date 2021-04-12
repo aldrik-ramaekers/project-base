@@ -7,9 +7,11 @@
 #ifndef INCLUDE_ARRAY
 #define INCLUDE_ARRAY
 
-//	:/Title Array
-//	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
-//			This implementation provides functionality for adding, deleting and changing data.
+/*
+	:/Title Array
+	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
+			This implementation provides functionality for adding, deleting and changing data.
+*/
 
 typedef struct t_array
 {

@@ -1,4 +1,4 @@
-s32 _settings_config_write(int argc, char** argv) {
+s32 test_settings_config_write(int argc, char** argv) {
     platform_init(argc, argv);
     settings_init(CONFIG_DIRECTORY);
 
@@ -16,7 +16,7 @@ s32 _settings_config_write(int argc, char** argv) {
     success;
 }
 
-s32 _settings_config_read(int argc, char** argv) {
+s32 test_settings_config_read(int argc, char** argv) {
     platform_init(argc, argv);
     settings_init(CONFIG_DIRECTORY);
 

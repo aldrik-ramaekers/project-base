@@ -1,7 +1,7 @@
 array arr;
 s32 vals[] = {1,2,3,4,5,6,7,8,9};
 
-s32 array_write() {
+s32 test_array_write() {
     
     arr = array_create(sizeof(s32));
     error_if(!array_exists(&arr));
@@ -18,7 +18,7 @@ s32 array_write() {
     success;
 }
 
-s32 array_read() {
+s32 test_array_read() {
     error_if(*(s32*)array_at(&arr, 0) != 1);
     error_if(*(s32*)array_at(&arr, 1) != 2);
     error_if(*(s32*)array_at(&arr, 5) != 9);
@@ -26,7 +26,7 @@ s32 array_read() {
     success;
 }
 
-s32 array_delete() {
+s32 test_array_delete() {
     array_remove_at(&arr, 0);
     error_if(*(s32*)array_at(&arr, 0) != 2);
     error_if(arr.length != 5);
@@ -38,7 +38,7 @@ s32 array_delete() {
     success;
 }
 
-s32 array_swap_() {
+s32 test_array_swap() {
     array_swap(&arr, 0, 3);
     error_if(*(s32*)array_at(&arr, 0) != 9);
     error_if(*(s32*)array_at(&arr, 3) != 3);
@@ -56,7 +56,7 @@ void *array_thread_write_imp(void *temp) {
     return 0;
 }
 
-s32 array_thread_write() {
+s32 test_array_thread_write() {
     array temp = array_create(sizeof(s32));
 
     thread t1 = thread_start(array_thread_write_imp, &temp);

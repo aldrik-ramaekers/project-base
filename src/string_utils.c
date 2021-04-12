@@ -57,6 +57,7 @@ bool string_is_whitespace(char *text) {
 bool string_is_asteriks(char *text)
 {
 	utf8_int32_t ch;
+	if (!utf8len(text)) return false;
 	while((text = utf8codepoint(text, &ch)) && ch)
 	{
 		if (ch != '*') return false;
@@ -68,7 +69,14 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 {
 	bool final_result = false;
 	bool is_asteriks_only = false;
-	
+
+#if 0
+	int len = strlen(text_to_find)+1;
+	char *tmp = mem_alloc(len);
+	strcpy(tmp, text_to_find);
+	text_to_find = tmp;
+	#endif
+
 	// * wildcard at the start of text to find is not needed
 	if (string_is_asteriks(text_to_find))
 	{
@@ -95,7 +103,7 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 	char* line_start_ptr = text_to_search;
 	
 	s32 index = 0;
-	while((text_to_search = utf8codepoint(text_to_search, &text_to_search_ch)) 
+	while((text_to_search = utf8codepoint(text_to_search, &text_to_search_ch))
 		  && text_to_search_ch)
 	{
 		if (cancel_search && *cancel_search) goto set_info_and_return_failure;
@@ -137,7 +145,7 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 			}
 			
 			// text to find has reached 0byte, word has been found
-			if (text_to_find_ch == 0)
+			if (text_to_find_ch == 0 || string_is_asteriks(text_to_find))
 			{
 				done:
 				if (save_info)
@@ -173,6 +181,7 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 				text_to_search_current_attempt,
 				&text_to_search_current_attempt_ch);
 			
+			//if (!text_to_search_current_attempt_ch && string_is_asteriks(text_to_find)) goto done;
 			if (!text_to_search_current_attempt_ch && !text_to_find_ch) goto done;
 			
 			word_match_len_val++;

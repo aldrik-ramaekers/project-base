@@ -26,6 +26,7 @@
    - Get rid of definitions like CONFIG_DIRECTORY_WINDOWS
    - Move localization loading to user code
    - Refactor settings_config
+   - refactor switching between render drivers
 1.2.0 [21-07-2020]
    - Fix issue where text and images were being cut off on scroll
    - Fix cursor being overwritten by underlying ui element

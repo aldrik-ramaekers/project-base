@@ -92,6 +92,7 @@ install_linux:
 
 ## Tests (Windows + Linux)
 tests:
+	make build
 	make $(create_tests_command)
 
 tests_windows:
@@ -109,11 +110,16 @@ examples:
 	make $(create_examples_command)
 
 examples_windows:
-	gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window.exe -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window.exe -lprojectbase $(libs)
 
 examples_linux:
 	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window -lprojectbase $(libs)
 	$(permissions) chmod +x build/example_window
+
+docs:
+	$(permissions) gcc -m64 docs/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
+	$(permissions) ./build/gen_docs
+	## $(permissions) pandoc build/docs.txt -o build/docs.pdf
 
 cloc:
 	cloc-1.88.exe --exclude-dir=external src/

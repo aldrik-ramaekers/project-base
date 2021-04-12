@@ -1,5 +1,5 @@
 
-s32 c_parser_test() {
+s32 test_c_parser_test() {
     char* test = "//cool comments!\n"
     "/* XDDD\n"
     "*/\n"

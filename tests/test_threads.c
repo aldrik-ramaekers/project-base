@@ -6,7 +6,7 @@ static void* test_t(void *args) {
     val = 50;
 }
 
-s32 detached_thread(int argc, char** argv) {
+s32 test_detached_thread(int argc, char** argv) {
     platform_init(argc, argv);
 
     val = 0;
@@ -19,7 +19,7 @@ s32 detached_thread(int argc, char** argv) {
     success;
 }
 
-s32 joined_thread(int argc, char** argv) {
+s32 test_joined_thread(int argc, char** argv) {
     platform_init(argc, argv);
 
     val = 0;
