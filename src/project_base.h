@@ -4,37 +4,33 @@
 *  All rights reserved.
 */
 
-/*
-	:/Title	Project-base entry-point
-	:/Text	This is that entry point of the project_base library. This is the only file you
-			will have to include to use this library. All functionality will be available 
-			by including this file.
-*/
+//	:/Title	Project-base entry-point
+//	:/Text	This is that entry point of the project_base library. This is the only file you
+//			will have to include to use this library. All functionality will be available 
+//			by including this file.
+//
 
-/*
-	:/Title	Source-code tags
-	:/Text	Throughout the source code tags prefixed with @ can be found marking the code below it.
-			- @Hardcoded: hardcoded buffer sizes. Should be fixed.
-			- @Unused: Unused function that should be removed.
-			- @Speed: Slow code that should be rewritten eventually.
-*/
 
-/*
-	:/Title	TODO's
-	:/Text	Project-base
-			- append .config/ before config on linux
-			- make sure a valid render config is found on linux
-			- replace all int with s32
-			- remove all unused functions @Unused
-			- prefix private functions with _ like platform_destroy_shared
-			- make custom popup windows so we can get rid of zenity and windows deps
-			- get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
-			- try crashing the lib and make asserts for the crashes
-			- rename localization_set_locale to localization_localization_set_locale()
-			- settings writes null = null to file??
-			- get rid of if (global_using_gpu) in render code and split cpu & gpu rendering so we can maybe add other render backends later
-			- get rid of text-search code in platform.h
-*/
+//	:/Title	Source-code tags
+//	:/Text	Throughout the source code tags prefixed with @ can be found marking the code below it.
+//			- @Hardcoded: hardcoded buffer sizes. Should be fixed.
+//			- @Unused: Unused function that should be removed.
+//			- @Speed: Slow code that should be rewritten eventually.
+
+//	:/Title	TODO's
+//	:/Text	Project-base
+//			- append .config/ before config on linux
+//			- make sure a valid render config is found on linux
+//			- replace all int with s32
+//			- remove all unused functions @Unused
+//			- prefix private functions with _ like platform_destroy_shared
+//			- make custom popup windows so we can get rid of zenity and windows deps
+//			- get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
+//			- try crashing the lib and make asserts for the crashes
+//			- rename localization_set_locale to localization_localization_set_locale()
+//			- settings writes null = null to file??
+//			- get rid of if (global_using_gpu) in render code and split cpu & gpu rendering so we can maybe add other render backends later
+//			- get rid of text-search code in platform.h
 
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE

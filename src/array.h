@@ -7,11 +7,9 @@
 #ifndef INCLUDE_ARRAY
 #define INCLUDE_ARRAY
 
-/*
-	:/Title	Array
-	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
-			This implementation provides functionality for adding, deleting and changing data.
-*/
+//	:/Title	Array
+//	:/Text	A simple thread-safe array implementation is provided with the Project-base library.
+//			This implementation provides functionality for adding, deleting and reordering data.
 
 typedef struct t_array
 {
@@ -43,14 +41,14 @@ int 	array_push_size(array *array, void *data, s32 entry_size);
 //	:/Info	Remove the item at the given index.
 void 	array_remove_at(array *array, u32 at);
 
-//	:/Info	Remove an item by the given address returned by `array_at`.
+//	:/Info	Remove an item by the given address returned by `array_at`. Remove an item by the given address returned by `array_at`.Remove an item by the given address returned by `array_at`.Remove an item by the given address returned by `array_at`.Remove an item by the given address returned by `array_at`.
 void 	array_remove(array *array, void *ptr);
 
-//	:/Info	Remove an item by the given data.
+//	:/Info	Remove an item with the given data.
 void 	array_remove_by(array *array, void *data);
 
 //	:/Info	Retrieve the item at the given index.
-//	:Ret	The address within the array pointing to the data.
+//	:/Ret	The address within the array pointing to the data.
 void* 	array_at(array *array, u32 at);
 
 //	:/Info	Destroy the given array. This array should not be used after calling this function.
@@ -64,7 +62,7 @@ void 	array_swap(array *array, u32 swap1, u32 swap2);
 void 	array_reserve(array *array, u32 reserve_count);
 
 //	:/Info	Copy the given array and items within the array.
-//	:Ret	A copy of the given array.
+//	:/Ret	A copy of the given array.
 array 	array_copy(array *array);
 
 #endif
