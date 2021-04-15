@@ -17,7 +17,7 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 
-// :/Info 	Load all required dynamic libraries. Will exit the application when a library or function is missing.
+//	:/Info	Load all required dynamic libraries. Will exit the application when a library or function is missing.
 void _lib_loader_init();
 
 #endif

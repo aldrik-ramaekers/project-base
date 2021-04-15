@@ -117,7 +117,7 @@ examples_linux:
 	$(permissions) chmod +x build/example_window
 
 docs:
-	$(permissions) gcc -m64 docs/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g docs/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
 	$(permissions) ./build/gen_docs
 	## $(permissions) pandoc build/docs.txt -o build/docs.pdf
 

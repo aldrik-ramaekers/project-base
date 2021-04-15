@@ -9,6 +9,21 @@
 
 */
 
+#define IDENTIFIER_CONTINUATION 	"//			"
+#define IDENTIFIER_PREFIX 			":/"
+#define INFO_IDENTIFIER 			"//	:/Info"
+#define RETURN_IDENTIFIER 			"//	:/Ret"
+
+typedef enum t_parse_state
+{
+	PARSING_SEARCHING,
+	PARSING_TITLE,
+	PARSING_INFO,
+	PARSING_TEXT,
+	PARSING_RET,
+	PARSING_FUNC,
+} parse_state;
+
 typedef enum t_data_tag_type
 {
     CHAPTER = 1, // title, text
@@ -31,11 +46,12 @@ data_tag current_tag;
 
 void reset_tag()
 {
+    current_tag.type = 0;
+    current_tag.title = 0;
+    current_tag.info = 0;
     current_tag.text = 0;
     current_tag.ret = 0;
-    current_tag.info = 0;
-    current_tag.title = 0;
-    current_tag.type = 0;
+	current_tag.func = 0;
 }
 
 void set_tag_type(data_tag_type type)
@@ -59,62 +75,56 @@ char* get_str_after_tab(char *string)
 
 char* str_append_newline(char* str, char* append)
 {
-    int total_len = strlen(str) + strlen(append) + 2;
-
-    char *newbuf = mem_alloc(total_len);
-    strcpy(newbuf, str);
-    strcat(newbuf, "\n");
-    strcat(newbuf, append);
+	if (str)
+	{
+		int new_len = strlen(str) + strlen(append) + 1;
+		char *newbuf = mem_alloc(new_len);
+		memset(newbuf, 0, new_len);
+		strcpy(newbuf, str);
+		strcat(newbuf, "\n");
+		strcat(newbuf, append);
+	}
+	else
+	{
+		return append;
+	}
 }
 
 bool str_is_func_def(char* str)
 {
-    return string_contains(str, "* *(*);");
+    return string_contains(str, "* *(") && string_contains(str, ");");
 }
 
-bool last_line_was_text = false; // take care of multi-line text blocks.
+#define IS_CONTINUATION(_ident) (string_contains(string, _ident) || string_contains(string, IDENTIFIER_CONTINUATION)) 
+parse_state current_state = PARSING_SEARCHING;
+
 void parse_line(char *string)
 {
     int str_len = strlen(string);
-    if (str_len <= 5) return;
 
-    if (string_contains(string, "// :/Info"))
-    {
-        set_tag_type(FUNCTION);
-        current_tag.info = get_str_after_tab(string);
-    }
-    if (string_contains(string, "// :/Return"))
-    {
-        set_tag_type(FUNCTION);
-        current_tag.ret = get_str_after_tab(string);
-    }
-    if (current_tag.type == FUNCTION && str_is_func_def(string))
-    {
-        current_tag.func = string;
-    }
-    if (string_contains(string, "   :/Title"))
-    {
-        set_tag_type(CHAPTER);
-        current_tag.title = get_str_after_tab(string);
-    }
-    
-    if (string_contains(string, "   :/Text"))
-    {
-        set_tag_type(CHAPTER);
-        current_tag.text = get_str_after_tab(string);
-        last_line_was_text = true;
-    }
-    else if (string_contains(string, "           ") && last_line_was_text)
-    {
-        set_tag_type(CHAPTER);
-        current_tag.text = str_append_newline(current_tag.text, get_str_after_tab(string));
-        last_line_was_text = true;
-    }
-    else if (last_line_was_text)
-    {
-        store_tag();
-        last_line_was_text = false;
-    }
+	if (current_state == PARSING_SEARCHING)
+	{
+		if (string_contains(string, INFO_IDENTIFIER)) { current_state = PARSING_INFO; set_tag_type(FUNCTION); };
+		if (string_contains(string, RETURN_IDENTIFIER)) current_state = PARSING_RET;
+	}
+
+	if (current_tag.type == FUNCTION) {
+		if (str_is_func_def(string))
+		{
+			current_tag.func = str_append_newline(current_tag.func, get_str_after_tab(string));
+			store_tag();
+		}
+		if (current_state == PARSING_INFO)
+		{
+			if (!IS_CONTINUATION(INFO_IDENTIFIER)) { current_state = PARSING_SEARCHING; }
+			else current_tag.info = str_append_newline(current_tag.info, get_str_after_tab(string));
+		}
+		if (current_state == PARSING_RET)
+		{
+			if (!IS_CONTINUATION(RETURN_IDENTIFIER)) { current_state = PARSING_SEARCHING; }
+			else current_tag.ret = str_append_newline(current_tag.ret, get_str_after_tab(string));
+		}
+	}
 }
 
 void parse_file(char* path)
@@ -135,9 +145,62 @@ void parse_file(char* path)
     }
 }
 
+#define MAX_BODY_LEN 100000
+#define APPEND(_big, _str) strncat(_big, _str, MAX_BODY_LEN);
+
+void dump_html()
+{
+    char* header =
+    "<html>"
+    "<body>"
+    "<h1>Project-base Technical Reference Manual</h1>"
+    "<hr>"
+    "<p>Written by Aldrik Ramaekers<br>This document is distributed under the BSD 2-Clause 'Simplified' License.</p><cite>This document pertains to version 2.0.0 of the project-base library.</cite><br><br>"
+    "<h1>Introduction</h1>"
+    "<p>This document gives a technical description for the Project-base library.The Project-base library is a general purpose library intended for creating graphical programs for the Windows and Linux operating system.This document describes all the components"
+    "of the Project-base library and gives examples for using these components.</p>"
+    "<b>© Aldrik Ramaekers, 2020<br>https://aldrik.org<br>aldrik.ramaekers@protonmail.com</b>"
+    "</body>"
+    "</html>";
+
+    char* body = mem_alloc(MAX_BODY_LEN);
+    memset(body, 0, MAX_BODY_LEN);
+
+    APPEND(body, "<html>");
+    APPEND(body, "<body>");
+
+    for (int i = 0; i < tags.length; i++)
+    {
+        data_tag* tag = array_at(&tags, i);
+
+        if (tag->type == CHAPTER)
+        {
+			printf("chapter: %s\n", tag->title);
+			printf("	text: %s\n", tag->text);
+            APPEND(body, "<h1>");
+            APPEND(body, tag->title);
+            APPEND(body, "</h1>");
+        }
+		if (tag->type == FUNCTION)
+        {
+			printf("func\n");
+			printf("	info: %s\n", tag->info);
+			printf("	ret: %s\n", tag->ret);
+			printf("	desc: %s\n", tag->func);
+        }
+    }
+
+    APPEND(body, "</body>");
+    APPEND(body, "</html>");
+
+    platform_write_file_content("build\\docs_title.html", "wb+", header, strlen(header));
+	platform_write_file_content("build\\docs.html", "wb+", body, strlen(body));
+}
+
 int main(int argc, char **argv)
 {
     tags = array_create(sizeof(data_tag));
+	reset_tag();
 
     array files = array_create(sizeof(found_file));
     array filters = string_split("*.h");
@@ -156,6 +219,7 @@ int main(int argc, char **argv)
     }
 
     printf("tags: %d\n", tags.length);
+    dump_html();
 
     return 0;
 }
