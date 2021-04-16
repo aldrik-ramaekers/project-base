@@ -7,6 +7,9 @@
 #ifndef INCLUDE_LIB_LOADER
 #define INCLUDE_LIB_LOADER
 
+//	:/Title	Library loader
+//	:/Text	Contains functions to load the necessary libraries.
+
 #include <GL/gl.h>
 #ifdef OS_WIN
 #include <GL/wglext.h>

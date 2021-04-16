@@ -31,12 +31,14 @@ typedef enum t_parse_state
 	PARSING_INFO,
 	PARSING_TEXT,
 	PARSING_RET,
+	PARSING_STRUCT,
 } parse_state;
 
 typedef enum t_data_tag_type
 {
     CHAPTER = 1, // title, text
     FUNCTION = 2, // info, return
+	STRUCT = 3, // struct_def
 } data_tag_type;
 
 typedef struct t_data_tag
@@ -47,6 +49,9 @@ typedef struct t_data_tag
     char* text;
     char* ret;
     char* func;
+	char* func_name;
+	char* struct_def;
+	char* struct_name;
 } data_tag;
 
 array tags;
@@ -61,6 +66,9 @@ void reset_tag()
     current_tag.text = 0;
     current_tag.ret = 0;
 	current_tag.func = 0;
+	current_tag.func_name = 0;
+	current_tag.struct_def = 0;
+	current_tag.struct_name = 0;
 }
 
 void set_tag_type(data_tag_type type)
@@ -82,7 +90,7 @@ char* get_str_after_tab(char *string)
     return last_str;
 }
 
-char* str_append_newline(char* str, char* append)
+char* str_append_newline(char* str, char* append, bool append_newlines)
 {
 	if (str)
 	{
@@ -90,13 +98,25 @@ char* str_append_newline(char* str, char* append)
 		char *newbuf = mem_alloc(new_len);
 		memset(newbuf, 0, new_len);
 		strcpy(newbuf, str);
-		if (append[0] == '-') strcat(newbuf, "<br>");
+		if (append[0] == '-' || append_newlines) strcat(newbuf, "<br>");
 		strcat(newbuf, append);
 	}
 	else
 	{
 		return append;
 	}
+}
+
+char* str_replace_tab_with_space(char* str)
+{
+	char* str_orig = str;
+	while(*str)
+	{
+		if (*str == '	') *str = ' ';
+		str++;
+	}
+
+	return str_orig;
 }
 
 char* str_remove_excess_indent(char* str)
@@ -116,13 +136,218 @@ char* str_remove_excess_indent(char* str)
 	return buf;
 }
 
+char* str_trim(char* str)
+{
+	while(*str)
+	{
+		if (*str != ' ' && *str != '	') return str;
+		str++;
+	}
+}
+
+char* str_get_last_word_from_struct_def(char* str)
+{
+	int len = strlen(str) + 1;
+	char* buf = mem_alloc(len);
+	memset(buf, 0, len);
+
+	char *finder = str;
+	char *last_indent = str;
+	while(*finder)
+	{
+		if (*finder == ' ' || *finder == '	'  || *finder == '}') last_indent = finder;
+		if (*finder == ';' || *finder == '{') break;
+		finder++;
+	}
+
+	memcpy(buf, last_indent+1, finder - last_indent-1);
+
+	return buf;
+}
+
+char* get_next_word_to_highlight(char* str, char* buf, int buflen)
+{
+	memset(buf, 0, buflen);
+	int write_cursor = 0;
+	while(*str)
+	{
+		if (*str == ' ') goto done;
+		if (*str == '\n') goto done;
+		if (*str == '(') goto done;
+		if (*str == '*') goto done;
+		if (*str == ')') goto done;
+		if (*str == ',') goto done;
+		// if (*str == ';') goto done;
+		if (*str == '>') goto done;
+
+		buf[write_cursor++] = *str;
+
+		str++;
+	}
+
+	done:
+	if (!write_cursor) { buf[write_cursor++] = *str; str++;}
+	return str;
+}
+
+bool str_is_type(char* str, char** struct_name)
+{
+	*struct_name = 0;
+	if (!strcmp(str, "int")) return true;
+	if (!strcmp(str, "short")) return true;
+	if (!strcmp(str, "byte")) return true;
+	if (!strcmp(str, "char")) return true;
+	if (!strcmp(str, "long")) return true;
+	if (!strcmp(str, "float")) return true;
+	if (!strcmp(str, "double")) return true;
+	if (!strcmp(str, "u8")) return true;
+	if (!strcmp(str, "u16")) return true;
+	if (!strcmp(str, "u32")) return true;
+	if (!strcmp(str, "u64")) return true;
+	if (!strcmp(str, "s8")) return true;
+	if (!strcmp(str, "s16")) return true;
+	if (!strcmp(str, "s32")) return true;
+	if (!strcmp(str, "s64")) return true;
+	if (!strcmp(str, "signed")) return true;
+	if (!strcmp(str, "unsigned")) return true;
+	if (!strcmp(str, "bool")) return true;
+	if (!strcmp(str, "void")) return true;
+
+	for (int i = 0; i < tags.length; i++)
+	{
+		data_tag* tag = array_at(&tags, i);
+
+        if (tag->type == STRUCT) {
+			if (!strcmp(str, tag->struct_name)) {
+				*struct_name = tag->struct_name;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+char* apply_word_highlighting(char* str, int newbuflen)
+{
+	char* orig = str;
+	char* buf = mem_alloc(newbuflen);
+	memset(buf, 0, newbuflen);
+
+	int write_cursor = 0;
+	char* last_str = 0;
+	char word_buf[500];
+	while(((last_str = str) && (str = get_next_word_to_highlight(str, word_buf, 500))))
+	{
+		char* struct_name;
+		bool is_type = str_is_type(word_buf, &struct_name);
+
+		if (is_type) {
+			if (struct_name) { 
+				strcat(buf, "<a href='#STRUC_");
+				strcat(buf, struct_name);
+				strcat(buf, "'>");
+				strcat(buf, "<span style='color:rgb(86, 156, 203) !important;'>");
+				strcat(buf, word_buf);
+				strcat(buf, "</span>");
+				strcat(buf, "</a>");
+			 } 
+			else {
+				strcat(buf, "<span style='color:rgb(86, 156, 203) !important;'>");
+				strcat(buf, word_buf);
+				strcat(buf, "</span>");
+			}
+		}
+		else {
+			strcat(buf, word_buf);
+		}
+		
+		if (*str == 0) break;
+	}
+
+	return buf;
+}
+
+bool str_is_struct_def(char* str)
+{
+	return string_contains(str, "struct *") && !string_contains(str, ";");
+}
+
+bool str_is_struct_def_end(char* str)
+{
+	return string_contains(str, "}*;") || string_contains(str, "};");
+}
+
 bool str_is_func_def(char* str)
 {
     return string_contains(str, "* *(*);") || string_contains(str, "* *();");
 }
 
+char* struct_name_from_str(char* str)
+{
+	if (str_is_struct_def(str))
+	{
+		if (string_contains(str, "typedef"))
+		{
+			if (string_contains(str, ";")) // example: typedef struct t_backbuffer backbuffer;
+			{
+				return str_get_last_word_from_struct_def(str);
+			}
+
+			return 0; // name is in last line of struct def.
+		}
+
+		return str_get_last_word_from_struct_def(str);
+	}
+	else if (str_is_struct_def_end(str))
+	{
+		return str_get_last_word_from_struct_def(str);
+	}
+}
+
+char* func_name_from_def(char *str)
+{
+	int len = strlen(str) + 1;
+	char* buf = mem_alloc(len);
+	memset(buf, 0, len);
+
+	char *finder = str;
+	char *last_indent = 0;
+	while(*finder)
+	{
+		if (*finder == ' ' || *finder == '	') last_indent = finder;
+		if (*finder == '(') break;
+		finder++;
+	}
+
+	memcpy(buf, last_indent+1, finder - last_indent-1);
+
+	return buf;
+}
+
 #define IS_CONTINUATION(_ident) (string_contains(string, _ident) || string_contains(string, IDENTIFIER_CONTINUATION)) 
 parse_state current_state = PARSING_SEARCHING;
+
+void parse_struct(char *string)
+{
+	log_assert(current_state == PARSING_STRUCT, "invalid state for parsing struct");
+
+	if (!current_tag.struct_name) current_tag.struct_name = struct_name_from_str(string);
+
+	if (!string_contains(string, ";") || str_is_struct_def_end(string))
+		current_tag.struct_def = str_append_newline(current_tag.struct_def, "<div style=\"height:18px;\">", false);
+	else
+		current_tag.struct_def = str_append_newline(current_tag.struct_def, "<div style=\"padding-left: 50px;height:18px;\">", false);
+
+	current_tag.struct_def = str_append_newline(current_tag.struct_def, 
+					str_replace_tab_with_space(str_trim(str_remove_excess_indent(string))), false);
+
+	current_tag.struct_def = str_append_newline(current_tag.struct_def, "</div>", false);
+	if (str_is_struct_def_end(string)) { 
+		current_state = PARSING_SEARCHING;
+		store_tag();
+	}
+}
 
 void parse_chapter(char *string)
 {
@@ -134,12 +359,12 @@ void parse_chapter(char *string)
 			current_state = PARSING_SEARCHING;
 			if (!string_contains(string, TEXT_IDENTIFIER)) store_tag();
 		}
-		else current_tag.title = str_append_newline(current_tag.title, get_str_after_tab(string));
+		else current_tag.title = str_append_newline(current_tag.title, get_str_after_tab(string), false);
 	}
 	if (current_state == PARSING_TEXT)
 	{
 		if (!IS_CONTINUATION(TEXT_IDENTIFIER)) { current_state = PARSING_SEARCHING; store_tag(); }
-		else current_tag.text = str_append_newline(current_tag.text, get_str_after_tab(string));
+		else current_tag.text = str_append_newline(current_tag.text, get_str_after_tab(string), false);
 	}
 }
 
@@ -149,25 +374,28 @@ void parse_function(char *string)
 
 	if (str_is_func_def(string))
 	{
-		current_tag.func = str_append_newline(current_tag.func, str_remove_excess_indent(string));
+		current_tag.func_name = func_name_from_def(string);
+		current_tag.func = str_append_newline(current_tag.func, str_remove_excess_indent(string), false);
 		current_state = PARSING_SEARCHING;
 		store_tag();
 	}
 	if (current_state == PARSING_INFO)
 	{
 		if (!IS_CONTINUATION(INFO_IDENTIFIER)) { current_state = PARSING_SEARCHING; }
-		else current_tag.info = str_append_newline(current_tag.info, get_str_after_tab(string));
+		else current_tag.info = str_append_newline(current_tag.info, get_str_after_tab(string), false);
 	}
 	if (current_state == PARSING_RET)
 	{
 		if (!IS_CONTINUATION(RETURN_IDENTIFIER)) { current_state = PARSING_SEARCHING; }
-		else current_tag.ret = str_append_newline(current_tag.ret, get_str_after_tab(string));
+		else current_tag.ret = str_append_newline(current_tag.ret, get_str_after_tab(string), false);
 	}
 }
 
-void parse_line(char *string)
+void parse_line(char *string, bool current_file_has_chapter)
 {
     int str_len = strlen(string);
+
+	if (str_is_struct_def(string)) { current_state = PARSING_STRUCT; set_tag_type(STRUCT); }
 
 	if (string_contains(string, INFO_IDENTIFIER)) { current_state = PARSING_INFO; set_tag_type(FUNCTION); };
 	if (string_contains(string, RETURN_IDENTIFIER)) current_state = PARSING_RET;
@@ -175,8 +403,12 @@ void parse_line(char *string)
 	if (string_contains(string, TITLE_IDENTIFIER)) { current_state = PARSING_TITLE; set_tag_type(CHAPTER); };
 	if (string_contains(string, TEXT_IDENTIFIER)) { current_state = PARSING_TEXT; };
 
-	if (current_tag.type == FUNCTION) parse_function(string);
 	if (current_tag.type == CHAPTER) parse_chapter(string);
+
+	if (current_file_has_chapter) {
+		if (current_tag.type == FUNCTION) parse_function(string);
+		if (current_tag.type == STRUCT) parse_struct(string);
+	}
 }
 
 void parse_file(char* path)
@@ -185,11 +417,15 @@ void parse_file(char* path)
     char* current_line = content.content;
     char* ptr = current_line;
 
+	reset_tag();
+	bool current_file_has_chapter = false;
+
     while(*ptr != 0)
     {
         if (*ptr == '\n'){
             *ptr = 0;
-            parse_line(current_line);
+            parse_line(current_line, current_file_has_chapter);
+			if (current_tag.type == PARSING_TITLE) current_file_has_chapter = true;
             current_line = ++ptr;
             continue;
         }
@@ -197,7 +433,7 @@ void parse_file(char* path)
     }
 }
 
-#define MAX_BODY_LEN 100000
+#define MAX_BODY_LEN 500000
 #define APPEND(_big, _str) strncat(_big, _str, MAX_BODY_LEN);
 
 #define DOCUMENT_TITLE "Project-base Technical Reference Manual"
@@ -215,25 +451,57 @@ void parse_file(char* path)
 #define STYLE_SEPARATOR_SMALL "style=\"width: 100%;height:5px;background-color:rgb(0, 98, 208);padding:0px;margin:0px;color:white;padding-left: 5px;font-style: italic;margin-top: 20px;\""
 #define STYLE_FUNCTION_CONTAINER "style=\"padding-bottom: 20px;\""
 #define STYLE_FUNCTION_DEF "style=\"padding: 5px;background-color:rgb(243, 243, 248);border-radius:3px;border:2px solid rgb(221, 221, 221);\""
+#define STYLE_STRUCT_DEF "style=\"padding: 5px 5px 15px 5px;background-color:rgb(243, 243, 248);border-radius:3px;border:2px solid rgb(221, 221, 221);\""
 
-int count_functions_for_chapter(int index)
+int count_type_for_chapter(int index, data_tag_type type)
 {
 	int count = 0;
 	for (int i = index; i < tags.length; i++)
     {
         data_tag* tag = array_at(&tags, i);
 
-		if (tag->type == FUNCTION) {
+		if (tag->type == type) {
 			count++;
 		}
-		else {
+		else if (tag->type == CHAPTER) {
 			break;
 		}
 	}
 	return count;
 }
 
-char* dump_functions_for_chapter(char* body, int index, int current_chapter_nr)
+char* dump_structs_for_chapter(char* body, int index, int current_chapter_nr, int current_subchapter_nr)
+{
+	int current_struct_nr = 1;
+    for (int i = index; i < tags.length; i++)
+    {
+        data_tag* tag = array_at(&tags, i);
+
+		if (tag->type == STRUCT) {
+			APPEND(body, "<div "STYLE_FUNCTION_CONTAINER">");
+						
+			APPEND(body, "<h3 "STYLE_HEADING3" id=\"STRUC_"); APPEND(body, tag->struct_name); APPEND(body, "\">");
+			char id[20];
+			sprintf(id, "%d.%d.%d	", current_chapter_nr, current_subchapter_nr, current_struct_nr);
+			APPEND(body, id);
+			APPEND(body, tag->struct_name);
+			APPEND(body, "</h3>");
+
+			APPEND(body, "<div "STYLE_STRUCT_DEF">");
+			APPEND(body, tag->struct_def);
+			APPEND(body, "</div>");
+
+			APPEND(body, "</div>");
+			current_struct_nr++;
+		}
+		else if (tag->type == CHAPTER) {
+			break;
+		}
+	}
+	return body;
+}
+
+char* dump_functions_for_chapter(char* body, int index, int current_chapter_nr, int current_subchapter_nr)
 {
 	int current_function_nr = 1;
     for (int i = index; i < tags.length; i++)
@@ -242,20 +510,20 @@ char* dump_functions_for_chapter(char* body, int index, int current_chapter_nr)
 
 		if (tag->type == FUNCTION) {
 			APPEND(body, "<div "STYLE_FUNCTION_CONTAINER">");
-						
-			APPEND(body, "<h3 "STYLE_HEADING3">");
+
 			char id[20];
-			sprintf(id, "%d.1.%d	", current_chapter_nr, current_function_nr);
-			APPEND(body, id);
-			APPEND(body, "[FUNCTION NAME]");
+			sprintf(id, "%d.%d.%d", current_chapter_nr, current_subchapter_nr, current_function_nr);		
+			APPEND(body, "<h3 "STYLE_HEADING3" id=\"FUNC_"); APPEND(body, tag->func_name); APPEND(body, "\">");
+			APPEND(body, id); APPEND(body, "	"); APPEND(body, tag->func_name);
 			APPEND(body, "</h3>");
 
 			APPEND(body, "<div "STYLE_FUNCTION_DEF">");
 			APPEND(body, tag->func);
 			APPEND(body, "</div>");
-
-			APPEND(body, "<br>");
+			
+			APPEND(body, "<div style='padding-top:10px;'></div>");
 			APPEND(body, "<div "STYLE_TEXT">");
+			APPEND(body, "<b>Info: </b>");
 			APPEND(body, tag->info);
 			APPEND(body, "</div>");
 
@@ -269,7 +537,7 @@ char* dump_functions_for_chapter(char* body, int index, int current_chapter_nr)
 			APPEND(body, "</div>");
 			current_function_nr++;
 		}
-		else {
+		else if (tag->type == CHAPTER) {
 			break;
 		}
 	}
@@ -307,10 +575,11 @@ void dump_html()
 	APPEND(body, "<head>");
 	APPEND(body, "<meta charset='utf-8' />");
 	APPEND(body, "</head>");
-    APPEND(body, "<body style=\"color: red;\">");
+    APPEND(body, "<body>");
 
 	int current_chapter_nr = 0;
 	int current_function_nr = 1;
+	int current_subchapter_nr = 1;
     for (int i = 0; i < tags.length; i++)
     {
         data_tag* tag = array_at(&tags, i);
@@ -318,6 +587,7 @@ void dump_html()
         if (tag->type == CHAPTER)
         {
 			current_function_nr = 1;
+			current_subchapter_nr = 1;
 			current_chapter_nr++;
 
 			APPEND(body, PAGE_BREAK);
@@ -341,15 +611,26 @@ void dump_html()
             APPEND(body, tag->text);
             APPEND(body, "</div>");
 
-			// Function sub-chapter
-			if (count_functions_for_chapter(i+1)) {
+			// Struct sub-chapter
+			if (count_type_for_chapter(i+1, STRUCT)) {
 				APPEND(body, "<h2 "STYLE_HEADING2">");
-				sprintf(id, "%d.%d	", current_chapter_nr, current_function_nr);
+				sprintf(id, "%d.%d	", current_chapter_nr, current_subchapter_nr);
+				APPEND(body, id);
+				APPEND(body, "Structures");
+				APPEND(body, "</h2>");
+
+				dump_structs_for_chapter(body, i+1, current_chapter_nr++, current_subchapter_nr++);
+			}
+
+			// Function sub-chapter
+			if (count_type_for_chapter(i+1, FUNCTION)) {
+				APPEND(body, "<h2 "STYLE_HEADING2">");
+				sprintf(id, "%d.%d	", current_chapter_nr, current_subchapter_nr);
 				APPEND(body, id);
 				APPEND(body, "Functions");
 				APPEND(body, "</h2>");
 
-				dump_functions_for_chapter(body, i+1, current_chapter_nr);
+				dump_functions_for_chapter(body, i+1, current_chapter_nr, current_subchapter_nr++);
 			}
         }
     }
@@ -358,6 +639,11 @@ void dump_html()
     APPEND(body, "</html>");
 
     platform_write_file_content("build\\docs_title.html", "wb+", header, strlen(header));
+	
+	printf("Length before: %d\n", strlen(body));
+	body = apply_word_highlighting(body, MAX_BODY_LEN);
+	printf("Length after: %d\n", strlen(body));
+
 	platform_write_file_content("build\\docs.html", "wb+", body, strlen(body));
 }
 
