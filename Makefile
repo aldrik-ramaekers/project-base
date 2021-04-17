@@ -117,9 +117,9 @@ examples_linux:
 	$(permissions) chmod +x build/example_window
 
 docs:
-	$(permissions) gcc -m64 -g docs/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG docs/gen_docs.c -o build/gen_docs.exe -lprojectbase $(libs)
 	$(permissions) ./build/gen_docs
 	$(permissions) pandoc --pdf-engine wkhtmltopdf -V margin-top=14 -V margin-left=9 -V margin-right=9 -V margin-bottom=14 -V papersize=letter .\build\docs_title.html .\build\docs.html -o .\build\docs_title.pdf
 
 cloc:
-	cloc-1.88.exe --exclude-dir=external src/
+	cloc-1.88.exe --exclude-dir=external src/ docs/

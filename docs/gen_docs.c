@@ -275,12 +275,14 @@ bool str_is_struct_def(char* str)
 
 bool str_is_struct_def_end(char* str)
 {
-	return string_contains(str, "}*;") || string_contains(str, "};");
+	return string_contains(str, "}*;");// || string_contains(str, "};");
 }
 
 bool str_is_func_def(char* str)
 {
-    return string_contains(str, "* *(*);") || string_contains(str, "* *();");
+    return string_contains(str, "* *(*);") || string_contains(str, "* *();") || 
+	(string_contains(str, "* *(") && string_contains(str, ");")) ||
+	(string_contains(str, "*	*(") && string_contains(str, ");"));
 }
 
 char* struct_name_from_str(char* str)
@@ -330,7 +332,7 @@ parse_state current_state = PARSING_SEARCHING;
 
 void parse_struct(char *string)
 {
-	log_assert(current_state == PARSING_STRUCT, "invalid state for parsing struct");
+	//log_assert(current_state == PARSING_STRUCT, "invalid state for parsing struct");
 
 	if (!current_tag.struct_name) current_tag.struct_name = struct_name_from_str(string);
 
@@ -351,7 +353,7 @@ void parse_struct(char *string)
 
 void parse_chapter(char *string)
 {
-	log_assert(current_state == PARSING_TITLE || current_state == PARSING_TEXT, "invalid state for parsing chapter");
+	//log_assert(current_state == PARSING_TITLE || current_state == PARSING_TEXT, "invalid state for parsing chapter");
 
 	if (current_state == PARSING_TITLE)
 	{
@@ -364,13 +366,16 @@ void parse_chapter(char *string)
 	if (current_state == PARSING_TEXT)
 	{
 		if (!IS_CONTINUATION(TEXT_IDENTIFIER)) { current_state = PARSING_SEARCHING; store_tag(); }
-		else current_tag.text = str_append_newline(current_tag.text, get_str_after_tab(string), false);
+		else {
+			current_tag.text = str_append_newline(current_tag.text, get_str_after_tab(string), false);
+			current_tag.text = str_append_newline(current_tag.text, " ", false);
+		}
 	}
 }
 
 void parse_function(char *string)
 {
-	log_assert(current_state == PARSING_INFO || current_state == PARSING_RET, "invalid state for parsing function");
+	//log_assert(current_state == PARSING_INFO || current_state == PARSING_RET, "invalid state for parsing function");
 
 	if (str_is_func_def(string))
 	{
@@ -619,7 +624,7 @@ void dump_html()
 				APPEND(body, "Structures");
 				APPEND(body, "</h2>");
 
-				dump_structs_for_chapter(body, i+1, current_chapter_nr++, current_subchapter_nr++);
+				dump_structs_for_chapter(body, i+1, current_chapter_nr, current_subchapter_nr++);
 			}
 
 			// Function sub-chapter

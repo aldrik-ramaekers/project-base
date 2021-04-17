@@ -7,6 +7,15 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
+//	:/Title	Assets
+//	:/Text	The asset system is responsible for loading images, fonts and sound
+//			into memory and the active render device. The asset system is multi-threaded.
+//			The amount of threads dedicated to loading assets can be specified with ASSET_WORKER_COUNT,
+//			defaulting to 2 threads. All assets that will be used in your application need to be queued
+//			into the asset system before starting the main loop. The asset system will automatically shut
+//			down when all assets have been loaded.
+
+
 #ifndef ASSET_IMAGE_COUNT
 #define ASSET_IMAGE_COUNT 10
 #endif
@@ -103,16 +112,41 @@ char*	binary_path;
 mutex 	asset_mutex;
 assets 	global_asset_collection;
 
+//	:/Info	Create the asset system.
 void 	assets_create();
+
+//	:/Info	Destroy the asset system. All assets will be invalidated.
 void 	assets_destroy();
+
+//	:/Info	Handle post-processing on the loaded assets. Should be called on the main thread.
+//	:/Ret	Returns true when an asset was post-processed.
 bool 	assets_do_post_process();
+
+// TODO: make private
 void*	assets_queue_worker();
+
+//	:/Info	Load a png image.
+//	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_image(u8 *start_addr, u8 *end_addr);
+
+//	:/Info	Invalidate the given image.
 void 	assets_destroy_image(image *image);
+
+//	:/Info	Load a bitmap image.
+//	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_bitmap(u8 *start_addr, u8 *end_addr);
+
+//	:/Info	Invalidate the given image.
 void 	assets_destroy_bitmap(image *image);
+
+//	:/Info	Load a ttf font.
+//	:/Ret	Pointer to the loading/loaded font.
 font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
+
+//	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
+
+// TODO: make private
 void 	assets_switch_render_method();
 
 #define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)

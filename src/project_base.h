@@ -29,7 +29,6 @@
 //			- try crashing the lib and make asserts for the crashes
 //			- rename localization_set_locale to localization_localization_set_locale()
 //			- settings writes null = null to file??
-//			- get rid of if (global_using_gpu) in render code and split cpu & gpu rendering so we can maybe add other render backends later
 //			- get rid of text-search code in platform.h
 
 #ifndef INCLUDE_PROJECT_BASE
