@@ -14,6 +14,6 @@ typedef struct t_camera
 	float32 rotation;
 } camera;
 
-void camera_apply_transformations(platform_window *window, camera *camera);
+void _camera_apply_transformations(platform_window *window, camera *camera);
 
 #endif

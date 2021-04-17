@@ -7,6 +7,9 @@
 #ifndef INCLUDE_PLATFORM
 #define INCLUDE_PLATFORM
 
+//	:/Title	Platform
+//	:/Text	Provides an interface to interact with the underlying operating system.
+
 typedef struct t_platform_window platform_window;
 typedef struct t_backbuffer backbuffer;
 
@@ -38,50 +41,6 @@ typedef struct t_search_info
 	u64 file_count;
 	u64 dir_count;
 } search_info;
-
-// :Cleanup: move to text_search.c.. what is this doing here?
-typedef struct t_search_result
-{
-	array work_queue;
-	array files;
-	array matches;
-	s32 match_count;
-	u64 find_duration_us;
-	array errors;
-	bool show_error_message; // error occured
-	bool found_file_matches; // found/finding file matches
-	s32 files_searched;
-	s32 files_matched;
-	s32 search_result_source_dir_len;
-	bool match_found; // found text match
-	mutex mutex;
-	bool walking_file_system;
-	bool cancel_search;
-	bool done_finding_matches;
-	s32 search_id;
-	u64 start_time;
-	bool done_finding_files;
-	memory_bucket mem_bucket;
-	bool is_command_line_search;
-	bool threads_closed;
-	search_info search_info;
-	char *export_path;
-	char *file_filter;
-	char *directory_to_search;
-	char *text_to_find;
-	s32 max_thread_count;
-	s32 max_file_size;
-	bool is_recursive;
-} search_result;
-
-typedef struct t_find_text_args
-{
-	file_match file;
-	search_result *search_result_buffer;
-} find_text_args;
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
 
 typedef struct t_file_content
 {
@@ -136,14 +95,14 @@ typedef enum t_file_open_error
 	FILE_ERROR_TOO_BIG = 11,
 } file_open_error;
 
-struct open_dialog_args
+typedef struct t_open_dialog_args
 {
 	char *buffer;
 	char *file_filter;
 	char *start_path;
 	char *default_save_file_extension;
 	file_dialog_type type;
-};
+} open_dialog_args;
 
 typedef struct t_list_file_args
 {
@@ -166,6 +125,7 @@ typedef enum t_cursor_type
 	CURSOR_DRAG,
 } cursor_type;
 
+// TODO: move this to more appropriate file.
 typedef struct t_vec2
 {
 	s32 x;
@@ -213,7 +173,6 @@ void 	platform_window_set_size(platform_window *window, u16 width, u16 height);
 void 	platform_window_set_position(platform_window *window, u16 x, u16 y);
 void 	platform_destroy_window(platform_window *window);
 void 	platform_handle_events();
-void 	_platform_handle_events_for_window(platform_window *window);
 void 	platform_window_swap_buffers(platform_window *window);
 void 	platform_set_cursor(platform_window *window, cursor_type type);
 void 	platform_window_set_title(platform_window *window, char *name);
@@ -253,11 +212,23 @@ bool 	platform_delete_file(char *path);
 bool 	platform_keep_running(platform_window *window);
 void 	platform_init_shared(int argc, char **argv);
 void 	platform_destroy_shared();
+
+//	:/Info	Get the current time.
+//	:/Ret	The time in ns, μs, ms or sec depending on given parameters.
 u64 	platform_get_time(time_type time_type, time_precision precision);
+
+//	:/Info	Retrieve the the installed amount of memory on de machine.
+//	:/Ret	The amount of memory installed, in KB.
 s32 	platform_get_memory_size();
+
+//	:/Info	Retrieve the number of cpu cores on the machine.
+//	:/Ret	The number of cpu cores on the machine.
 s32 	platform_get_cpu_count();
+
+//	:/Info	Toggle vsync. On by default.
 void 	platform_toggle_vsync(bool on);
 
+void _platform_handle_events_for_window(platform_window *window);
 void _platform_register_window(platform_window* window);
 void _platform_unregister_window(platform_window* window);
 

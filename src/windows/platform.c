@@ -1263,7 +1263,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 
 static void* platform_open_file_dialog_implementation(void *data)
 {
-	struct open_dialog_args *args = data;
+	open_dialog_args *args = data;
 	
 	OPENFILENAME info;
 	info.lStructSize = sizeof(OPENFILENAME);

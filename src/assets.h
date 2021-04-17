@@ -122,9 +122,6 @@ void 	assets_destroy();
 //	:/Ret	Returns true when an asset was post-processed.
 bool 	assets_do_post_process();
 
-// TODO: make private
-void*	assets_queue_worker();
-
 //	:/Info	Load a png image.
 //	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_image(u8 *start_addr, u8 *end_addr);
@@ -146,8 +143,8 @@ font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 //	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
 
-// TODO: make private
-void 	assets_switch_render_method();
+void*	_assets_queue_worker();
+void 	_assets_switch_render_method();
 
 #define load_image(_name, _inmem) assets_load_image(_binary____data_imgs_##_name##_start,_binary____data_imgs_##_name##_end)
 #define load_font(_name, _size) assets_load_font(_binary____data_fonts_##_name##_start,_binary____data_fonts_##_name##_end, _size)

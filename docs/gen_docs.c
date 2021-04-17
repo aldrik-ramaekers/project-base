@@ -200,6 +200,8 @@ bool str_is_type(char* str, char** struct_name)
 	if (!strcmp(str, "long")) return true;
 	if (!strcmp(str, "float")) return true;
 	if (!strcmp(str, "double")) return true;
+	if (!strcmp(str, "float32")) return true;
+	if (!strcmp(str, "float64")) return true;
 	if (!strcmp(str, "u8")) return true;
 	if (!strcmp(str, "u16")) return true;
 	if (!strcmp(str, "u32")) return true;
@@ -212,6 +214,10 @@ bool str_is_type(char* str, char** struct_name)
 	if (!strcmp(str, "unsigned")) return true;
 	if (!strcmp(str, "bool")) return true;
 	if (!strcmp(str, "void")) return true;
+
+	if (!strcmp(str, "typedef")) return true;
+	if (!strcmp(str, "struct")) return true;
+	if (!strcmp(str, "enum")) return true;
 
 	for (int i = 0; i < tags.length; i++)
 	{
@@ -237,12 +243,13 @@ char* apply_word_highlighting(char* str, int newbuflen)
 	int write_cursor = 0;
 	char* last_str = 0;
 	char word_buf[500];
+	bool last_str_was_type = false;
 	while(((last_str = str) && (str = get_next_word_to_highlight(str, word_buf, 500))))
 	{
 		char* struct_name;
 		bool is_type = str_is_type(word_buf, &struct_name);
 
-		if (is_type) {
+		if (is_type && !last_str_was_type) {
 			if (struct_name) { 
 				strcat(buf, "<a href='#STRUC_");
 				strcat(buf, struct_name);
@@ -262,6 +269,9 @@ char* apply_word_highlighting(char* str, int newbuflen)
 			strcat(buf, word_buf);
 		}
 		
+		if (!(strcmp(word_buf, " ") == 0 || strcmp(word_buf, "	") == 0))
+			last_str_was_type = is_type;
+
 		if (*str == 0) break;
 	}
 
@@ -270,7 +280,7 @@ char* apply_word_highlighting(char* str, int newbuflen)
 
 bool str_is_struct_def(char* str)
 {
-	return string_contains(str, "struct *") && !string_contains(str, ";");
+	return (string_contains(str, "struct *") || string_contains(str, "enum *")) && !string_contains(str, ";");
 }
 
 bool str_is_struct_def_end(char* str)
@@ -336,7 +346,7 @@ void parse_struct(char *string)
 
 	if (!current_tag.struct_name) current_tag.struct_name = struct_name_from_str(string);
 
-	if (!string_contains(string, ";") || str_is_struct_def_end(string))
+	if (!(string_contains(string, ";") || string_contains(string, ",")) || str_is_struct_def_end(string))
 		current_tag.struct_def = str_append_newline(current_tag.struct_def, "<div style=\"height:18px;\">", false);
 	else
 		current_tag.struct_def = str_append_newline(current_tag.struct_def, "<div style=\"padding-left: 50px;height:18px;\">", false);

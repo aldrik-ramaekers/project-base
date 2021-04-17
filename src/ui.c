@@ -25,7 +25,7 @@ inline void ui_begin(platform_window *window)
 	platform_window_make_current(window);
 	platform_set_cursor(window, CURSOR_DEFAULT);
 	renderer->render_clear(window);
-	camera_apply_transformations(window, &_global_camera);
+	_camera_apply_transformations(window, &_global_camera);
 	renderer->render_reset_scissor();
 
 	global_ui_context.active_window = window;

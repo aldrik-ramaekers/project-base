@@ -4,7 +4,7 @@
 *  All rights reserved.
 */
 
-void camera_apply_transformations(platform_window *window, camera *camera)
+void _camera_apply_transformations(platform_window *window, camera *camera)
 {
 	s32 x = (window->width/2)+(camera->x);
 	s32 y =  (window->height/2)+(camera->y);

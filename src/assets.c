@@ -237,7 +237,7 @@ bool assets_queue_worker_load_font(font *font)
 	return true;
 }
 
-void *assets_queue_worker()
+void *_assets_queue_worker()
 {
 	while (global_asset_collection.valid && !global_asset_collection.done_loading_assets)
 	{
@@ -480,7 +480,7 @@ void assets_destroy_bitmap(image *image_to_destroy)
 	}
 }
 
-void assets_switch_render_method()
+void _assets_switch_render_method()
 {
 	for (int i = 0; i < global_asset_collection.images.length; i++)
 	{

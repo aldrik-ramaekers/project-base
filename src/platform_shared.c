@@ -154,7 +154,7 @@ void platform_list_files(array *list, char *start_dir, char *filter, bool recurs
 
 void platform_open_file_dialog(file_dialog_type type, char *buffer, char *file_filter, char *start_path, char *save_file_extension)
 {
-	struct open_dialog_args *args = mem_alloc(sizeof(struct open_dialog_args));
+	open_dialog_args *args = mem_alloc(sizeof(open_dialog_args));
 	args->buffer = buffer;
 	args->type = type;
 	args->file_filter = file_filter;
@@ -223,7 +223,7 @@ void platform_init_shared(int argc, char **argv)
 
 	assets_create();
 	for (s32 i = 0; i < ASSET_WORKER_COUNT; i++) {
-		thread asset_queue_worker_thread = thread_start(assets_queue_worker, NULL);
+		thread asset_queue_worker_thread = thread_start(_assets_queue_worker, NULL);
 		thread_detach(&asset_queue_worker_thread);
 	}
 	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
@@ -260,7 +260,7 @@ void _switch_render_method(bool use_gpu)
 		platform_setup_backbuffer(w);
 	}
 	platform_setup_renderer();
-	assets_switch_render_method();
+	_assets_switch_render_method();
 }
 
 void platform_handle_events()

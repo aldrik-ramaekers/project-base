@@ -1453,7 +1453,7 @@ void platform_show_message(platform_window *window, char *message, char *title)
 
 static void* platform_open_file_dialog_thread(void *data)
 {
-	struct open_dialog_args *args = data;
+	open_dialog_args *args = data;
 	
 	FILE *f;
 	
