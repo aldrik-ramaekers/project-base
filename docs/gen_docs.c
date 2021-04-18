@@ -190,6 +190,17 @@ char* get_next_word_to_highlight(char* str, char* buf, int buflen)
 	return str;
 }
 
+bool str_is_constant(char* str)
+{
+	while(*str)
+	{
+		if (!((*str >= 'A' && *str <= 'Z') || *str == '_')) return false;
+		str++;
+	}
+
+	return true;
+}
+
 bool str_is_type(char* str, char** struct_name)
 {
 	*struct_name = 0;
@@ -243,24 +254,30 @@ char* apply_word_highlighting(char* str, int newbuflen)
 	int write_cursor = 0;
 	char* last_str = 0;
 	char word_buf[500];
-	bool last_str_was_type = false;
+	bool last_str_was_highlighted = false;
 	while(((last_str = str) && (str = get_next_word_to_highlight(str, word_buf, 500))))
 	{
 		char* struct_name;
 		bool is_type = str_is_type(word_buf, &struct_name);
+		bool is_constant = str_is_constant(word_buf);
 
-		if (is_type && !last_str_was_type) {
+		bool is_highlighted = is_constant || is_type;
+
+		char* type_color = "<span style='color:rgb(86, 156, 203) !important;'>";
+		if (is_constant) type_color = "<span style='color:rgb(220, 220, 139) !important;'>";
+
+		if (is_highlighted && !last_str_was_highlighted) {
 			if (struct_name) { 
 				strcat(buf, "<a href='#STRUC_");
 				strcat(buf, struct_name);
 				strcat(buf, "'>");
-				strcat(buf, "<span style='color:rgb(86, 156, 203) !important;'>");
+				strcat(buf, type_color);
 				strcat(buf, word_buf);
 				strcat(buf, "</span>");
 				strcat(buf, "</a>");
 			 } 
 			else {
-				strcat(buf, "<span style='color:rgb(86, 156, 203) !important;'>");
+				strcat(buf, type_color);
 				strcat(buf, word_buf);
 				strcat(buf, "</span>");
 			}
@@ -270,7 +287,7 @@ char* apply_word_highlighting(char* str, int newbuflen)
 		}
 		
 		if (!(strcmp(word_buf, " ") == 0 || strcmp(word_buf, "	") == 0))
-			last_str_was_type = is_type;
+			last_str_was_highlighted = is_highlighted;
 
 		if (*str == 0) break;
 	}

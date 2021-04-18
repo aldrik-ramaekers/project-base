@@ -125,7 +125,7 @@ inline void platform_show_alert(char *title, char *message)
 
 inline void platform_destroy()
 {
-	platform_destroy_shared();
+	_platform_destroy_shared();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();
@@ -1369,7 +1369,7 @@ void platform_init(int argc, char **argv)
 	instance = GetModuleHandle(NULL);
 	cmd_show = argc;
 	
-	platform_init_shared(argc, argv);
+	_platform_init_shared(argc, argv);
 }
 
 void platform_set_icon(platform_window *window, image *img)

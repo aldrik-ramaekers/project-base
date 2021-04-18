@@ -209,9 +209,10 @@ void 	platform_get_directory_from_path(char *buffer, char *path);
 vec2 	platform_get_window_size(platform_window *window);
 s32 	platform_filter_matches(array *filters, char *string, char **matched_filter);
 bool 	platform_delete_file(char *path);
+
+//	:/Info	Check if the window is still open. Should be used in the main loop.
+//	:/Ret	true when open, false when closed.
 bool 	platform_keep_running(platform_window *window);
-void 	platform_init_shared(int argc, char **argv);
-void 	platform_destroy_shared();
 
 //	:/Info	Get the current time.
 //	:/Ret	The time in ns, μs, ms or sec depending on given parameters.
@@ -228,6 +229,8 @@ s32 	platform_get_cpu_count();
 //	:/Info	Toggle vsync. On by default.
 void 	platform_toggle_vsync(bool on);
 
+void _platform_init_shared(int argc, char **argv);
+void _platform_destroy_shared();
 void _platform_handle_events_for_window(platform_window *window);
 void _platform_register_window(platform_window* window);
 void _platform_unregister_window(platform_window* window);

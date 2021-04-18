@@ -203,14 +203,14 @@ s32 platform_filter_matches(array *filters, char *string, char **matched_filter)
 	return -1;
 }
 
-void platform_destroy_shared()
+void _platform_destroy_shared()
 {
 	localization_destroy();
 	ui_destroy();
 	assets_destroy();
 }
 
-void platform_init_shared(int argc, char **argv)
+void _platform_init_shared(int argc, char **argv)
 {
 	_lib_loader_init();
 
