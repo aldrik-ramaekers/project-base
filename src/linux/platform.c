@@ -35,6 +35,7 @@ typedef struct t_backbuffer
 
 struct t_platform_window
 {
+	void (*update_func)(platform_window*);
 	Display *display;
 	Window parent;
 	XVisualInfo *visual_info;
@@ -614,12 +615,12 @@ inline void platform_init(int argc, char **argv)
 	
 	XInitThreads();
 	
-	platform_init_shared(argc, argv);
+	_platform_init_shared(argc, argv);
 }
 
 inline void platform_destroy()
 {
-	platform_destroy_shared();
+	_platform_destroy_shared();
 	
 #if defined(MODE_DEVELOPER)
 	memory_print_leaks();
@@ -749,7 +750,7 @@ bool platform_is_graphical()
 	}
 }
 
-platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags)
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window))
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) width = min_h;
@@ -762,6 +763,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(max_h >= 0, "Maximum height should be greater or equal to 0, where 0 means no limit");
 	log_assert(min_w > 0, "Minimum width should be greater than 0");
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
+	log_assert(update_func, "Update function cannot be 0");
 
 	bool has_max_size = max_w || max_h;
 	
@@ -769,6 +771,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	if (!window) return window;
 	window->width = width;
 	window->height = height;
+	window->update_func = update_func;
 	window->backbuffer.buffer = 0;
 	window->gl_context = 0;
 	window->icon_loaded = false;
@@ -1287,7 +1290,7 @@ void _platform_handle_events_for_window(platform_window *window)
 					}
 				}
 				
-				keyboard_handle_input_string(window, keyboard, ch);
+				keyboard_handle_input_string(window, ch);
 			}
 		}
 		else if (window->event.type == KeyRelease)

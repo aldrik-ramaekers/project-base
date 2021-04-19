@@ -43,6 +43,10 @@ __def_proc( void, glDeleteTextures, (GLsizei n,const GLuint *textures))
 __def_proc( void, glTranslatef, (GLfloat x,GLfloat y,GLfloat z))
 __def_proc( void, glOrtho, (GLdouble left,GLdouble right,GLdouble bottom,GLdouble top,GLdouble zNear,GLdouble zFar))
 __def_proc( void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height))
+__def_proc( void, glFinish, (void))
+__def_proc( void, glLineWidth, (GLfloat))
+__def_proc( void, glPushMatrix, ())
+__def_proc( void, glPopMatrix, ())
 
 __def_proc( XRRCrtcInfo*, XRRGetCrtcInfo, (Display *dpy, XRRScreenResources *resources, RRCrtc crtc))
 __def_proc( void, XRRFreeCrtcInfo, (XRRCrtcInfo *crtcInfo))
@@ -113,6 +117,10 @@ void _lib_loader_init()
     __load_fnc_or_exit(glTranslatef, libGL);
     __load_fnc_or_exit(glOrtho, libGL);
     __load_fnc_or_exit(glViewport, libGL);
+	__load_fnc_or_exit(glFinish, libGL);
+    __load_fnc_or_exit(glLineWidth, libGL);
+    __load_fnc_or_exit(glPushMatrix, libGL);
+    __load_fnc_or_exit(glPopMatrix, libGL);
 
     __load_lib_or_exit(libXRandr, "libXrandr.so");
     __load_fnc_or_exit(XRRGetCrtcInfo, libXRandr);
