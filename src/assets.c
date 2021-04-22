@@ -37,7 +37,7 @@ void assets_stop_if_done()
 {
 	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
-		global_asset_collection.done_loading_assets = true;
+		//global_asset_collection.done_loading_assets = true;
 		
 #ifdef MODE_TIMESTARTUP
 		abort();
@@ -70,7 +70,7 @@ bool assets_do_post_process()
 	bool result = false;
 	
 	mutex_lock(&asset_mutex);
-	
+
 	for (int i = 0; i < global_asset_collection.post_process_queue.length; i++)
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);
@@ -87,12 +87,14 @@ bool assets_do_post_process()
 				s32 flag = is_big_endian() ? GL_UNSIGNED_INT_8_8_8_8 : 
 				GL_UNSIGNED_INT_8_8_8_8_REV;
 				
-				if (task->type == ASSET_IMAGE)
+				if (task->type == ASSET_IMAGE) {
 					IMP_glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_RGBA, flag, task->image->data);
-				else
+				}
+				else {
 					IMP_glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_BGRA, flag, task->image->data);
+				}
 				
 				IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -261,7 +263,7 @@ void *_assets_queue_worker()
 				bool result = assets_queue_worker_load_image(buf.image);
 				buf.valid = result;
 			}
-			if (buf.type == ASSET_BITMAP)
+			else if (buf.type == ASSET_BITMAP)
 			{
 				bool result = assets_queue_worker_load_bitmap(buf.image);
 				buf.valid = result;
@@ -424,42 +426,77 @@ void assets_destroy()
 	mutex_destroy(&asset_mutex);
 }
 
-image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
+static u32 hash_path(char* str)
 {
-	// check if image is already loaded or loading
+	unsigned long hash = 5381;
+    int c;
+    while ((c = *str++) && c) hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static image empty_image()
+{
+	image new_image;
+	new_image.loaded = false;
+	new_image.start_addr = 0;
+	new_image.end_addr = 0;
+	new_image.references = 1;
+	new_image.path_hash = UNDEFINED_PATH_HASH;
+	return new_image;
+}
+
+static image* find_image_ref(u8 *start_addr, s32 hash)
+{
 	for (int i = 0; i < global_asset_collection.images.length; i++)
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if (start_addr == img_at->start_addr && img_at->references > 0)
+		if ((start_addr == img_at->start_addr || hash == img_at->path_hash) && img_at->references > 0)
 		{
-			// image is already loaded/loading
 			img_at->references++;
 			return img_at;
 		}
 	}
-	
-	image new_image;
-	new_image.loaded = false;
-	new_image.start_addr = start_addr;
-	new_image.end_addr = end_addr;
-	new_image.references = 1;
-	
-	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
-	// invalidated.
-	log_assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length, "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
-	
-	int index = array_push(&global_asset_collection.images, &new_image);
+	return 0;
+}
+
+image *assets_load_bitmap_from_file(char* path)
+{
+	u32 hash = hash_path(path);
+	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
+	if (ref) return ref;
+
+	return ref;
+}
+
+static asset_task add_image_to_queue(image img, bool is_bitmap)
+{
+	int index = array_push(&global_asset_collection.images, &img);
 	
 	asset_task task;
-	task.type = ASSET_BITMAP;
+	task.type = is_bitmap ? ASSET_BITMAP : ASSET_IMAGE;
 	task.image = array_at(&global_asset_collection.images, index);
 	
 	mutex_lock(&asset_mutex);
 	array_push(&global_asset_collection.queue.queue, &task);
 	mutex_unlock(&asset_mutex);
+
+	return task;
+}
+
+image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
+{
+	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
+	if (ref) return ref;
+
+	image new_image = empty_image();
+	new_image.start_addr = start_addr;
+	new_image.end_addr = end_addr;
 	
-	return task.image;
+	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
+	log_assert(CAN_ADD_NEW_IMAGE(), "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
+
+	return add_image_to_queue(new_image, true).image;
 }
 
 void assets_destroy_bitmap(image *image_to_destroy)
@@ -492,7 +529,6 @@ void _assets_switch_render_method()
 			task.type = ASSET_IMAGE;
 			task.image = img_at;
 			task.valid = true;
-			
 			array_push(&global_asset_collection.post_process_queue, &task);
 		}
 		else

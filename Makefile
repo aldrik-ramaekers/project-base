@@ -59,7 +59,7 @@ install_deps:
 	sudo apt-get --yes --force-yes install libglu1-mesa-dev
 	sudo apt-get --yes --force-yes install libgl1-mesa-dev
 	sudo apt-get --yes --force-yes install libxrandr-dev
-
+	
 # Build (Windows + Linux)
 build:
 	$(permissions) mkdir -p "build/"
@@ -70,25 +70,18 @@ build:
 	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
 	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
-	#$(permissions) gcc $(flags) src/addons/c_parser.c -o build/$(output_file)-parser.a
-
 	make $(install_lib_command)
 
 install_windows:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
-	$(permissions) cp "build/$(output_file)-parser.a" "$(lib_dir)-parser.a" 2>/dev/null || :
-
 	# github action shite
 	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
-	$(permissions) cp "build/$(output_file)-parser.a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file)-parser.a" 2>/dev/null || :
-
 install_linux:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
-	$(permissions) cp "build/$(output_file)-parser.a" "$(lib_dir)-parser.a" 2>/dev/null || :
 
 ## Tests (Windows + Linux)
 tests:
@@ -96,17 +89,17 @@ tests:
 	make $(create_tests_command)
 
 tests_windows:
-	gcc -m64 -g tests/main.c -o build/tests.exe -lprojectbase -lprojectbase-parser $(libs)
+	gcc -m64 -g tests/main.c -o build/tests.exe -lprojectbase $(libs)
 	./build/tests
 
 tests_linux:
-	$(permissions) gcc -m64 -g tests/main.c -o build/tests -lprojectbase -lprojectbase-parser $(libs)
+	$(permissions) gcc -m64 -g tests/main.c -o build/tests -lprojectbase $(libs)
 	$(permissions) sudo chmod +x build/tests
 	$(permissions) ./build/tests
 
 ## Examples (Windows + Linux)
 examples:
-	$(permissions) ld -r -b binary -o build/data.o examples/en.mo
+	$(permissions) ld -r -b binary -o build/data.o examples/en.mo examples/logo_64.png examples/logo_64.bmp
 	make $(create_examples_command)
 
 examples_windows:

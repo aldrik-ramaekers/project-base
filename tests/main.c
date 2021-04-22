@@ -31,9 +31,6 @@ int main(int argc, char** argv) {
     print_result("Swap", test_array_swap());
     print_result("Multi-threaded Write", test_array_thread_write());
 
-    print_h1("C Parser");
-    print_result("Tokenize", test_c_parser_test());
-
     print_h1("Settings Config");
     print_result("Write", test_settings_config_write(argc, argv));
     print_result("Read", test_settings_config_read(argc, argv));

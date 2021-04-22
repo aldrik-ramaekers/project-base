@@ -228,6 +228,8 @@ void _platform_init_shared(int argc, char **argv)
 	}
 	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
 	localization_init();
+
+	set_render_driver(DRIVER_GL); // Default to GL
 }
 
 u64 __last_stamp = 0;

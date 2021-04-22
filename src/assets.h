@@ -47,11 +47,16 @@ typedef struct t_image {
 	void *data;
 	s16 references;
 	u32 textureID;
+	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
 } image;
 
+#define UNDEFINED_PATH_HASH -1
+#define UNDEFINED_START_ADDR (void*)(1)
 #define TEXT_CHARSET_START 0
 #define TEXT_CHARSET_END 2000
 #define TOTAL_GLYPHS TEXT_CHARSET_END-TEXT_CHARSET_START
+
+#define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)
 
 typedef struct t_glyph
 {
@@ -132,6 +137,10 @@ void 	assets_destroy_image(image *image);
 //	:/Info	Load a bitmap image.
 //	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_bitmap(u8 *start_addr, u8 *end_addr);
+
+//	:/Info	Load a bitmap image.
+//	:/Ret	Pointer to the loading/loaded image.
+image*	assets_load_bitmap_from_file(char* path);
 
 //	:/Info	Invalidate the given image.
 void 	assets_destroy_bitmap(image *image);

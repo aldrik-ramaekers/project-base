@@ -5,6 +5,12 @@
 extern unsigned char _binary_examples_en_mo_start[];
 extern unsigned char _binary_examples_en_mo_end[];
 
+extern unsigned char _binary_examples_logo_64_bmp_start[];
+extern unsigned char _binary_examples_logo_64_bmp_end[];
+
+extern unsigned char _binary_examples_logo_64_png_start[];
+extern unsigned char _binary_examples_logo_64_png_end[];
+
 void update_render_sub(platform_window* window)
 {
      ui_begin(window);
@@ -32,6 +38,9 @@ void update_render_sub(platform_window* window)
     }
     ui_end();
 }
+
+image* img;
+image* img2;
 
 void update_render_main(platform_window* window) 
 {
@@ -72,6 +81,9 @@ void update_render_main(platform_window* window)
     }
     ui_end();
 #endif
+
+	renderer->render_image(img, 0, 0, 50, 50);
+	renderer->render_image(img2, 0, 50, 50, 50);
 }
 
 int main(int argc, char **argv)
@@ -84,6 +96,9 @@ int main(int argc, char **argv)
                       0,0, "en", "English");
 
     localization_set_locale("en");
+
+	img = assets_load_bitmap(_binary_examples_logo_64_bmp_start, _binary_examples_logo_64_bmp_end);
+	img2 = assets_load_bitmap(_binary_examples_logo_64_png_start, _binary_examples_logo_64_png_end);
 
     platform_window *window = platform_open_window(localize("window_title_main"),
                 500, 500, 800, 600, 500, 500, update_render_main);
