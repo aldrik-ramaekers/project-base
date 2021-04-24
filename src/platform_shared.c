@@ -205,12 +205,13 @@ s32 platform_filter_matches(array *filters, char *string, char **matched_filter)
 
 void _platform_destroy_shared()
 {
+	_settings_destroy();
 	localization_destroy();
 	ui_destroy();
 	assets_destroy();
 }
 
-void _platform_init_shared(int argc, char **argv)
+void _platform_init_shared(int argc, char **argv, char* config_path)
 {
 	_lib_loader_init();
 
@@ -229,7 +230,8 @@ void _platform_init_shared(int argc, char **argv)
 	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
 	localization_init();
 
-	set_render_driver(DRIVER_GL); // Default to GL
+	_settings_init(config_path);
+	set_render_driver(DRIVER_GL); // Default to GL, settings_get_number_or_default("USE_GPU", 1); 
 }
 
 u64 __last_stamp = 0;

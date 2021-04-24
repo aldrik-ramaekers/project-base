@@ -59,7 +59,7 @@ install_deps:
 	sudo apt-get --yes --force-yes install libglu1-mesa-dev
 	sudo apt-get --yes --force-yes install libgl1-mesa-dev
 	sudo apt-get --yes --force-yes install libxrandr-dev
-	
+
 # Build (Windows + Linux)
 build:
 	$(permissions) mkdir -p "build/"
@@ -86,19 +86,23 @@ install_linux:
 ## Tests (Windows + Linux)
 tests:
 	make build
+	# we use assets from examples in tests
+	make examples
 	make $(create_tests_command)
 
 tests_windows:
-	gcc -m64 -g tests/main.c -o build/tests.exe -lprojectbase $(libs)
+	gcc -m64 -g tests/main.c build/data.o -o build/tests.exe -lprojectbase $(libs)
 	./build/tests
 
 tests_linux:
-	$(permissions) gcc -m64 -g tests/main.c -o build/tests -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g tests/main.c build/data.o -o build/tests -lprojectbase $(libs)
 	$(permissions) sudo chmod +x build/tests
 	$(permissions) ./build/tests
 
 ## Examples (Windows + Linux)
 examples:
+	$(permissions) cp "examples/logo_64.png" "build/logo_64.png"
+	$(permissions) cp "examples/logo_64.bmp" "build/logo_64.bmp"
 	$(permissions) ld -r -b binary -o build/data.o examples/en.mo examples/logo_64.png examples/logo_64.bmp
 	make $(create_examples_command)
 
@@ -115,4 +119,4 @@ docs:
 	$(permissions) pandoc --pdf-engine wkhtmltopdf -V margin-top=14 -V margin-left=9 -V margin-right=9 -V margin-bottom=14 -V papersize=letter .\build\docs_title.html .\build\docs.html -o .\build\docs_title.pdf
 
 cloc:
-	cloc-1.88.exe --exclude-dir=external src/ docs/
+	cloc-1.88.exe --exclude-dir=external src/ docs/ examples/

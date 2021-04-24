@@ -1359,7 +1359,7 @@ void platform_window_make_current(platform_window *window)
 		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 }
 
-void platform_init(int argc, char **argv)
+void platform_init(int argc, char **argv, char* config_path)
 {
 	setlocale(LC_ALL, "en_US.UTF-8");
 	
@@ -1369,7 +1369,7 @@ void platform_init(int argc, char **argv)
 	instance = GetModuleHandle(NULL);
 	cmd_show = argc;
 	
-	_platform_init_shared(argc, argv);
+	_platform_init_shared(argc, argv, config_path);
 }
 
 void platform_set_icon(platform_window *window, image *img)

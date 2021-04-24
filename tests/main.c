@@ -1,5 +1,4 @@
 #include <projectbase/project_base.h>
-#include <projectbase/addons/c_parser.h>
 #include <projectbase/addons/test_helper.h>
 
 #define CONFIG_DIRECTORY "test_program_config"
@@ -7,8 +6,8 @@
 #include "test_string_utils.c"
 #include "test_threads.c"
 #include "test_window.c"
+#include "test_assets.c"
 #include "test_array.c"
-#include "test_c_parser.c"
 #include "test_settings_config.c"
 
 int main(int argc, char** argv) {
@@ -34,6 +33,11 @@ int main(int argc, char** argv) {
     print_h1("Settings Config");
     print_result("Write", test_settings_config_write(argc, argv));
     print_result("Read", test_settings_config_read(argc, argv));
+
+	print_h1("Assets");
+    print_result("Load image embedded", test_assets_load_embedded(argc, argv));
+	print_result("Load image from file", test_assets_load_file(argc, argv));
+	print_result("Queue & post-process", test_assets_queue_and_postprocess_count(argc, argv));
 
     if (failure) exit(EXIT_FAILURE);
     return 0;

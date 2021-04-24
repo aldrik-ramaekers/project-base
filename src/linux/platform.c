@@ -609,13 +609,13 @@ static void create_key_tables(platform_window* window)
 	XkbFreeKeyboard(desc, 0, True);
 }
 
-inline void platform_init(int argc, char **argv)
+inline void platform_init(int argc, char **argv, char* config_path)
 {
 	setlocale(LC_ALL, "en_US.UTF-8");
 	
 	XInitThreads();
 	
-	_platform_init_shared(argc, argv);
+	_platform_init_shared(argc, argv, config_path);
 }
 
 inline void platform_destroy()

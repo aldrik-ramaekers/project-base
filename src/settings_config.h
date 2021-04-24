@@ -26,9 +26,10 @@ typedef struct t_settings_config
 *  NUMBER = "15"
 */
 
-void settings_init(char *path);
 void settings_write_to_file();
-void settings_destroy();
+
+void _settings_init(char *path);
+void _settings_destroy();
 
 config_setting* settings_get_setting(char *name);
 char* 			settings_get_string(char *name);

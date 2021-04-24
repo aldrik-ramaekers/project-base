@@ -73,7 +73,7 @@ static void get_config_from_string(settings_config *config, char *string)
 	array_push(&config->settings, &current_entry);
 }
 
-void settings_init(char *directory)
+void _settings_init(char *directory)
 {
 	settings_config config;
 	config.loaded = true;
@@ -235,7 +235,7 @@ void settings_set_number(char *name, s64 value)
 	}
 }
 
-void settings_destroy()
+void _settings_destroy()
 {
 	log_assert(_settings_file.loaded, "settings_init() should be called before calling any other settings functions");
 

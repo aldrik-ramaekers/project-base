@@ -215,3 +215,8 @@ array array_copy(array *arr)
 	mutex_unlock(&arr->mutex);
 	return new_array;
 }
+
+void array_clear(array *arr)
+{
+	arr->length = 0;
+}

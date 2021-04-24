@@ -65,4 +65,7 @@ void 	array_reserve(array *arr, u32 reserve_count);
 //	:/Ret	A copy of the given array.
 array 	array_copy(array *arr);
 
+//	:/Info	Clear tha array. Amount of reserve spots remain.
+void 	array_clear(array *arr);
+
 #endif

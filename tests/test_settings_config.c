@@ -1,6 +1,5 @@
 s32 test_settings_config_write(int argc, char** argv) {
-    platform_init(argc, argv);
-    settings_init(CONFIG_DIRECTORY);
+    platform_init(argc, argv, CONFIG_DIRECTORY);
 
     settings_set_number("number1", 1);
     settings_set_number("number2", 2);
@@ -11,14 +10,12 @@ s32 test_settings_config_write(int argc, char** argv) {
 
     error_if(_settings_file.settings.length != 4);
 
-    settings_destroy();
     platform_destroy();
     success;
 }
 
 s32 test_settings_config_read(int argc, char** argv) {
-    platform_init(argc, argv);
-    settings_init(CONFIG_DIRECTORY);
+    platform_init(argc, argv, CONFIG_DIRECTORY);
 
     int num1 = settings_get_number("number1");
     int num2 = settings_get_number("number2");
@@ -34,7 +31,6 @@ s32 test_settings_config_read(int argc, char** argv) {
     error_if(!string_equals(string2, "321 String"));
     error_if(def != 15);
 
-    settings_destroy();
     platform_destroy();
     success;
 }

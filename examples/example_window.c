@@ -41,6 +41,8 @@ void update_render_sub(platform_window* window)
 
 image* img;
 image* img2;
+image* img3;
+image* img4;
 
 void update_render_main(platform_window* window) 
 {
@@ -84,12 +86,13 @@ void update_render_main(platform_window* window)
 
 	renderer->render_image(img, 0, 0, 50, 50);
 	renderer->render_image(img2, 0, 50, 50, 50);
+	renderer->render_image(img3, 0, 100, 50, 50);
+	renderer->render_image(img3, 0, 150, 50, 50);
 }
 
 int main(int argc, char **argv)
 {    
-    platform_init(argc, argv);
-    settings_init(CONFIG_DIRECTORY);
+    platform_init(argc, argv, CONFIG_DIRECTORY);
 
     localization_load(_binary_examples_en_mo_start,
                       _binary_examples_en_mo_end,
@@ -98,7 +101,9 @@ int main(int argc, char **argv)
     localization_set_locale("en");
 
 	img = assets_load_bitmap(_binary_examples_logo_64_bmp_start, _binary_examples_logo_64_bmp_end);
-	img2 = assets_load_bitmap(_binary_examples_logo_64_png_start, _binary_examples_logo_64_png_end);
+	img2 = assets_load_image(_binary_examples_logo_64_png_start, _binary_examples_logo_64_png_end);
+	img3 = assets_load_bitmap_from_file("logo_64.bmp");
+	img4 = assets_load_image_from_file("logo_64.png");
 
     platform_window *window = platform_open_window(localize("window_title_main"),
                 500, 500, 800, 600, 500, 500, update_render_main);
@@ -109,7 +114,6 @@ int main(int argc, char **argv)
 
     settings_write_to_file();
 
-    settings_destroy();
     platform_destroy();
 
     return 0;

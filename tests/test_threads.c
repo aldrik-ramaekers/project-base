@@ -7,7 +7,7 @@ static void* test_t(void *args) {
 }
 
 s32 test_detached_thread(int argc, char** argv) {
-    platform_init(argc, argv);
+    platform_init(argc, argv, CONFIG_DIRECTORY);
 
     val = 0;
     thread t = thread_start(test_t, 0);
@@ -20,7 +20,7 @@ s32 test_detached_thread(int argc, char** argv) {
 }
 
 s32 test_joined_thread(int argc, char** argv) {
-    platform_init(argc, argv);
+    platform_init(argc, argv, CONFIG_DIRECTORY);
 
     val = 0;
     thread t = thread_start(test_t, 0);

@@ -192,7 +192,7 @@ void 	platform_open_url(char *command);
 bool 	platform_send_http_request(char *url, char *params, char *response_buffer);
 void 	platform_run_command(char *command);
 void 	platform_window_make_current(platform_window *window);
-void 	platform_init(int argc, char **argv);
+void 	platform_init(int argc, char **argv, char* config_path);
 void 	platform_destroy();
 void 	platform_setup_backbuffer(platform_window *window);
 void 	platform_setup_renderer();
@@ -229,7 +229,7 @@ s32 	platform_get_cpu_count();
 //	:/Info	Toggle vsync. On by default.
 void 	platform_toggle_vsync(bool on);
 
-void _platform_init_shared(int argc, char **argv);
+void _platform_init_shared(int argc, char **argv, char* config_path);
 void _platform_destroy_shared();
 void _platform_handle_events_for_window(platform_window *window);
 void _platform_register_window(platform_window* window);

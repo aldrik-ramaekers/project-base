@@ -35,6 +35,7 @@ inline static bool is_big_endian()
 
 void assets_stop_if_done()
 {
+	return;
 	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
 		//global_asset_collection.done_loading_assets = true;
@@ -130,9 +131,8 @@ bool assets_do_post_process()
 		
 		done:
 		result = true;
-		array_remove_at(&global_asset_collection.post_process_queue, i);
 	}
-	
+	array_clear(&global_asset_collection.post_process_queue);	
 	mutex_unlock(&asset_mutex);
 	
 	return result;
@@ -291,60 +291,38 @@ void *_assets_queue_worker()
 	return 0;
 }
 
-image *assets_load_image(u8 *start_addr, u8 *end_addr)
+static image* find_image_ref(u8 *start_addr, s32 hash)
 {
-	// check if image is already loaded or loading
 	for (int i = 0; i < global_asset_collection.images.length; i++)
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if (start_addr == img_at->start_addr && img_at->references > 0)
+		if ((start_addr == img_at->start_addr || hash == img_at->path_hash) && img_at->references > 0)
 		{
-			// image is already loaded/loading
 			img_at->references++;
 			return img_at;
 		}
 	}
-	
-	image new_image;
-	new_image.loaded = false;
-	new_image.start_addr = start_addr;
-	new_image.end_addr = end_addr;
-	new_image.references = 1;
-	
-	// NOTE(Aldrik): we should never realloc the image array because pointers will be 
-	// invalidated.
-	log_assert(global_asset_collection.images.reserved_length > global_asset_collection.images.length,  "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
-	
-	int index = array_push(&global_asset_collection.images, &new_image);
-	
-	asset_task task;
-	task.type = ASSET_IMAGE;
-	task.image = array_at(&global_asset_collection.images, index);
-	
-	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, &task);
-	mutex_unlock(&asset_mutex);
-	
-	return task.image;
+	return 0;
 }
 
-void assets_destroy_image(image *image_to_destroy)
+static u32 hash_path(char* str)
 {
-	if (image_to_destroy->references == 1)
-	{
-		if (current_render_driver() == DRIVER_CPU)
-		{
-			IMP_glBindTexture(GL_TEXTURE_2D, 0);
-			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
-		}
-		
-		image_to_destroy->references = 0;
-	}
-	else
-	{
-		image_to_destroy->references--;
-	}
+	unsigned long hash = 5381;
+    int c;
+    while ((c = *str++) && c) hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static image empty_image()
+{
+	image new_image;
+	new_image.loaded = false;
+	new_image.start_addr = 0;
+	new_image.end_addr = 0;
+	new_image.references = 1;
+	new_image.path_hash = UNDEFINED_PATH_HASH;
+	return new_image;
 }
 
 font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
@@ -385,6 +363,106 @@ font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 	return task.font;
 }
 
+static asset_task add_image_to_queue(image img, bool is_bitmap)
+{
+	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
+	log_assert(CAN_ADD_NEW_IMAGE(), "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
+
+	int index = array_push(&global_asset_collection.images, &img);
+	
+	asset_task task;
+	task.type = is_bitmap ? ASSET_BITMAP : ASSET_IMAGE;
+	task.image = array_at(&global_asset_collection.images, index);
+	
+	mutex_lock(&asset_mutex);
+	array_push(&global_asset_collection.queue.queue, &task);
+	mutex_unlock(&asset_mutex);
+
+	return task;
+}
+
+////////////////////////////////////////////////////
+// Loading
+////////////////////////////////////////////////////
+image *assets_load_image_from_file(char* path)
+{
+	u32 hash = hash_path(path);
+	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
+	if (ref) return ref;
+
+	platform_set_active_directory(binary_path);
+	file_content content = platform_read_file_content(path, "rb");
+
+	image new_image = empty_image();
+	new_image.path_hash = hash;
+	new_image.start_addr = content.content;
+	new_image.end_addr = content.content + content.content_length - 1;
+
+	return add_image_to_queue(new_image, false).image;
+}
+
+image *assets_load_image(u8 *start_addr, u8 *end_addr)
+{
+	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
+	if (ref) return ref;
+	
+	image new_image = empty_image();
+	new_image.start_addr = start_addr;
+	new_image.end_addr = end_addr;
+
+	return add_image_to_queue(new_image, false).image;
+}
+
+image *assets_load_bitmap_from_file(char* path)
+{
+	u32 hash = hash_path(path);
+	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
+	if (ref) return ref;
+
+	platform_set_active_directory(binary_path);
+	file_content content = platform_read_file_content(path, "rb");
+
+	image new_image = empty_image();
+	new_image.path_hash = hash;
+	new_image.start_addr = content.content;
+	new_image.end_addr = content.content + content.content_length - 1;
+
+	return add_image_to_queue(new_image, true).image;
+}
+
+image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
+{
+	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
+	if (ref) return ref;
+
+	image new_image = empty_image();
+	new_image.start_addr = start_addr;
+	new_image.end_addr = end_addr;
+
+	return add_image_to_queue(new_image, true).image;
+}
+
+////////////////////////////////////////////////////
+// Cleaning up
+////////////////////////////////////////////////////
+void assets_destroy_bitmap(image *image_to_destroy)
+{
+	if (image_to_destroy->references == 1)
+	{
+		if (current_render_driver() == DRIVER_GL)
+		{
+			IMP_glBindTexture(GL_TEXTURE_2D, 0);
+			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
+		}
+		
+		image_to_destroy->references = 0;
+	}
+	else
+	{
+		image_to_destroy->references--;
+	}
+}
+
 void assets_destroy_font(font *font_to_destroy)
 {
 	if (font_to_destroy->references == 1)
@@ -407,103 +485,11 @@ void assets_destroy_font(font *font_to_destroy)
 	}
 }
 
-void assets_destroy()
-{
-	global_asset_collection.valid = false;
-	global_asset_collection.done_loading_assets = true;
-	thread_sleep(30000); // wait 30ms for all asset threads to finish.
-	mutex_lock(&asset_mutex);
-	{
-		if (array_exists(&global_asset_collection.images)) array_destroy(&global_asset_collection.images);
-		if (array_exists(&global_asset_collection.fonts)) array_destroy(&global_asset_collection.fonts);
-		
-		if (array_exists(&global_asset_collection.queue.queue)) array_destroy(&global_asset_collection.queue.queue);
-		if (array_exists(&global_asset_collection.post_process_queue)) array_destroy(&global_asset_collection.post_process_queue);
-
-		mem_free(binary_path);
-	}
-	mutex_unlock(&asset_mutex);
-	mutex_destroy(&asset_mutex);
-}
-
-static u32 hash_path(char* str)
-{
-	unsigned long hash = 5381;
-    int c;
-    while ((c = *str++) && c) hash = ((hash << 5) + hash) + c;
-    return hash;
-}
-
-static image empty_image()
-{
-	image new_image;
-	new_image.loaded = false;
-	new_image.start_addr = 0;
-	new_image.end_addr = 0;
-	new_image.references = 1;
-	new_image.path_hash = UNDEFINED_PATH_HASH;
-	return new_image;
-}
-
-static image* find_image_ref(u8 *start_addr, s32 hash)
-{
-	for (int i = 0; i < global_asset_collection.images.length; i++)
-	{
-		image *img_at = array_at(&global_asset_collection.images, i);
-		
-		if ((start_addr == img_at->start_addr || hash == img_at->path_hash) && img_at->references > 0)
-		{
-			img_at->references++;
-			return img_at;
-		}
-	}
-	return 0;
-}
-
-image *assets_load_bitmap_from_file(char* path)
-{
-	u32 hash = hash_path(path);
-	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
-	if (ref) return ref;
-
-	return ref;
-}
-
-static asset_task add_image_to_queue(image img, bool is_bitmap)
-{
-	int index = array_push(&global_asset_collection.images, &img);
-	
-	asset_task task;
-	task.type = is_bitmap ? ASSET_BITMAP : ASSET_IMAGE;
-	task.image = array_at(&global_asset_collection.images, index);
-	
-	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, &task);
-	mutex_unlock(&asset_mutex);
-
-	return task;
-}
-
-image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
-{
-	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
-	if (ref) return ref;
-
-	image new_image = empty_image();
-	new_image.start_addr = start_addr;
-	new_image.end_addr = end_addr;
-	
-	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
-	log_assert(CAN_ADD_NEW_IMAGE(), "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
-
-	return add_image_to_queue(new_image, true).image;
-}
-
-void assets_destroy_bitmap(image *image_to_destroy)
+void assets_destroy_image(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		if (current_render_driver() == DRIVER_GL)
+		if (current_render_driver() == DRIVER_CPU)
 		{
 			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
@@ -517,6 +503,10 @@ void assets_destroy_bitmap(image *image_to_destroy)
 	}
 }
 
+
+////////////////////////////////////////////////////
+// Extra
+////////////////////////////////////////////////////
 void _assets_switch_render_method()
 {
 	for (int i = 0; i < global_asset_collection.images.length; i++)
@@ -561,4 +551,23 @@ void _assets_switch_render_method()
 			}
 		}
 	}
+}
+
+void assets_destroy()
+{
+	global_asset_collection.valid = false;
+	global_asset_collection.done_loading_assets = true;
+	thread_sleep(30000); // wait 30ms for all asset threads to finish.
+	mutex_lock(&asset_mutex);
+	{
+		if (array_exists(&global_asset_collection.images)) array_destroy(&global_asset_collection.images);
+		if (array_exists(&global_asset_collection.fonts)) array_destroy(&global_asset_collection.fonts);
+		
+		if (array_exists(&global_asset_collection.queue.queue)) array_destroy(&global_asset_collection.queue.queue);
+		if (array_exists(&global_asset_collection.post_process_queue)) array_destroy(&global_asset_collection.post_process_queue);
+
+		mem_free(binary_path);
+	}
+	mutex_unlock(&asset_mutex);
+	mutex_destroy(&asset_mutex);
 }
