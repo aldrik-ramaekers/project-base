@@ -590,7 +590,8 @@ void platform_toggle_vsync(bool on)
         return;
     }
 
-	IMP_wglSwapIntervalEXT(on);
+	if (IMP_wglSwapIntervalEXT != 0)
+		IMP_wglSwapIntervalEXT(on);
 }
 
 void platform_setup_backbuffer(platform_window *window)
@@ -637,9 +638,9 @@ void platform_setup_backbuffer(platform_window *window)
 
 		// Load wgl specific extensions after gl context has been created.
 		if (IMP_wglSwapIntervalEXT == 0) {
-			__load_fnc_wgl_or_exit(wglSwapIntervalEXT);
-    		__load_fnc_wgl_or_exit(wglGetSwapIntervalEXT);
-    		__load_fnc_wgl_or_exit(wglGetExtensionsStringEXT);
+			__load_fnc_wgl(wglSwapIntervalEXT);
+    		__load_fnc_wgl(wglGetSwapIntervalEXT);
+    		__load_fnc_wgl(wglGetExtensionsStringEXT);
 		}
 		platform_toggle_vsync(true);
 	}
