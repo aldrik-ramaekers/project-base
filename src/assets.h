@@ -21,7 +21,7 @@
 #endif
 
 #ifndef ASSET_FONT_COUNT
-#define ASSET_FONT_COUNT 1
+#define ASSET_FONT_COUNT 5
 #endif
 
 #ifndef ASSET_QUEUE_COUNT
@@ -31,11 +31,6 @@
 #ifndef ASSET_WORKER_COUNT
 #define ASSET_WORKER_COUNT 2
 #endif
-
-#ifdef MODE_DEVELOPER
-s32 __frames_drawn_with_missing_assets = 0;
-#endif
-
 
 typedef struct t_image {
 	u8 *start_addr;
@@ -57,6 +52,7 @@ typedef struct t_image {
 #define TOTAL_GLYPHS TEXT_CHARSET_END-TEXT_CHARSET_START
 
 #define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)
+#define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
 
 typedef struct t_glyph
 {
@@ -81,6 +77,7 @@ typedef struct t_font
 	float32 scale;
 	stbtt_fontinfo info;
 	glyph glyphs[TOTAL_GLYPHS];
+	u32 path_hash; // only defined when font is loaded from path, else UNDEFINED_PATH_HASH.
 } font;
 
 typedef enum t_asset_task_type

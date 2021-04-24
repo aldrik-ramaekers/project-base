@@ -103,7 +103,8 @@ tests_linux:
 examples:
 	$(permissions) cp "examples/logo_64.png" "build/logo_64.png"
 	$(permissions) cp "examples/logo_64.bmp" "build/logo_64.bmp"
-	$(permissions) ld -r -b binary -o build/data.o examples/en.mo examples/logo_64.png examples/logo_64.bmp
+	$(permissions) cp "examples/mono.ttf" "build/mono.ttf"
+	$(permissions) ld -r -b binary -o build/data.o examples/en.mo examples/logo_64.png examples/logo_64.bmp examples/mono.ttf
 	make $(create_examples_command)
 
 examples_windows:

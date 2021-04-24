@@ -11,6 +11,9 @@ extern unsigned char _binary_examples_logo_64_bmp_end[];
 extern unsigned char _binary_examples_logo_64_png_start[];
 extern unsigned char _binary_examples_logo_64_png_end[];
 
+extern unsigned char _binary_examples_mono_ttf_start[];
+extern unsigned char _binary_examples_mono_ttf_end[];
+
 void update_render_sub(platform_window* window)
 {
      ui_begin(window);
@@ -43,6 +46,9 @@ image* img;
 image* img2;
 image* img3;
 image* img4;
+
+font* font_big;
+font* font_very_big;
 
 void update_render_main(platform_window* window) 
 {
@@ -88,6 +94,10 @@ void update_render_main(platform_window* window)
 	renderer->render_image(img2, 0, 50, 50, 50);
 	renderer->render_image(img3, 0, 100, 50, 50);
 	renderer->render_image(img3, 0, 150, 50, 50);
+
+	renderer->render_text(font_big, 120, 150, "BAZINGA!", rgb(255,100,100));
+	renderer->render_text(font_very_big, 120, 180, "BIG BAZINGA!", rgb(100,255,100));
+	
 }
 
 int main(int argc, char **argv)
@@ -104,6 +114,9 @@ int main(int argc, char **argv)
 	img2 = assets_load_image(_binary_examples_logo_64_png_start, _binary_examples_logo_64_png_end);
 	img3 = assets_load_bitmap_from_file("logo_64.bmp");
 	img4 = assets_load_image_from_file("logo_64.png");
+
+	font_big = assets_load_font(_binary_examples_mono_ttf_start, _binary_examples_mono_ttf_end, 36);
+	font_very_big = assets_load_font_from_file("mono.ttf", 48);
 
     platform_window *window = platform_open_window(localize("window_title_main"),
                 500, 500, 800, 600, 500, 500, update_render_main);

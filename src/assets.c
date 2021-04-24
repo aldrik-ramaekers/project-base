@@ -39,27 +39,7 @@ void assets_stop_if_done()
 	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
 		//global_asset_collection.done_loading_assets = true;
-		
-#ifdef MODE_TIMESTARTUP
-		abort();
-#endif
-		
-#if defined(MODE_DEBUGMEM) && !defined(MODE_TEST)
-		printf("allocated at startup: %dkb\n", __total_allocated/1000);
-		printf("reallocated at startup: %dkb\n", __total_reallocated/1000);
-#endif
-		
-#if defined(MODE_DEVELOPER) && !defined(MODE_TEST)
-		printf("frames drawn with missing assets: %d\n", __frames_drawn_with_missing_assets);
-#endif
 	}
-	
-#ifdef MODE_DEVELOPER
-	if (global_asset_collection.queue.queue.length != 0 && !global_asset_collection.done_loading_assets)
-	{
-		__frames_drawn_with_missing_assets++;
-	}
-#endif
 }
 
 bool assets_do_post_process()
@@ -257,7 +237,6 @@ void *_assets_queue_worker()
 			array_remove_at(&global_asset_collection.queue.queue, 0);
 			mutex_unlock(&asset_mutex);
 			
-			// load here
 			if (buf.type == ASSET_IMAGE)
 			{
 				bool result = assets_queue_worker_load_image(buf.image);
@@ -306,6 +285,21 @@ static image* find_image_ref(u8 *start_addr, s32 hash)
 	return 0;
 }
 
+static font* find_font_ref(u8 *start_addr, s32 hash, s16 size)
+{
+	for (int i = 0; i < global_asset_collection.fonts.length; i++)
+	{
+		font *font_at = array_at(&global_asset_collection.fonts, i);
+		
+		if ((start_addr == font_at->start_addr || hash == font_at->path_hash) && font_at->size == size && font_at->references > 0)
+		{
+			font_at->references++;
+			return font_at;
+		}
+	}
+	return 0;
+}
+
 static u32 hash_path(char* str)
 {
 	unsigned long hash = 5381;
@@ -325,32 +319,24 @@ static image empty_image()
 	return new_image;
 }
 
-font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
+static font empty_font()
 {
-	for (int i = 0; i < global_asset_collection.fonts.length; i++)
-	{
-		font *font_at = array_at(&global_asset_collection.fonts, i);
-		
-		if (start_addr == font_at->start_addr && font_at->size == size && font_at->references > 0)
-		{
-			// font is already loaded/loading
-			font_at->references++;
-			return font_at;
-		}
-	}
-	
 	font new_font;
+	new_font.size = 0;
 	new_font.loaded = false;
-	new_font.start_addr = start_addr;
-	new_font.end_addr = end_addr;
-	new_font.size = size;
+	new_font.start_addr = 0;
+	new_font.end_addr = 0;
 	new_font.references = 1;
-	
-	// NOTE(Aldrik): we should never realloc the font array because pointers will be 
-	// invalidated.
-	log_assert(global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length, "Attempted to process more fonts than specified with constant ASSET_FONT_COUNT");
-	
-	int index = array_push(&global_asset_collection.fonts, &new_font);
+	new_font.path_hash = UNDEFINED_PATH_HASH;
+	return new_font;
+}
+
+static asset_task add_font_to_queue(font font)
+{
+	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
+	log_assert(CAN_ADD_NEW_FONT(), "Attempted to process more fonts than specified with constant ASSET_IMAGE_COUNT");
+
+	int index = array_push(&global_asset_collection.fonts, &font);
 	
 	asset_task task;
 	task.type = ASSET_FONT;
@@ -359,8 +345,8 @@ font *assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 	mutex_lock(&asset_mutex);
 	array_push(&global_asset_collection.queue.queue, &task);
 	mutex_unlock(&asset_mutex);
-	
-	return task.font;
+
+	return task;
 }
 
 static asset_task add_image_to_queue(image img, bool is_bitmap)
@@ -384,10 +370,41 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 ////////////////////////////////////////////////////
 // Loading
 ////////////////////////////////////////////////////
-image *assets_load_image_from_file(char* path)
+font* assets_load_font_from_file(char* path, s16 size)
 {
 	u32 hash = hash_path(path);
-	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
+	font* ref = find_font_ref(UNDEFINED_START_ADDR, hash, size);
+	if (ref) return ref;
+
+	platform_set_active_directory(binary_path);
+	file_content content = platform_read_file_content(path, "rb");
+
+	font new_font = empty_font();
+	new_font.size = size;
+	new_font.path_hash = hash;
+	new_font.start_addr = content.content;
+	new_font.end_addr = content.content + content.content_length - 1;
+
+	return add_font_to_queue(new_font).font;
+}
+
+font* assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
+{
+	font* ref = find_font_ref(start_addr, UNDEFINED_PATH_HASH, size);
+	if (ref) return ref;
+	
+	font new_font = empty_font();
+	new_font.start_addr = start_addr;
+	new_font.end_addr = end_addr;
+	new_font.size = size;
+
+	return add_font_to_queue(new_font).font;
+}
+
+image* assets_load_image_from_file(char* path)
+{
+	u32 hash = hash_path(path);
+	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash);
 	if (ref) return ref;
 
 	platform_set_active_directory(binary_path);
@@ -401,9 +418,9 @@ image *assets_load_image_from_file(char* path)
 	return add_image_to_queue(new_image, false).image;
 }
 
-image *assets_load_image(u8 *start_addr, u8 *end_addr)
+image* assets_load_image(u8 *start_addr, u8 *end_addr)
 {
-	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
+	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH);
 	if (ref) return ref;
 	
 	image new_image = empty_image();
@@ -413,10 +430,10 @@ image *assets_load_image(u8 *start_addr, u8 *end_addr)
 	return add_image_to_queue(new_image, false).image;
 }
 
-image *assets_load_bitmap_from_file(char* path)
+image* assets_load_bitmap_from_file(char* path)
 {
 	u32 hash = hash_path(path);
-	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash); // check if image is already loaded or loading
+	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash);
 	if (ref) return ref;
 
 	platform_set_active_directory(binary_path);
@@ -430,9 +447,9 @@ image *assets_load_bitmap_from_file(char* path)
 	return add_image_to_queue(new_image, true).image;
 }
 
-image *assets_load_bitmap(u8 *start_addr, u8 *end_addr)
+image* assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 {
-	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH); // check if image is already loaded or loading
+	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH);
 	if (ref) return ref;
 
 	image new_image = empty_image();
