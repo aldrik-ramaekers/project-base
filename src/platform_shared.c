@@ -269,6 +269,8 @@ void _switch_render_method(bool use_gpu)
 
 void platform_handle_events()
 {
+	__last_stamp = platform_get_time(TIME_FULL, TIME_NS);
+
 	bool _use_gpu = settings_get_number_or_default("USE_GPU", 1);
 
 	// USE_GPU setting changed..
@@ -295,13 +297,7 @@ void platform_handle_events()
 		if (w->do_draw) {
             w->update_func(w);
 			if (i == 0) update_render_notifications();
-
 			if (current_render_driver() == DRIVER_GL) IMP_glFinish();
-			u64 current_stamp = platform_get_time(TIME_FULL, TIME_US);
-			u64 diff = current_stamp - __last_stamp;
-			float diff_ms = diff / 1000000.0f;
-			frame_delta = diff_ms;
-
 		    platform_window_swap_buffers(w);
         }
 
@@ -312,5 +308,17 @@ void platform_handle_events()
 		if (!w->is_open) {
 			platform_destroy_window(w);
 		}
+	}
+
+	u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
+	u64 diff = current_stamp - __last_stamp;
+	float diff_ms = diff / 1000000000.0f;
+	frame_delta = diff_ms;
+
+	if (diff_ms < TARGET_FRAMERATE)
+	{
+		double time_to_wait = (TARGET_FRAMERATE) - diff_ms;
+		// printf("sleeping for %f, fps: %f\n", time_to_wait, 1000.0 / (double)diff_ms);
+		thread_sleep(time_to_wait*1000);
 	}
 }

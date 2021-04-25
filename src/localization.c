@@ -9,6 +9,7 @@ void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 {
 	mo_file mo;
 	mo.translations = array_create(sizeof(mo_translation));
+	mo.translations.reserve_jump = 10;
 	
 	{
 		mo.header = *(mo_header*)start_addr;

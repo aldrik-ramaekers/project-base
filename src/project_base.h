@@ -35,14 +35,6 @@
 #define INCLUDE_PROJECT_BASE
 
 #pragma GCC push_options
-
-#if defined(MODE_DEBUG)
-#pragma GCC optimize("Og")
-#else
-#pragma GCC optimize("O3")
-#define NDEBUG
-#endif
-
 #pragma GCC diagnostic ignored "-Wunused-result"
 
 #define PROJECT_BASE_NAME "Project-base"

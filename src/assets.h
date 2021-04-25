@@ -21,7 +21,7 @@
 #endif
 
 #ifndef ASSET_FONT_COUNT
-#define ASSET_FONT_COUNT 5
+#define ASSET_FONT_COUNT 3
 #endif
 
 #ifndef ASSET_QUEUE_COUNT
@@ -29,7 +29,7 @@
 #endif
 
 #ifndef ASSET_WORKER_COUNT
-#define ASSET_WORKER_COUNT 2
+#define ASSET_WORKER_COUNT 1
 #endif
 
 typedef struct t_image {
@@ -48,7 +48,7 @@ typedef struct t_image {
 #define UNDEFINED_PATH_HASH -1
 #define UNDEFINED_START_ADDR (void*)(1)
 #define TEXT_CHARSET_START 0
-#define TEXT_CHARSET_END 2000
+#define TEXT_CHARSET_END 255
 #define TOTAL_GLYPHS TEXT_CHARSET_END-TEXT_CHARSET_START
 
 #define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)

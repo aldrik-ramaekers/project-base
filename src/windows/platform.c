@@ -126,10 +126,7 @@ inline void platform_show_alert(char *title, char *message)
 inline void platform_destroy()
 {
 	_platform_destroy_shared();
-	
-#if defined(MODE_DEVELOPER)
 	memory_print_leaks();
-#endif
 }
 
 inline void platform_set_cursor(platform_window *window, cursor_type type)

@@ -621,10 +621,7 @@ inline void platform_init(int argc, char **argv, char* config_path)
 inline void platform_destroy()
 {
 	_platform_destroy_shared();
-	
-#if defined(MODE_DEVELOPER)
 	memory_print_leaks();
-#endif
 }
 
 inline void platform_window_make_current(platform_window *window)

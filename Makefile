@@ -67,7 +67,11 @@ build:
 	$(permissions) mkdir -p "$(include_dir)"
 
 	$(permissions) ld -r -b binary -o build/data.o src/resources/mono.ttf
-	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file).o $(libs)
+
+	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file)-debug.o $(libs)
+	$(permissions) gcc $(release_flags) $(main_file) -o build/$(output_file).o $(libs)
+
+	$(permissions) ar rcs build/$(output_file)-debug.a build/$(output_file)-debug.o build/data.o
 	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
 	make $(install_lib_command)
@@ -75,10 +79,14 @@ build:
 install_windows:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file)-debug.a" "$(lib_dir)-debug.a" 2>/dev/null || :
+
 	# github action shite
 	$(permissions) mkdir -p "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp -a "src/." "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/include/projectbase" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file).a" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file)-debug.a" "C:/ProgramData/Chocolatey/lib/mingw/tools/install/mingw64/x86_64-w64-mingw32/lib/$(output_file)-debug.a" 2>/dev/null || :
+
 install_linux:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
@@ -108,10 +116,10 @@ examples:
 	make $(create_examples_command)
 
 examples_windows:
-	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window.exe -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window.exe -lprojectbase-debug $(libs)
 
 examples_linux:
-	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window -lprojectbase $(libs)
+	$(permissions) gcc -m64 -g -DMODE_DEBUG examples/example_window.c build/data.o -o build/example_window -lprojectbase-debug $(libs)
 	$(permissions) chmod +x build/example_window
 
 docs:

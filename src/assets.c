@@ -223,6 +223,8 @@ void *_assets_queue_worker()
 {
 	while (global_asset_collection.valid && !global_asset_collection.done_loading_assets)
 	{
+		thread_sleep(1000);
+
 		if (mutex_trylock(&asset_mutex))
 		{
 			int queue_length = global_asset_collection.queue.queue.length;
@@ -261,8 +263,6 @@ void *_assets_queue_worker()
 			array_push(&global_asset_collection.post_process_queue, &buf);
 			mutex_unlock(&asset_mutex);
 		}
-		
-		thread_sleep(1000);
 	}
 	
 	thread_exit();
@@ -334,7 +334,7 @@ static font empty_font()
 static asset_task add_font_to_queue(font font)
 {
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
-	log_assert(CAN_ADD_NEW_FONT(), "Attempted to process more fonts than specified with constant ASSET_IMAGE_COUNT");
+	log_assert(CAN_ADD_NEW_FONT(), "Attempted to process more fonts than specified with constant ASSET_FONT_COUNT");
 
 	int index = array_push(&global_asset_collection.fonts, &font);
 	
