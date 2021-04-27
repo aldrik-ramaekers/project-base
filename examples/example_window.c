@@ -8,7 +8,7 @@ void resize_ui2(platform_window* window, u32 change_x, u32 change_y)
 {
 	if (ui_main) {
 		ui_el_resize((ui_el_base*)ui_main, change_x, change_y);
-		ui_print_tree((ui_el_base*)ui_main, 0);
+		// ui_print_tree((ui_el_base*)ui_main, 0);
 	}
 }
 
@@ -25,20 +25,18 @@ void update_render_ui2(platform_window* window)
 		ui_el_scrollable* container3 = ui_create_scrollable(el_size(1), (ui_el_base*)layout1);
 		ui_el_container* container4 = ui_create_container(el_size(1), (ui_el_base*)layout1);
 
+		ui_el_container* container9 = ui_create_container(el_size_h(1, 200,200), (ui_el_base*)container3);
+		ui_el_container* container10 = ui_create_container(el_size_h(1, 200,200), (ui_el_base*)container3);
+		ui_el_container* container11 = ui_create_container(el_size_h(1, 200,200), (ui_el_base*)container3);
+
 		ui_el_container* container6 = ui_create_container(el_size(1), (ui_el_base*)container4);
 		ui_el_container* container7 = ui_create_container(el_size(3), (ui_el_base*)container4);
 		ui_el_container* container8 = ui_create_container(el_size(1), (ui_el_base*)container4);
 
-		//ui_el_container* container3 = ui_create_container(el_size(1), (ui_el_base*)container2);
-		//ui_el_layout* container4 = ui_create_layout(el_size(2), (ui_el_base*)container2, LAYOUT_HORIZONTAL);
-		//ui_el_container* container5 = ui_create_container(el_size(1), (ui_el_base*)container2);
-		
-		//ui_el_container* container6 = ui_create_container(el_size(1), (ui_el_base*)container4);
-		//ui_el_container* container7 = ui_create_container(el_size(1), (ui_el_base*)container4);
-		//ui_el_container* container8 = ui_create_container(el_size(1), (ui_el_base*)container4);
+		resize_ui2(window, 0,0);
 	}
 
-	ui_el_render((ui_el_base*)ui_main);
+	ui_el_render((ui_el_base*)ui_main, window);
 }
 
 int main(int argc, char **argv)

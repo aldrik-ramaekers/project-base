@@ -78,7 +78,7 @@ ui_el_layout* ui_create_layout(el_size size_ref, ui_el_base* parent, ui_directio
 ui_el_container* ui_create_container(el_size size_ref, ui_el_base* parent);
 ui_el_scrollable* ui_create_scrollable(el_size size_ref, ui_el_base* parent);
 
-void ui_el_render(ui_el_base* el);
+void ui_el_render(ui_el_base* el, platform_window* window);
 void ui_el_resize(ui_el_base* el, u32 change_x, u32 change_y);
 void ui_print_tree(ui_el_base* el, s32 indent);
 

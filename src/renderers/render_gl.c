@@ -637,7 +637,8 @@ static void gl_render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u16
 static void gl_render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 {
     IMP_glEnable(GL_SCISSOR_TEST);
-    IMP_glScissor(x - 1, window->height - h - y - 1, w + 1, h + 1);
+	if (window) IMP_glScissor(x - 1, window->height - h - y - 1, w + 1, h + 1);
+	else IMP_glScissor(x - 1, y - 1 + h, w + 1, h + 1);
 }
 
 static vec4 gl_render_get_scissor(platform_window *window)

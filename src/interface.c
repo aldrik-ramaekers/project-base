@@ -215,15 +215,33 @@ void ui_el_resize(ui_el_base* el, u32 change_x, u32 change_y)
 	_ui_el_resize_sub(el, 0, 0, change_x, change_y);	
 }
 
-void ui_el_render(ui_el_base* el)
+static vec4 _get_bounds_for_el(ui_el_base* el)
+{
+	vec4 vec = el->area;
+
+	ui_el_base* p = el->parent;
+	while(p)
+	{
+		if (vec.x < p->area.x) vec.x = p->area.x;
+		if (vec.y < p->area.y) vec.y = p->area.y;
+		if (vec.x+vec.w > p->area.x+p->area.w) vec.w = (vec.x+vec.w) - (vec.x + vec.w - p->area.x + p->area.w);
+		if (vec.y+vec.h > p->area.y+p->area.h) vec.h = (vec.y+vec.h) - (vec.y + vec.h - p->area.y + p->area.h);
+		p = p->parent;
+	}
+	return vec;
+}
+
+void ui_el_render(ui_el_base* el, platform_window* window)
 {
 	color c = rgb(255, 255, 255);
 	if ((void*)el->type == (void*)get_type(ui_el_container)) c = rgb(200,0,0);
 	if ((void*)el->type == (void*)get_type(ui_el_layout)) c = rgb(0,200,0);
 	if ((void*)el->type == (void*)get_type(ui_el_scrollable)) c = rgb(0,0,200);
 
-	renderer->render_set_scissor(el->area.x, el->area.y, el->area.w, el->area.h);
+	vec4 v = _get_bounds_for_el(el);
+	renderer->render_set_scissor(window, v.x,v.y,v.w,v.h);
 	renderer->render_rectangle_outline(el->area.x, el->area.y, el->area.w, el->area.h, 1, c);
+	renderer->render_reset_scissor();
 
 #if 1
 	char size[20];
@@ -234,7 +252,7 @@ void ui_el_render(ui_el_base* el)
 	for (s32 i = 0; i < el->children.length; i++)
 	{
 		ui_el_base* child = array_at(&el->children, i);
-		ui_el_render(child);
+		ui_el_render(child, window);
 	}
 }
 
