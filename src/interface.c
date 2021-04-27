@@ -22,8 +22,8 @@ static ui_el_base _ui_create_base()
 	base.parent = 0;
 	base.dock = 0;
 	base.size = 0;
-	base.dir = DIRECTION_HORIZONTAL;
-	base.flex = FLEX_GROW;
+	base.dir = DIRECTION_VERTICAL;
+	base.size_ref = el_size(1);
 	base.children = array_create(sizeof(ui_el_base));
 	array_reserve(&base.children, 10);
 	base.area = (vec4){0,0,0,0};
@@ -31,12 +31,12 @@ static ui_el_base _ui_create_base()
 	return base;
 }
 
-#define get_type(_type) _hash_type_name(#_type)
+#define get_type(_type) #_type
 
 #define create_base_for(_cont, _type)\
 	ui_el_base base = _ui_create_base();\
 	_type *container_ptr = (_type*)(&base);\
-	container_ptr->type = _hash_type_name(#_type);\
+	container_ptr->type = #_type;\
 	container_ptr->size = sizeof(_type);\
 	_cont = *container_ptr;
 
@@ -54,104 +54,159 @@ ui_el_container* ui_create(platform_window* window)
 	return container;
 }
 
-ui_el_layout* ui_create_layout(u8 flex, ui_el_base* parent, ui_direction dir)
+ui_el_layout* ui_create_layout(el_size size_ref, ui_el_base* parent, ui_direction dir)
 {
 	ui_el_layout container;
 	create_base_for(container, ui_el_layout);
-	container.flex = flex;
+	container.size_ref = size_ref;
 	container.dir = dir;
 	container.parent = parent;
 	int index = array_push_size(&parent->children, &container, container.size);
 	return (ui_el_layout*)array_at(&parent->children, index);
 }
 
-ui_el_container* ui_create_container(u8 flex, ui_el_base* parent)
+ui_el_scrollable* ui_create_scrollable(el_size size_ref, ui_el_base* parent)
+{
+	ui_el_scrollable container;
+	create_base_for(container, ui_el_scrollable);
+	container.size_ref = size_ref;
+	container.dir = DIRECTION_VERTICAL;
+	container.parent = parent;
+	int index = array_push_size(&parent->children, &container, container.size);
+	return (ui_el_scrollable*)array_at(&parent->children, index);
+}
+
+ui_el_container* ui_create_container(el_size size_ref, ui_el_base* parent)
 {
 	ui_el_container container;
 	create_base_for(container, ui_el_container);
-	container.flex = flex;
-	container.dir = parent->dir;
+	container.size_ref = size_ref;
+	container.dir = DIRECTION_VERTICAL;
 	container.parent = parent;
 	int index = array_push_size(&parent->children, &container, container.size);
 	return (ui_el_container*)array_at(&parent->children, index);
 }
 
-static void _ui_el_resize_sub(ui_el_base* el, u32 x, u32 y, u32 w, u32 h)
+static bool _is_element_size_independent(ui_el_base* el)
 {
-	u32 change_x = 0;
-	u32 change_y = 0;
-	u32 change_w = 0;
-	u32 change_h = 0;
+	return  el->size_ref.min_w || el->size_ref.min_h ||  el->size_ref.max_w ||  el->size_ref.max_h;
+}
 
-	if (w > 0) {
-		if (el->dock & DOCK_RIGHT && el->dock & DOCK_LEFT)
-		{
-			change_w = w;
-			el->area.w += w;
-		}
-		else if (el->dock & DOCK_RIGHT)
-		{
-			change_x = w;
-			el->area.x += w;
-		}
+static s32 _calculate_position_for_el(ui_el_base* el, int current_offset)
+{
+	if (el->parent->dir == DIRECTION_HORIZONTAL) {
+		el->area.x = el->parent->area.x + current_offset;
+		el->area.y = el->parent->area.y;
+		current_offset += el->area.w;
 	}
-	if (h > 0) {
-		if (el->dock & DOCK_TOP && el->dock & DOCK_BOTTOM)
-		{
-			change_h = h;
-			el->area.h += h;
-		}
-		else if (el->dock & DOCK_RIGHT)
-		{
-			change_y = h;
-			el->area.y += h;
-		}
+	else {
+		el->area.y = el->parent->area.y + current_offset;
+		el->area.x = el->parent->area.x;
+		current_offset += el->area.h;
 	}
-	
-	if (el->parent)
-	{
-		s32 total_flex = 0;
-		int my_index = 0;
 
-		for (s32 i = 0; i < el->parent->children.length; i++)
-		{
-			ui_el_base* child = array_at(&el->parent->children, i);
-			total_flex += child->flex;
-			if (child == el) my_index = i;
-		}
+	return current_offset;
+}
 
-		if (el->parent->dir == DIRECTION_HORIZONTAL) {
-			s32 width_sep = el->parent->area.w / total_flex;
-			s32 new_width = width_sep * el->flex;
-			el->area.w = new_width;
-			el->area.h = el->parent->area.h;
-
-			el->area.x = el->parent->area.x;
-			if (my_index > 0) {
-				ui_el_base* prev_sib = (ui_el_base*)array_at(&el->parent->children, my_index-1);
-				el->area.x = prev_sib->area.x + prev_sib->area.w;
-			}
-			el->area.y = el->parent->area.y;
-		}
-		else {
-			s32 height_sep = el->parent->area.h / total_flex;
-			s32 new_height = height_sep * el->flex;
-			el->area.h = new_height;
-			el->area.w = el->parent->area.w;
-
-			el->area.y = el->parent->area.y;
-			if (my_index > 0) {
-				ui_el_base* prev_sib = (ui_el_base*)array_at(&el->parent->children, my_index-1);
-				el->area.y = prev_sib->area.y + prev_sib->area.h;
-			}
-			el->area.x = el->parent->area.x;
-		}
+static void _calculate_size_for_dependent_el(ui_el_base* el, float flex_1)
+{
+	if (el->parent->dir == DIRECTION_HORIZONTAL) {
+		float new_s = el->size_ref.flex * flex_1;
+		el->area.h = el->parent->area.h;
+		el->area.w  = round(new_s);
 	}
+	else {
+		float new_s = el->size_ref.flex * flex_1;
+		el->area.w = el->parent->area.w;
+		el->area.h  = round(new_s);
+	}
+}
+
+static void _calculate_size_for_independent_el(ui_el_base* el, float flex_1)
+{
+	if (el->parent->dir == DIRECTION_HORIZONTAL) {
+		float new_s = el->size_ref.flex * flex_1;
+		el->area.h = el->parent->area.h;
+		el->area.w  = round(new_s);
+	}
+	else {
+		float new_s = el->size_ref.flex * flex_1;
+		el->area.w = el->parent->area.w;
+		el->area.h  = round(new_s);
+	}
+
+	if (el->area.w > el->size_ref.max_w && el->size_ref.max_w) el->area.w = el->size_ref.max_w;
+	if (el->area.h > el->size_ref.max_h && el->size_ref.max_h) el->area.h = el->size_ref.max_h;
+	if (el->area.w < el->size_ref.min_w && el->size_ref.min_w) el->area.w = el->size_ref.min_w;
+	if (el->area.h < el->size_ref.min_h && el->size_ref.min_h) el->area.h = el->size_ref.min_h;
+}
+
+static void _handle_resizing(ui_el_base* el)
+{
+	float total_flex = 0;
+	float flex_1 = 0.0f;
+	int area_size = (el->dir == DIRECTION_HORIZONTAL) ? el->area.w : el->area.h;
 
 	for (s32 i = 0; i < el->children.length; i++)
 	{
 		ui_el_base* child = array_at(&el->children, i);
-		_ui_el_resize_sub(child, change_x, change_y, change_w, change_h);
+		total_flex += child->size_ref.flex;
+	}
+
+	flex_1 = area_size / total_flex;
+	// 1. calculate independent children
+	for (s32 i = 0; i < el->children.length; i++)
+	{
+		ui_el_base* child = array_at(&el->children, i);
+		if (_is_element_size_independent(child)) {
+			_calculate_size_for_independent_el(child, flex_1);
+
+			// Remove area that has been calculated from available area.
+			total_flex -= child->size_ref.flex;
+			if (el->dir == DIRECTION_HORIZONTAL) {
+				area_size -= child->area.w;
+			}
+			else {
+				area_size -= child->area.h;
+			}
+		}
+	}
+
+	flex_1 = area_size / total_flex;
+	// 2. calculate independent children
+	for (s32 i = 0; i < el->children.length; i++)
+	{
+		ui_el_base* child = array_at(&el->children, i);
+		if (!_is_element_size_independent(child))
+			_calculate_size_for_dependent_el(child, flex_1);
+	}
+
+	// 3. calculate position
+	s32 current_offset = 0;
+	for (s32 i = 0; i < el->children.length; i++)
+	{
+		ui_el_base* child = array_at(&el->children, i);
+		current_offset = _calculate_position_for_el(child, current_offset);
+	}
+}
+
+static void _ui_el_resize_sub(ui_el_base* el, u32 x, u32 y, u32 w, u32 h)
+{
+	if (el->parent == 0) {
+		if (w > 0) {
+			el->area.w += w;
+		}
+		if (h > 0) {
+			el->area.h += h;
+		}
+	}
+	
+	_handle_resizing(el);
+
+	for (s32 i = 0; i < el->children.length; i++)
+	{
+		ui_el_base* child = array_at(&el->children, i);
+		_ui_el_resize_sub(child, 0,0,0,0);
 	}
 }
 
@@ -163,10 +218,12 @@ void ui_el_resize(ui_el_base* el, u32 change_x, u32 change_y)
 void ui_el_render(ui_el_base* el)
 {
 	color c = rgb(255, 255, 255);
-	if (el->type == get_type(ui_el_container)) c = rgb(200,0,0);
-	if (el->type == get_type(ui_el_layout)) c = rgb(0,200,0);
+	if ((void*)el->type == (void*)get_type(ui_el_container)) c = rgb(200,0,0);
+	if ((void*)el->type == (void*)get_type(ui_el_layout)) c = rgb(0,200,0);
+	if ((void*)el->type == (void*)get_type(ui_el_scrollable)) c = rgb(0,0,200);
 
-	renderer->render_rectangle(el->area.x, el->area.y, el->area.w, el->area.h, c);
+	renderer->render_set_scissor(el->area.x, el->area.y, el->area.w, el->area.h);
+	renderer->render_rectangle_outline(el->area.x, el->area.y, el->area.w, el->area.h, 1, c);
 
 #if 1
 	char size[20];
@@ -184,12 +241,11 @@ void ui_el_render(ui_el_base* el)
 void ui_print_tree(ui_el_base* el, s32 indent)
 {
 	for (s32 i = 0; i < indent; i++) {
-		printf(" ");
+		printf("  ");
 	}
-	printf("%d\n", el->type);
+	printf("%s {x: %d, y: %d, w: %d, h: %d}\n", el->type, el->area.x, el->area.y, el->area.w, el->area.h);
 	for (s32 i = 0; i < el->children.length; i++)
 	{
-		indent++;
 		ui_el_base* child = array_at(&el->children, i);
 		ui_print_tree(child, indent+1);
 	}
