@@ -295,6 +295,12 @@ void platform_handle_events()
 		_platform_handle_events_for_window(w);
 
 		if (w->do_draw) {
+			platform_window_make_current(w);
+			platform_set_cursor(w, CURSOR_DEFAULT);
+			renderer->render_clear(w);
+			_camera_apply_transformations(w, &_global_camera);
+			renderer->render_reset_scissor();
+
             w->update_func(w);
 			if (i == 0) update_render_notifications();
 			if (current_render_driver() == DRIVER_GL) IMP_glFinish();

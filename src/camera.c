@@ -20,3 +20,8 @@ void _camera_apply_transformations(platform_window *window, camera *camera)
     
 	IMP_glMatrixMode(GL_MODELVIEW);
 }
+
+vec4 camera_get_target_rectangle(platform_window *window, camera *camera)
+{
+	return (vec4){camera->x, camera->y, window->width, window->height};
+}

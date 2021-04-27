@@ -23,6 +23,7 @@ struct t_backbuffer
 struct t_platform_window
 {
 	void (*update_func)(platform_window*);
+	void (*resize_func)(platform_window*,u32,u32);
 	HWND window_handle;
 	HDC hdc;
 	HGLRC gl_context;
@@ -349,6 +350,11 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 		u32 width = lparam&0xFFFF;
 		u32 height = lparam>>16;
 		
+		if (current_window_to_handle->resize_func) {
+			current_window_to_handle->resize_func(current_window_to_handle, 
+				width-current_window_to_handle->width, height-current_window_to_handle->height);
+		}
+
 		current_window_to_handle->width = width;
 		current_window_to_handle->height = height;
 		
@@ -679,7 +685,8 @@ void platform_setup_renderer()
 	}
 }
 
-platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window))
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, 
+	void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32, u32))
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) width = min_h;
@@ -705,6 +712,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	if (!window) return window;
 	window->has_focus = true;
 	window->update_func = update_func;
+	window->resize_func = resize_func;
 	window->window_handle = 0;
 	window->hdc = 0;
 	window->width = width;

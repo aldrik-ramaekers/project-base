@@ -13,6 +13,16 @@ render_driver_id current_render_driver()
 
 void set_render_driver(render_driver_id driver)
 {
-    if (driver == DRIVER_GL) renderer = &render_gl_driver;
-    if (driver == DRIVER_CPU) renderer = &render_cpu_driver;
+	switch (driver)
+	{
+	case DRIVER_GL:
+		renderer = &render_gl_driver;
+		break;
+	case DRIVER_CPU:
+		renderer = &render_cpu_driver;
+		break;
+	default:
+		log_assert(0, "Invalid render driver.");
+		break;
+	}
 }
