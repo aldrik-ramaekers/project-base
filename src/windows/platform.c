@@ -29,6 +29,9 @@ struct t_platform_window
 	HGLRC gl_context;
 	WNDCLASS window_class;
 	s32 flags;
+	s32 style;
+	s32 ex_style;
+	char* title;
 	
     s32 min_width;
 	s32 min_height;
@@ -585,7 +588,7 @@ void platform_hide_window(platform_window *window)
 	ShowWindow(window->window_handle, SW_HIDE);
 }
 
-bool WGLisExtensionSupported(const char *extension)
+bool _wgl_is_extension_supported(const char *extension)
 {
     const size_t extlen = strlen(extension);
     const char *supported = NULL;
@@ -627,7 +630,7 @@ bool WGLisExtensionSupported(const char *extension)
 int _platform_init_multisample_format(HWND hWnd)
 {
 	// See If The String Exists In WGL!
-    if (!WGLisExtensionSupported("WGL_ARB_multisample"))
+    if (!_wgl_is_extension_supported("WGL_ARB_multisample"))
     {
         printf("no multisampling supported\n");
 		return 0;
@@ -749,6 +752,7 @@ void platform_setup_backbuffer(platform_window *window)
 		platform_toggle_vsync(true);
 
 #if 1
+		// Multisampling madness
 		int format = _platform_init_multisample_format(window->window_handle);
 		if (format) {
 			log_info("Multisampling enabled");
@@ -758,10 +762,10 @@ void platform_setup_backbuffer(platform_window *window)
 			ReleaseDC(window->window_handle, window->hdc);
 			DestroyWindow(window->window_handle);
 
-			window->window_handle = CreateWindowEx(window->window_class.style,
+			window->window_handle = CreateWindowEx(window->ex_style,
 											window->window_class.lpszClassName,
-											"test",
-											WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX|WS_SIZEBOX,
+											window->title,
+											window->style,
 											CW_USEDEFAULT,
 											CW_USEDEFAULT,
 											window->width,
@@ -875,6 +879,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->do_draw = true;
 	window->gl_context = 0;
 	window->icon_loaded = false;
+	window->title = name;
 
 	window->keyboard = keyboard_input_create();
 	window->mouse = mouse_input_create();
@@ -917,7 +922,9 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	{
 		ex_style |= WS_EX_TOOLWINDOW;
 	}
-		
+	
+	window->style = style;
+	window->ex_style = ex_style;
 	window->window_handle = CreateWindowEx(ex_style,
 											window->window_class.lpszClassName,
 											name,
