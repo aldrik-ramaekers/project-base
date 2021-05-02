@@ -19,6 +19,7 @@
 
 //	:/Title	TODO's
 //	:/Text	Project-base
+//			- return error when asset file is not found
 //			- append .config/ before config on linux
 //			- make sure a valid render config is found on linux
 //			- replace all int with s32

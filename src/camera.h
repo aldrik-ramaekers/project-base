@@ -15,6 +15,6 @@ typedef struct t_camera
 } camera;
 
 void _camera_apply_transformations(platform_window *window, camera *camera);
-vec4 camera_get_target_rectangle(platform_window *window, camera *camera);
+vec4 camera_get_target_rectangle(platform_window *window);
 
 #endif

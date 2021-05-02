@@ -10,9 +10,13 @@ __def_proc( WINBOOL, wglMakeCurrent, (HDC,HGLRC));
 __def_proc( WINBOOL, wglDeleteContext, (HGLRC));
 
 __def_proc( PROC, wglGetProcAddress, (LPCSTR));
+__def_proc( HDC , wglGetCurrentDC, (void));
+__def_proc( GLubyte*, glGetString, (GLenum));
+
 __def_proc( BOOL, wglSwapIntervalEXT, (int));
 __def_proc( int, wglGetSwapIntervalEXT, (void));
 __def_proc( const char *, wglGetExtensionsStringEXT, (void));
+__def_proc( HGLRC, wglCreateContextAttribsARB, (HDC,HGLRC,const int*));
 
 __def_proc( void, glDepthMask, (GLboolean));
 __def_proc( void, glColorMask, (GLboolean,GLboolean,GLboolean,GLboolean));
@@ -73,6 +77,9 @@ void _lib_loader_init()
     __load_fnc_or_exit(wglMakeCurrent, libOpengl32);
     __load_fnc_or_exit(wglDeleteContext, libOpengl32);
     __load_fnc_or_exit(wglGetProcAddress, libOpengl32);
+	__load_fnc_or_exit(wglGetCurrentDC, libOpengl32);
+	__load_fnc_or_exit(glGetString, libOpengl32);
+
     __load_fnc_or_exit(glDepthMask, libOpengl32);
     __load_fnc_or_exit(glColorMask, libOpengl32);
     __load_fnc_or_exit(glDepthFunc, libOpengl32);

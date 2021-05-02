@@ -49,7 +49,7 @@ ui_el_container* ui_create(platform_window* window)
 	container->size = sizeof(ui_el_container);
 
 	container->dock = DOCK_ALL;
-	container->area = camera_get_target_rectangle(window, &_global_camera);
+	container->area = camera_get_target_rectangle(window);
 
 	return container;
 }

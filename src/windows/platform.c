@@ -127,7 +127,7 @@ inline void platform_show_alert(char *title, char *message)
 inline void platform_destroy()
 {
 	_platform_destroy_shared();
-	memory_print_leaks();
+	// memory_print_leaks();
 }
 
 inline void platform_set_cursor(platform_window *window, cursor_type type)
@@ -585,14 +585,112 @@ void platform_hide_window(platform_window *window)
 	ShowWindow(window->window_handle, SW_HIDE);
 }
 
+bool WGLisExtensionSupported(const char *extension)
+{
+    const size_t extlen = strlen(extension);
+    const char *supported = NULL;
+ 
+    // Try To Use wglGetExtensionStringARB On Current DC, If Possible
+    PROC wglGetExtString = IMP_wglGetProcAddress("wglGetExtensionsStringARB");
+ 
+    if (wglGetExtString)
+        supported = ((char*(__stdcall*)(HDC))wglGetExtString)(IMP_wglGetCurrentDC());
+ 
+    // If That Failed, Try Standard Opengl Extensions String
+    if (supported == NULL)
+        supported = (char*)IMP_glGetString(GL_EXTENSIONS);
+ 
+    // If That Failed Too, Must Be No Extensions Supported
+    if (supported == NULL)
+        return false;
+ 
+    // Begin Examination At Start Of String, Increment By 1 On False Match
+    for (const char* p = supported; ; p++)
+    {
+        // Advance p Up To The Next Possible Match
+        p = strstr(p, extension);
+ 
+        if (p == NULL)
+            return false;                       // No Match
+ 
+        // Make Sure That Match Is At The Start Of The String Or That
+        // The Previous Char Is A Space, Or Else We Could Accidentally
+        // Match "wglFunkywglExtension" With "wglExtension"
+ 
+        // Also, Make Sure That The Following Character Is Space Or NULL
+        // Or Else "wglExtensionTwo" Might Match "wglExtension"
+        if ((p==supported || p[-1]==' ') && (p[extlen]=='\0' || p[extlen]==' '))
+            return true;                        // Match
+    }
+}
+
+int _platform_init_multisample_format(HWND hWnd)
+{
+	// See If The String Exists In WGL!
+    if (!WGLisExtensionSupported("WGL_ARB_multisample"))
+    {
+        printf("no multisampling supported\n");
+		return 0;
+    }
+
+	PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB =
+    	(PFNWGLCHOOSEPIXELFORMATARBPROC)IMP_wglGetProcAddress("wglChoosePixelFormatARB");
+	
+	if (!wglChoosePixelFormatARB)
+	{
+		return 0;
+	}
+
+	HDC hDC = GetDC(hWnd);
+	int pixelFormat;
+    bool valid;
+    UINT numFormats;
+    float fAttributes[] = {0,0};
+
+    // These Attributes Are The Bits We Want To Test For In Our Sample
+    // Everything Is Pretty Standard, The Only One We Want To
+    // Really Focus On Is The SAMPLE BUFFERS ARB And WGL SAMPLES
+    // These Two Are Going To Do The Main Testing For Whether Or Not
+    // We Support Multisampling On This Hardware
+    int iAttributes[] = { WGL_DRAW_TO_WINDOW_ARB,GL_TRUE,
+        WGL_SUPPORT_OPENGL_ARB,GL_TRUE,
+        WGL_ACCELERATION_ARB,WGL_FULL_ACCELERATION_ARB,
+        WGL_COLOR_BITS_ARB,24,
+        WGL_ALPHA_BITS_ARB,8,
+        WGL_DEPTH_BITS_ARB,24,
+        WGL_STENCIL_BITS_ARB,8,
+        WGL_DOUBLE_BUFFER_ARB,GL_TRUE,
+        WGL_SAMPLE_BUFFERS_ARB,GL_TRUE,
+        WGL_SAMPLES_ARB, 16 ,                        // Check For 16x Multisampling
+        0,0};
+    // First We Check To See If We Can Get A Pixel Format For 4 Samples
+    valid = wglChoosePixelFormatARB(hDC,iAttributes,fAttributes,1,&pixelFormat,&numFormats);
+  
+    // if We Returned True, And Our Format Count Is Greater Than 1
+    if (valid && numFormats >= 1)
+    {
+        return pixelFormat;
+    }
+    // Our Pixel Format With 4 Samples Failed, Test For 2 Samples
+    iAttributes[19] = 2;
+    valid = wglChoosePixelFormatARB(hDC,iAttributes,fAttributes,1,&pixelFormat,&numFormats);
+    if (valid && numFormats >= 1)
+    {
+        return pixelFormat;
+    }
+	return 0;
+}
+
 void platform_toggle_vsync(bool on)
 {
 	if (IMP_wglGetExtensionsStringEXT == 0) return;
 	if (strstr(IMP_wglGetExtensionsStringEXT(), "WGL_EXT_swap_control") == NULL)
 		return;
 
-	if (IMP_wglSwapIntervalEXT != 0)
+	if (IMP_wglSwapIntervalEXT != 0) {
 		IMP_wglSwapIntervalEXT(on);
+		log_info("Vsync enabled");
+	}
 }
 
 void platform_setup_backbuffer(platform_window *window)
@@ -605,18 +703,22 @@ void platform_setup_backbuffer(platform_window *window)
 		PIXELFORMATDESCRIPTOR actual_format;
 		// old pixel format selection
 		{
-			PIXELFORMATDESCRIPTOR format;
-			memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
-			format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-			format.nVersion = 1;
-			format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
-			format.cColorBits = 24;
-			format.cAlphaBits = 8;
-			format.cDepthBits = 16;
-			format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
-			s32 suggested_format_index = IMP_ChoosePixelFormat(window->hdc, &format); // SLOW AF??
-			// https://people.freedesktop.org/~marcheu/extensions/ARB/multisample.html
-			IMP_DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
+			s32 suggested_format_index = 0;
+			if (suggested_format_index == 0) {
+				PIXELFORMATDESCRIPTOR format;
+				memset(&format, 0, sizeof(PIXELFORMATDESCRIPTOR));
+				format.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+				format.nVersion = 1;
+				format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
+				format.cColorBits = 24;
+				format.cAlphaBits = 8;
+				format.cDepthBits = 16;
+				format.iLayerType = PFD_MAIN_PLANE; // PFD_TYPE_RGBA
+				suggested_format_index = IMP_ChoosePixelFormat(window->hdc, &format); // SLOW AF??
+				// https://people.freedesktop.org/~marcheu/extensions/ARB/multisample.html
+				IMP_DescribePixelFormat(window->hdc, suggested_format_index, sizeof(actual_format), &actual_format);
+			}
+
 			IMP_SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
 		}
 		
@@ -642,8 +744,54 @@ void platform_setup_backbuffer(platform_window *window)
 			__load_fnc_wgl(wglSwapIntervalEXT);
 			__load_fnc_wgl(wglGetSwapIntervalEXT);
 			__load_fnc_wgl(wglGetExtensionsStringEXT);
+			__load_fnc_wgl(wglCreateContextAttribsARB);
 		}
 		platform_toggle_vsync(true);
+
+#if 1
+		int format = _platform_init_multisample_format(window->window_handle);
+		if (format) {
+			log_info("Multisampling enabled");
+
+			//IMP_wglMakeCurrent(NULL, NULL);
+			//IMP_wglDeleteContext(window->gl_context);
+			ReleaseDC(window->window_handle, window->hdc);
+			DestroyWindow(window->window_handle);
+
+			window->window_handle = CreateWindowEx(window->window_class.style,
+											window->window_class.lpszClassName,
+											"test",
+											WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX|WS_SIZEBOX,
+											CW_USEDEFAULT,
+											CW_USEDEFAULT,
+											window->width,
+											window->height,
+											0,
+											0,
+											window->window_class.hInstance,
+											0);
+			window->hdc = GetDC(window->window_handle);
+
+			PIXELFORMATDESCRIPTOR PFD;
+			IMP_DescribePixelFormat(window->hdc, format, sizeof(PFD), &PFD);
+			IMP_SetPixelFormat(window->hdc, format, &PFD);
+
+			const int major_min = 3, minor_min = 0;
+			int  contextAttribs[] = {
+				WGL_CONTEXT_MAJOR_VERSION_ARB, major_min,
+				WGL_CONTEXT_MINOR_VERSION_ARB, minor_min,
+				WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+				0
+			};
+			
+			window->gl_context = IMP_wglCreateContextAttribsARB(window->hdc, 0, contextAttribs);
+			if (window->gl_context == NULL) {
+				log_info("wglCreateContextAttribsARB() failed.");
+				return;
+			}
+			IMP_wglMakeCurrent(window->hdc, window->gl_context);
+		}
+#endif
 	}
 	else
 	{

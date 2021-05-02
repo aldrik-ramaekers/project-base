@@ -37,6 +37,8 @@ void update_render_ui2(platform_window* window)
 	}
 
 	ui_el_render((ui_el_base*)ui_main, window);
+
+	//renderer->render_rectangle(0,0,500,500, rgb(255,0,0));
 }
 
 int main(int argc, char **argv)

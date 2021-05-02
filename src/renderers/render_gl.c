@@ -9,7 +9,7 @@ static vec4 current_scissor;
 
 static void gl_render_clear(platform_window *window)
 {
-    IMP_glClearColor(255 / 255.0, 255 / 255.0, 255 / 255.0, 1.0);
+    IMP_glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     IMP_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

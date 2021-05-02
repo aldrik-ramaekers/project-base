@@ -21,7 +21,25 @@ void _camera_apply_transformations(platform_window *window, camera *camera)
 	IMP_glMatrixMode(GL_MODELVIEW);
 }
 
-vec4 camera_get_target_rectangle(platform_window *window, camera *camera)
+vec4 camera_get_target_rectangle(platform_window *window)
 {
-	return (vec4){camera->x, camera->y, window->width, window->height};
+	int w = window->width;
+	int h = window->height;
+
+	double targetRatio = 16.0 / 9.0;
+	double ratio = (double)w / h;
+	if (ratio < targetRatio) // Too much height
+	{
+		int newHeight = (int)(w / targetRatio);
+		int newY = (h - newHeight) / 2;
+		return (vec4){0, newY, w, newHeight};
+	}
+	else if (ratio > targetRatio) // Too much width
+	{
+		int newWidth = (int)(h * targetRatio);
+		int newX = (w - newWidth) / 2;
+		return (vec4){newX, 0, newWidth, h};
+	}
+
+	return (vec4){0,0,w,h};
 }
