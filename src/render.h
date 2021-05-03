@@ -41,12 +41,6 @@ typedef enum t_triangle_direction
 	TRIANGLE_RIGHT,
 } triangle_direction;
 
-typedef struct t_vec2f
-{
-    float x;
-    float y;
-} vec2f;
-
 typedef enum t_render_driver_id
 {
 	DRIVER_NONE,

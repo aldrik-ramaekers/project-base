@@ -20,10 +20,12 @@ typedef struct t_mem_entry
 	u64 len;
 } mem_entry;
 array _mem_registry = {0,0,0,0,0};
+mutex _mem_mut;
 
 void* _registered_alloc(u64 size)
 {
 	if (_mem_registry.data == 0) {
+		_mem_mut = mutex_create();
 		array new_array;
 		new_array.length = 0;
 		new_array.reserved_length = 0;
@@ -35,35 +37,42 @@ void* _registered_alloc(u64 size)
 		_mem_registry = new_array; 
 		array_reserve(&_mem_registry, 1000);
 	}
+	mutex_lock(&_mem_mut);
 	void* addr = malloc(size);
 	mem_entry new_entry;
 	new_entry.ptr = addr;
 	new_entry.len = size;
 	array_push(&_mem_registry, &new_entry);
+	mutex_unlock(&_mem_mut);
 	return addr;
 }
 
 void _registered_free(void* addr)
 {
+	mutex_lock(&_mem_mut);
 	for (int i = 0; i < _mem_registry.length; i++)
 	{
 		mem_entry *entry = array_at(&_mem_registry, i);
 		if (entry->ptr == addr) {
 			array_remove_at(&_mem_registry, i);
 			free(addr);
+			mutex_unlock(&_mem_mut);
 			return;
 		}
 	}
+	mutex_unlock(&_mem_mut);
 }
 
 void _registered_print_leaks()
 {
+	mutex_lock(&_mem_mut);
 	printf("Leaks:\n");
 	for (s32 i = 0; i < _mem_registry.length; i++)
 	{
 		mem_entry* entry = array_at(&_mem_registry, i);
 		printf("#%d: %I64d\n", i+1, entry->len);
 	}
+	mutex_unlock(&_mem_mut);
 }
 
 #define mem_alloc(size) _registered_alloc(size);

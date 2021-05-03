@@ -994,6 +994,11 @@ bool platform_is_graphical()
 	return true;
 }
 
+s32	platform_get_titlebar_height()
+{
+	return GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME); // Lets hope this is consistent.
+}
+
 void platform_destroy_window(platform_window *window)
 {
 	if (platform_window_is_valid(window)) {

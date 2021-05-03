@@ -32,6 +32,12 @@
 #define ASSET_WORKER_COUNT 1
 #endif
 
+typedef struct t_vec2f
+{
+    float x;
+    float y;
+} vec2f;
+
 typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;
@@ -148,6 +154,9 @@ font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 
 //	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
+
+vec2f 	scale_image_to_width(image* img, s32 width);
+vec2f 	scale_image_to_height(image* img, s32 height);
 
 void*	_assets_queue_worker();
 void 	_assets_switch_render_method();

@@ -4,6 +4,10 @@
 *  All rights reserved.
 */
 
+#if defined(MODE_DEBUG)
+u64 load_stamp_start = 0;
+#endif
+
 void assets_create()
 {
 	assets asset_collection;
@@ -24,6 +28,10 @@ void assets_create()
 	asset_collection.done_loading_assets = false;
 	
 	global_asset_collection = asset_collection;
+
+	#if defined(MODE_DEBUG)
+	load_stamp_start = platform_get_time(TIME_FULL, TIME_MILI_S);
+	#endif
 }
 
 inline static bool is_big_endian()
@@ -35,17 +43,23 @@ inline static bool is_big_endian()
 
 void assets_stop_if_done()
 {
-	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
+	if (!global_asset_collection.valid || 
+		(global_asset_collection.post_process_queue.length == 0 && global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
+		#if defined(MODE_DEBUG)
+		char msg[100];
+		sprintf(msg, "Loaded assets in %.3fs", (platform_get_time(TIME_FULL, TIME_MILI_S) - load_stamp_start)/1000.0f);
+		log_info(msg);
+		#endif
 		global_asset_collection.done_loading_assets = true;
+		array_destroy(&global_asset_collection.queue.queue);
+		// array_destroy(&global_asset_collection.post_process_queue);
 	}
 }
 
 bool assets_do_post_process()
 {
 	if (!global_asset_collection.valid) return false;
-
-	assets_stop_if_done();
 	
 	bool result = false;
 	
@@ -113,6 +127,8 @@ bool assets_do_post_process()
 	}
 	array_clear(&global_asset_collection.post_process_queue);	
 	mutex_unlock(&asset_mutex);
+
+	assets_stop_if_done();
 	
 	return result;
 }
@@ -568,4 +584,22 @@ void assets_destroy()
 	}
 	mutex_unlock(&asset_mutex);
 	mutex_destroy(&asset_mutex);
+}
+
+vec2f scale_image_to_width(image* img, s32 width)
+{
+	vec2f v = {(float)img->width, (float)img->height};
+	float scale = v.x / width;
+	v.x = width;
+	v.y /= scale;
+	return v;
+}
+
+vec2f scale_image_to_height(image* img, s32 height)
+{
+	vec2f v = {(float)img->width, (float)img->height};
+	float scale = v.y / height;
+	v.y = height;
+	v.x /= scale;
+	return v;
 }
