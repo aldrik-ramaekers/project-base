@@ -316,6 +316,7 @@ void platform_handle_events()
 		}
 	}
 
+#if 0
 	u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 	u64 diff = current_stamp - __last_stamp;
 	float diff_ms = diff / 1000000000.0f;
@@ -327,4 +328,5 @@ void platform_handle_events()
 		// printf("sleeping for %f, fps: %f\n", time_to_wait, 1000.0 / (double)diff_ms);
 		thread_sleep(time_to_wait*1000);
 	}
+#endif
 }

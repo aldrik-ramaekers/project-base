@@ -23,7 +23,7 @@
         sprintf(__buf, "%s, Assertion failed at %s, line %d. In %s\n", _message, __FILENAME__, __LINE__, __func__); \
         printf(__buf); \
         MessageBox(0, __buf, "Error", MB_OK); exit(0); }
-#define log_info(_message) { printf("INFO: %s, at %s, line %d. In %s\n", _message,  __FILENAME__, __LINE__, __func__); }
+#define log_info(_message) { char buf[4000]; sprintf(buf, "INFO: %s, at %s, line %d. In %s\n", _message,  __FILENAME__, __LINE__, __func__); printf(buf); OutputDebugStringA(buf); }
 #endif
 
 #else

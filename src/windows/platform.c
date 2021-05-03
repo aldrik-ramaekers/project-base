@@ -724,12 +724,8 @@ void platform_setup_backbuffer(platform_window *window)
 
 			IMP_SetPixelFormat(window->hdc, suggested_format_index, &actual_format);
 		}
-		
-		//debug_print_elapsed(startup_stamp, "pixel format");
-		
+
 		window->gl_context = IMP_wglCreateContext(window->hdc);
-		
-		//debug_print_elapsed(startup_stamp, "gl context");
 		
 		if (share_list == 0)
 		{
@@ -853,13 +849,6 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
 	log_assert(update_func, "Update function cannot be 0");
 
-	debug_print_elapsed_title("window creation");
-	debug_print_elapsed_indent();
-	
-#ifdef MODE_DEVELOPER
-	u64 startup_stamp = platform_get_time(TIME_FULL, TIME_US);
-#endif
-	
 	platform_window* window = mem_alloc(sizeof(platform_window));
 	if (!window) return window;
 	window->has_focus = true;
@@ -895,13 +884,9 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->window_class.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 	//window->window_class.hCursor = LoadCursor(NULL, IDC_ARROW);
 	
-	debug_print_elapsed(startup_stamp, "setup");
-	
 	ATOM success = RegisterClass(&window->window_class);
 	if (!success) return 0;
-	
-	debug_print_elapsed(startup_stamp, "register class");
-		
+
 	int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
 	int ex_style = 0;
 		
@@ -947,17 +932,13 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	}
 		
 	window->flags = flags;
-		
-	debug_print_elapsed(startup_stamp, "create window");
-		
+	
 	window->hdc = GetDC(window->window_handle);
 	if (!window->hdc) return 0;
 
 	platform_setup_backbuffer(window);
-	debug_print_elapsed(startup_stamp, "backbuffer");
-			
+
 	platform_setup_renderer();
-	debug_print_elapsed(startup_stamp, "renderer");
 			
 	ShowWindow(window->window_handle, cmd_show);
 	if (flags & FLAGS_HIDDEN)
@@ -973,10 +954,8 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	track.hwndTrack = window->window_handle;
 	TrackMouseEvent(&track);
 	platform_get_focus(window);
-	debug_print_elapsed(startup_stamp, "windows nonsense");
 	
 	_platform_register_window(window);
-	debug_print_elapsed_undent();
 	
 	return window;
 }

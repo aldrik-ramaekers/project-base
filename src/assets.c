@@ -35,10 +35,9 @@ inline static bool is_big_endian()
 
 void assets_stop_if_done()
 {
-	return;
 	if (!global_asset_collection.valid || (global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
 	{
-		//global_asset_collection.done_loading_assets = true;
+		global_asset_collection.done_loading_assets = true;
 	}
 }
 
@@ -120,10 +119,6 @@ bool assets_do_post_process()
 
 bool assets_queue_worker_load_bitmap(image *image)
 {
-#ifdef MODE_DEVELOPER
-	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
-#endif
-	
 #pragma pack(push, 1)
 	typedef struct {
 		unsigned short type;                 /* Magic identifier            */
@@ -152,17 +147,11 @@ bool assets_queue_worker_load_bitmap(image *image)
 	image->height = info->height;
 	image->channels = info->bits/8;
 	
-	debug_print_elapsed(stamp, "loaded bitmap in");
-	
 	return image->data != 0;
 }
 
 bool assets_queue_worker_load_image(image *image)
 {
-#ifdef MODE_DEVELOPER
-	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
-#endif
-	
 	//stbi_convert_iphone_png_to_rgb(0);
 	image->data = stbi_load_from_memory(image->start_addr,
 										image->end_addr - image->start_addr,
@@ -171,17 +160,11 @@ bool assets_queue_worker_load_image(image *image)
 										&image->channels,
 										STBI_rgb_alpha);
 	
-	debug_print_elapsed(stamp, "loaded image in");
-	
 	return image->data != 0;
 }
 
 bool assets_queue_worker_load_font(font *font)
 {
-#ifdef MODE_DEVELOPER
-	u64 stamp = platform_get_time(TIME_FULL, TIME_US);
-#endif
-	
 	unsigned char *ttf_buffer = (unsigned char*)font->start_addr;
 	
     stbtt_fontinfo info;
@@ -213,8 +196,6 @@ bool assets_queue_worker_load_font(font *font)
 	
 	font->info = info;
 	font->scale = scale;
-	
-	debug_print_elapsed(stamp, "loaded font in");
 	
 	return true;
 }
