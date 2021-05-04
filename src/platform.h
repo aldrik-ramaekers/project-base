@@ -123,6 +123,7 @@ typedef enum t_cursor_type
 	CURSOR_POINTER,
 	CURSOR_TEXT,
 	CURSOR_DRAG,
+	CURSOR_LOADING,
 } cursor_type;
 
 // TODO: move this to more appropriate file.

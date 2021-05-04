@@ -1117,6 +1117,7 @@ void platform_window_swap_buffers(platform_window *window)
 		{
 			case CURSOR_DEFAULT: cursor_shape = IDC_ARROW; break;
 			case CURSOR_POINTER: cursor_shape = IDC_HAND; break;
+			case CURSOR_LOADING: cursor_shape = IDC_APPSTARTING; break;
 			case CURSOR_DRAG: cursor_shape = IDC_SIZEWE; break;
 			case CURSOR_TEXT: cursor_shape = IDC_IBEAM; break;
 		}

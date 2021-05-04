@@ -1352,6 +1352,7 @@ inline void platform_window_swap_buffers(platform_window *window)
 		{
 			case CURSOR_DEFAULT: cursor_shape = XC_arrow; break;
 			case CURSOR_POINTER: cursor_shape = XC_hand1; break;
+			case CURSOR_LOADING: cursor_shape = XC_watch; break;
 			case CURSOR_DRAG: cursor_shape = XC_sb_h_double_arrow; break;
 			case CURSOR_TEXT: cursor_shape = XC_xterm; break;
 		}
