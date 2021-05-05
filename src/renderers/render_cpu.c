@@ -154,14 +154,14 @@ static void cpu_render_clear(platform_window *window)
         memcpy(window->backbuffer.buffer + (i * 5), pixel, 5);
 }
 
-static void cpu_render_set_rotation(float32 rotation, float32 x, float32 y)
+static void cpu_render_set_rotation(float32 rotation)
 {
-    log_assert(0, "render_set_rotation not implemented for on cpu");
+    log_assert(0, "render_set_rotation not implemented on cpu");
 }
 
 static void cpu_render_reset_rotation(float32 rotation, float32 x, float32 y)
 {
-    log_assert(0, "render_reset_rotation not implemented for on cpu");
+    log_assert(0, "render_reset_rotation not implemented on cpu");
 }
 
 static void cpu_set_cpu_render_depth(s32 depth)

@@ -71,8 +71,8 @@ typedef struct t_render_driver
 	void 	(*render_set_scissor)(platform_window *window, s32 x, s32 y, s32 w, s32 h);
 	vec4 	(*render_get_scissor)();
 	void 	(*render_reset_scissor)();
-	void 	(*render_set_rotation)(float32 rotation, float32 x, float32 y);
-	void	(*render_reset_rotation)(float32 rotation, float32 x, float32 y);
+	void 	(*render_set_rotation)(float32 rotation);
+	void	(*render_reset_rotation)(float32 rotation, float32 x, float32 y); // @TODO: remove
 	void 	(*render_arc)(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color c, float thickness);
 } render_driver;
 

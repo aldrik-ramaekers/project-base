@@ -34,6 +34,7 @@ __def_proc( void, glBindTexture, (GLenum target,GLuint texture))
 __def_proc( void, glBegin, (GLenum mode))
 __def_proc( void, glColor4f, (GLfloat red,GLfloat green,GLfloat blue,GLfloat alpha))
 __def_proc( void, glTexCoord2i, (GLint s,GLint t))
+__def_proc( void, glTexCoord2f, (GLfloat s,GLfloat t))
 __def_proc( void, glVertex3i, (GLint x,GLint y,GLint z))
 __def_proc( void, glEnd, (void))
 __def_proc( void, glDisable, (GLenum cap))
@@ -96,6 +97,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(glBegin, libOpengl32);
     __load_fnc_or_exit(glColor4f, libOpengl32);
     __load_fnc_or_exit(glTexCoord2i, libOpengl32);
+	__load_fnc_or_exit(glTexCoord2f, libOpengl32);
     __load_fnc_or_exit(glVertex3i, libOpengl32);
     __load_fnc_or_exit(glEnd, libOpengl32);
     __load_fnc_or_exit(glDisable, libOpengl32);

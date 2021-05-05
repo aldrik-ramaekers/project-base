@@ -6,6 +6,7 @@
 
 static u8 gl_render_depth = 1;
 static vec4 current_scissor;
+static float global_rotation = 0.0f;
 
 static void gl_render_clear(platform_window *window)
 {
@@ -13,11 +14,9 @@ static void gl_render_clear(platform_window *window)
     IMP_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-static void gl_render_set_rotation(float32 rotation, float32 x, float32 y)
+static void gl_render_set_rotation(float32 rotation)
 {
-    IMP_glPushMatrix();
-    IMP_glTranslatef(x, y, 0);
-    IMP_glRotatef(rotation, 0, 0, gl_render_depth);
+    global_rotation = rotation;
 }
 
 static void gl_render_reset_rotation(float32 rotation, float32 x, float32 y)
@@ -32,10 +31,20 @@ static void gl_set_gl_render_depth(s32 depth)
 
 static vec2f gl_rotateUV(vec2f uv, float rotation)
 {
-    float mid = 0.5;
-    return (vec2f){
-        cos(rotation) * (uv.x - mid) + sin(rotation) * (uv.y - mid) + mid,
-        cos(rotation) * (uv.y - mid) - sin(rotation) * (uv.x - mid) + mid};
+	uv = (vec2f){uv.x - 0.5f, uv.y - 0.5f};
+    float m2x2[4] = { cos(rotation), sin(rotation), -sin(rotation), cos(rotation) };
+
+	vec2f result = {0,0};
+#if 0
+	result.x = m2x2[0] * uv.x + m2x2[1] * uv.y;
+	result.y = m2x2[2] * uv.x + m2x2[3] * uv.y;
+#else
+	result.x = m2x2[0] * uv.x + m2x2[2] * uv.y;
+	result.y = m2x2[1] * uv.x + m2x2[3] * uv.y;
+#endif
+	
+    result = (vec2f){result.x + 0.5f, result.y + 0.5f};
+	return result;
 }
 
 static void gl_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
@@ -62,22 +71,21 @@ static void gl_render_image(image *image, s32 x, s32 y, s32 width, s32 height)
         IMP_glColor4f(1., 1., 1., 1.);
 
         // @Speed get rid if this if not used.
-        static float rotation = 0.0f;
-        vec2f topleft = gl_rotateUV((vec2f){0, 0}, rotation);
-        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, rotation);
-        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, rotation);
-        vec2f topright = gl_rotateUV((vec2f){1, 0}, rotation);
+        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
+        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
+        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
+        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
 
         IMP_glPushMatrix();
         IMP_glTranslatef(x + (width / 2), y + (height / 2), 0);
 
-        IMP_glTexCoord2i(topleft.x, topleft.y);
+        IMP_glTexCoord2f(topleft.x, topleft.y);
         IMP_glVertex3i(x, y, gl_render_depth);
-        IMP_glTexCoord2i(bottomleft.x, bottomleft.y);
+        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
         IMP_glVertex3i(x, y + height, gl_render_depth);
-        IMP_glTexCoord2i(bottomright.x, bottomright.y);
+        IMP_glTexCoord2f(bottomright.x, bottomright.y);
         IMP_glVertex3i(x + width, y + height, gl_render_depth);
-        IMP_glTexCoord2i(topright.x, topright.y);
+        IMP_glTexCoord2f(topright.x, topright.y);
         IMP_glVertex3i(x + width, y, gl_render_depth);
 
         IMP_glPopMatrix();
