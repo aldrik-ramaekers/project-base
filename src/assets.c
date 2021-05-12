@@ -269,7 +269,7 @@ void *_assets_queue_worker()
 	return 0;
 }
 
-static image* find_image_ref(u8 *start_addr, s32 hash)
+image* assets_find_image_ref(u8 *start_addr, s32 hash)
 {
 	for (int i = 0; i < global_asset_collection.images.length; i++)
 	{
@@ -299,7 +299,7 @@ static font* find_font_ref(u8 *start_addr, s32 hash, s16 size)
 	return 0;
 }
 
-static u32 hash_path(char* str)
+u32 assets_hash_path(char* str)
 {
 	unsigned long hash = 5381;
     int c;
@@ -371,7 +371,7 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 ////////////////////////////////////////////////////
 font* assets_load_font_from_file(char* path, s16 size)
 {
-	u32 hash = hash_path(path);
+	u32 hash = assets_hash_path(path);
 	font* ref = find_font_ref(UNDEFINED_START_ADDR, hash, size);
 	if (ref) return ref;
 
@@ -402,8 +402,8 @@ font* assets_load_font(u8 *start_addr, u8 *end_addr, s16 size)
 
 image* assets_load_image_from_file(char* path)
 {
-	u32 hash = hash_path(path);
-	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash);
+	u32 hash = assets_hash_path(path);
+	image* ref = assets_find_image_ref(UNDEFINED_START_ADDR, hash);
 	if (ref) return ref;
 
 	platform_set_active_directory(binary_path);
@@ -419,7 +419,7 @@ image* assets_load_image_from_file(char* path)
 
 image* assets_load_image(u8 *start_addr, u8 *end_addr)
 {
-	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH);
+	image* ref = assets_find_image_ref(start_addr, UNDEFINED_PATH_HASH);
 	if (ref) return ref;
 	
 	image new_image = empty_image();
@@ -431,8 +431,8 @@ image* assets_load_image(u8 *start_addr, u8 *end_addr)
 
 image* assets_load_bitmap_from_file(char* path)
 {
-	u32 hash = hash_path(path);
-	image* ref = find_image_ref(UNDEFINED_START_ADDR, hash);
+	u32 hash = assets_hash_path(path);
+	image* ref = assets_find_image_ref(UNDEFINED_START_ADDR, hash);
 	if (ref) return ref;
 
 	platform_set_active_directory(binary_path);
@@ -448,7 +448,7 @@ image* assets_load_bitmap_from_file(char* path)
 
 image* assets_load_bitmap(u8 *start_addr, u8 *end_addr)
 {
-	image* ref = find_image_ref(start_addr, UNDEFINED_PATH_HASH);
+	image* ref = assets_find_image_ref(start_addr, UNDEFINED_PATH_HASH);
 	if (ref) return ref;
 
 	image new_image = empty_image();

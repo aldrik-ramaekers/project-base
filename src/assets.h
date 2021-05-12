@@ -155,6 +155,9 @@ font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 //	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
 
+u32 	assets_hash_path(char* str);
+image* 	assets_find_image_ref(u8 *start_addr, s32 hash);
+
 vec2f 	scale_image_to_width(image* img, s32 width);
 vec2f 	scale_image_to_height(image* img, s32 height);
 
