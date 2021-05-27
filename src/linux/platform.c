@@ -36,6 +36,7 @@ typedef struct t_backbuffer
 struct t_platform_window
 {
 	void (*update_func)(platform_window*);
+	void (*resize_func)(platform_window*,u32,u32);
 	Display *display;
 	Window parent;
 	XVisualInfo *visual_info;
@@ -747,7 +748,12 @@ bool platform_is_graphical()
 	}
 }
 
-platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window))
+s32	platform_get_titlebar_height()
+{
+	return 0; // Lets hope this is consistent.
+}
+
+platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32 change_x,u32 change_y))
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) width = min_h;
@@ -767,6 +773,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	platform_window* window = mem_alloc(sizeof(platform_window));
 	if (!window) return window;
 	window->width = width;
+	window->resize_func = resize_func;
 	window->height = height;
 	window->update_func = update_func;
 	window->backbuffer.buffer = 0;

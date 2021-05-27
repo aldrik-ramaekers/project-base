@@ -90,6 +90,7 @@ install_windows:
 install_linux:
 	$(permissions) cp -a "src/." "$(include_dir)" 2>/dev/null || :
 	$(permissions) cp "build/$(output_file).a" "$(lib_dir).a" 2>/dev/null || :
+	$(permissions) cp "build/$(output_file)-debug.a" "$(lib_dir)-debug.a" 2>/dev/null || :
 
 ## Tests (Windows + Linux)
 tests:

@@ -155,7 +155,7 @@ float frame_delta = 0.0f;
 array window_registry;
 
 keyboard_input _global_keyboard;
-mouse_input _global_mouse;
+mouse_input _global_mouse = {-1};
 camera _global_camera;
 
 #define platform_open_window(name, width, height, max_w, max_h, min_w, min_h, update_func, resize_func) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, update_func, resize_func)

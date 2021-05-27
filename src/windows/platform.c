@@ -545,7 +545,7 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	}
 	else
 	{
-		result = LSMProc(window, message, wparam, lparam);
+		result = LSMProc(window, message, wparam, lparam); //DefWindowProc
 	}
 	
 	return result;
