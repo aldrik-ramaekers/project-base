@@ -173,6 +173,7 @@ typedef struct t_mouse_input
 	s8 scroll_state;
 	bool last_state_released;
 	bool is_hovering_item;
+	bool inside_of_window;
 } mouse_input;
 
 typedef enum t_keyboard_input_mode

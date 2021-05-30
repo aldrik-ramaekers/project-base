@@ -1079,6 +1079,7 @@ void _platform_handle_events_for_window(platform_window *window)
 		
 		mouse->y = p.y;
 		mouse->x = p.x;
+		mouse->inside_of_window = (mouse->x >= 0 && mouse->y >= 0 && mouse->x < window->width && mouse->y < window->height);
 		
 #if 0
 		if (current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)

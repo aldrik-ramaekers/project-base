@@ -1143,6 +1143,7 @@ void _platform_handle_events_for_window(platform_window *window)
 			mouse->x = MOUSE_OFFSCREEN;
 			mouse->y = MOUSE_OFFSCREEN;
 			window->has_focus = false;
+			mouse->inside_of_window = (mouse->x >= 0 && mouse->y >= 0 && mouse->x < window->width && mouse->y < window->height);
 			
 			// if windows loses focus, set all keys to not pressed
 			memset(keyboard->keys, 0, MAX_KEYCODE);
@@ -1157,6 +1158,7 @@ void _platform_handle_events_for_window(platform_window *window)
 			
 			mouse->x = window->event.xmotion.x;
 			mouse->y = window->event.xmotion.y;
+			mouse->inside_of_window = (mouse->x >= 0 && mouse->y >= 0 && mouse->x < window->width && mouse->y < window->height);
 			
 			mouse->move_x = mouse->x - x;
 			mouse->move_y = mouse->y - y;

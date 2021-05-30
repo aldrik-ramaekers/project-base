@@ -24,12 +24,12 @@ inline bool is_left_released()
 
 inline bool is_left_clicked_peak()
 {
-	return _global_mouse.left_state & MOUSE_CLICK;
+	return _global_mouse.left_state & MOUSE_CLICK && _global_mouse.inside_of_window;
 }
 
 inline bool is_left_clicked()
 {
-	bool result = _global_mouse.left_state & MOUSE_CLICK;
+	bool result = _global_mouse.left_state & MOUSE_CLICK && _global_mouse.inside_of_window;
 	if (result) reset_left_click();
 	return result;
 }
@@ -82,6 +82,7 @@ mouse_input mouse_input_create()
 	mouse.left_state = 0;
 	mouse.right_state = 0;
 	mouse.is_hovering_item = false;
+	mouse.inside_of_window = false;
 	
 	return mouse;
 }
