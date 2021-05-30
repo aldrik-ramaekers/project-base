@@ -11,6 +11,7 @@ u64 load_stamp_start = 0;
 void assets_create()
 {
 	assets asset_collection;
+	asset_collection.load_threads_busy = 0;
 	asset_collection.images = array_create(sizeof(image));
 	asset_collection.fonts = array_create(sizeof(font));
 	
@@ -44,7 +45,10 @@ inline static bool is_big_endian()
 void assets_stop_if_done()
 {
 	if (!global_asset_collection.valid || 
-		(global_asset_collection.post_process_queue.length == 0 && global_asset_collection.queue.queue.length == 0 && !global_asset_collection.done_loading_assets))
+		(global_asset_collection.post_process_queue.length == 0 && 
+		global_asset_collection.queue.queue.length == 0 && 
+		!global_asset_collection.done_loading_assets &&
+		global_asset_collection.load_threads_busy == 0))
 	{
 		#if defined(MODE_DEBUG)
 		char msg[100];
@@ -232,10 +236,12 @@ void *_assets_queue_worker()
 				mutex_unlock(&asset_mutex);
 				continue;
 			}
+			global_asset_collection.load_threads_busy++;
 			
 			asset_task *task = array_at(&global_asset_collection.queue.queue, 0);
 			asset_task buf = *task;
 			array_remove_at(&global_asset_collection.queue.queue, 0);
+
 			mutex_unlock(&asset_mutex);
 			
 			if (buf.type == ASSET_IMAGE)
@@ -260,6 +266,8 @@ void *_assets_queue_worker()
 				   global_asset_collection.post_process_queue.length, "Attempted to process more assets than specified with constant ASSET_QUEUE_COUNT");
 			
 			array_push(&global_asset_collection.post_process_queue, &buf);
+			
+			global_asset_collection.load_threads_busy--; // Very important to do this last or assets may be flagged as done loading early.
 			mutex_unlock(&asset_mutex);
 		}
 	}

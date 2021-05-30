@@ -114,6 +114,7 @@ typedef struct t_assets {
 	array post_process_queue;
 	bool valid;
 	bool done_loading_assets;
+	u16 load_threads_busy;
 } assets;
 
 char*	binary_path;
