@@ -1071,6 +1071,7 @@ void _platform_handle_events_for_window(platform_window *window)
 	mouse->right_state &= ~MOUSE_DOUBLE_CLICK;
 	mouse->left_state &= ~MOUSE_RELEASE;
 	mouse->right_state &= ~MOUSE_RELEASE;
+	mouse->is_hovering_item = false;
 	memset(keyboard->input_keys, 0, MAX_KEYCODE);
 	mouse->move_x = 0;
 	mouse->move_y = 0;

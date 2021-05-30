@@ -4,6 +4,14 @@
 *  All rights reserved.
 */
 
+inline bool mouse_interacts(s32 x, s32 y, s32 w, s32 h)
+{
+	// Mouse is in rectangle and mouse has not been clicked yet.
+	bool result =  (!_global_mouse.is_hovering_item) && (_global_mouse.x >= x && _global_mouse.x <= x+w && _global_mouse.y >= y && _global_mouse.y <= y+h);
+	if (result) _global_mouse.is_hovering_item = true;
+	return result;
+}
+
 inline bool is_left_down()
 {
 	return _global_mouse.left_state & MOUSE_DOWN;
@@ -14,9 +22,16 @@ inline bool is_left_released()
 	return _global_mouse.left_state & MOUSE_RELEASE;
 }
 
-inline bool is_left_clicked()
+inline bool is_left_clicked_peak()
 {
 	return _global_mouse.left_state & MOUSE_CLICK;
+}
+
+inline bool is_left_clicked()
+{
+	bool result = _global_mouse.left_state & MOUSE_CLICK;
+	if (result) reset_left_click();
+	return result;
 }
 
 inline bool is_left_double_clicked()
@@ -66,6 +81,7 @@ mouse_input mouse_input_create()
 	mouse.move_y = 0;
 	mouse.left_state = 0;
 	mouse.right_state = 0;
+	mouse.is_hovering_item = false;
 	
 	return mouse;
 }

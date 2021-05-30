@@ -172,6 +172,7 @@ typedef struct t_mouse_input
 	s8 right_state;
 	s8 scroll_state;
 	bool last_state_released;
+	bool is_hovering_item;
 } mouse_input;
 
 typedef enum t_keyboard_input_mode
@@ -208,10 +209,13 @@ void reset_right_click();
 bool is_left_down();
 bool is_left_released();
 bool is_left_clicked();
+bool is_left_clicked_peak();
 bool is_left_double_clicked();
 bool is_right_down();
 bool is_right_released();
 bool is_right_clicked();
+
+bool mouse_interacts(s32 x, s32 y, s32 w, s32 h);
 
 bool keyboard_is_key_down(s16 key);
 bool keyboard_is_key_pressed(s16 key);
