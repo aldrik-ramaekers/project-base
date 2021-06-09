@@ -24,6 +24,16 @@
 #define ASSET_FONT_COUNT 3
 #endif
 
+#ifndef NUM_AUDIO_CHANNELS
+#define NUM_AUDIO_CHANNELS 4
+#endif
+
+
+
+#ifndef ASSET_SOUND_COUNT
+#define ASSET_SOUND_COUNT 1
+#endif
+
 #ifndef ASSET_QUEUE_COUNT
 #define ASSET_QUEUE_COUNT 20
 #endif
@@ -59,6 +69,17 @@ typedef struct t_image {
 
 #define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)
 #define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
+#define CAN_ADD_NEW_SOUND() (global_asset_collection.sounds.reserved_length > global_asset_collection.sounds.length)
+
+#include <SDL2/SDL_mixer.h>
+typedef struct t_sound
+{
+	Mix_Chunk* chunk;
+	u8 *start_addr;
+	bool loaded;
+	s16 references;
+	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
+} sound;
 
 typedef struct t_glyph
 {
@@ -88,9 +109,10 @@ typedef struct t_font
 
 typedef enum t_asset_task_type
 {
-	ASSET_IMAGE,
+	ASSET_PNG,
 	ASSET_BITMAP,
-	ASSET_FONT,
+	ASSET_TTF,
+	ASSET_WAV,
 } asset_task_type;
 
 typedef struct t_asset_task
@@ -100,6 +122,7 @@ typedef struct t_asset_task
 	union {
 		image *image;
 		font *font;
+		sound *sound;
 	};
 } asset_task;
 
@@ -110,6 +133,7 @@ typedef struct t_asset_queue {
 typedef struct t_assets {
 	array images;
 	array fonts;
+	array sounds;
 	asset_queue queue;
 	array post_process_queue;
 	bool valid;
@@ -152,9 +176,12 @@ void 	assets_destroy_bitmap(image *image);
 //	:/Info	Load a ttf font.
 //	:/Ret	Pointer to the loading/loaded font.
 font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
+font* 	assets_load_font_from_file(char* path, s16 size);
 
 //	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
+
+sound* 	assets_load_wav_from_file(char* path);
 
 u32 	assets_hash_path(char* str);
 image* 	assets_find_image_ref(u8 *start_addr, s32 hash);

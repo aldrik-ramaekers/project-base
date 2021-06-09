@@ -14,9 +14,11 @@ void assets_create()
 	asset_collection.load_threads_busy = 0;
 	asset_collection.images = array_create(sizeof(image));
 	asset_collection.fonts = array_create(sizeof(font));
+	asset_collection.sounds = array_create(sizeof(sound));
 	
 	array_reserve(&asset_collection.images, ASSET_IMAGE_COUNT);
 	array_reserve(&asset_collection.fonts, ASSET_FONT_COUNT);
+	array_reserve(&asset_collection.sounds, ASSET_SOUND_COUNT);
 	
 	asset_collection.queue.queue = array_create(sizeof(asset_task));
 	asset_collection.post_process_queue = array_create(sizeof(asset_task));
@@ -73,7 +75,10 @@ bool assets_do_post_process()
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);
 		
-		if (task->type == ASSET_IMAGE || task->type == ASSET_BITMAP)
+		if (task->type == ASSET_WAV) {
+			task->sound->loaded = true;
+		}
+		if (task->type == ASSET_PNG || task->type == ASSET_BITMAP)
 		{
 			if (task->image->data && task->valid)
 			{
@@ -85,7 +90,7 @@ bool assets_do_post_process()
 				s32 flag = is_big_endian() ? GL_UNSIGNED_INT_8_8_8_8 : 
 				GL_UNSIGNED_INT_8_8_8_8_REV;
 				
-				if (task->type == ASSET_IMAGE) {
+				if (task->type == ASSET_PNG) {
 					IMP_glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA8, task->image->width, 
 								 task->image->height, 0,  GL_RGBA, flag, task->image->data);
 				}
@@ -102,7 +107,7 @@ bool assets_do_post_process()
 				IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			}
 		}
-		else if (task->type == ASSET_FONT)
+		else if (task->type == ASSET_TTF)
 		{
 			if (task->valid)
 			{
@@ -244,7 +249,7 @@ void *_assets_queue_worker()
 
 			mutex_unlock(&asset_mutex);
 			
-			if (buf.type == ASSET_IMAGE)
+			if (buf.type == ASSET_PNG)
 			{
 				bool result = assets_queue_worker_load_image(buf.image);
 				buf.valid = result;
@@ -254,10 +259,15 @@ void *_assets_queue_worker()
 				bool result = assets_queue_worker_load_bitmap(buf.image);
 				buf.valid = result;
 			}
-			else if (buf.type == ASSET_FONT)
+			else if (buf.type == ASSET_TTF)
 			{
 				bool result = assets_queue_worker_load_font(buf.font);
 				buf.valid = result;
+			}
+			else if (buf.type == ASSET_WAV)
+			{
+				buf.sound->chunk = Mix_QuickLoad_WAV(buf.sound->start_addr);
+				buf.valid = (buf.sound->chunk!=0);
 			}
 			
 			mutex_lock(&asset_mutex);
@@ -287,6 +297,21 @@ image* assets_find_image_ref(u8 *start_addr, s32 hash)
 		{
 			img_at->references++;
 			return img_at;
+		}
+	}
+	return 0;
+}
+
+static sound* find_sound_ref(s32 hash)
+{
+	for (int i = 0; i < global_asset_collection.sounds.length; i++)
+	{
+		sound *sound_at = array_at(&global_asset_collection.sounds, i);
+		
+		if (hash == sound_at->path_hash && sound_at->references > 0)
+		{
+			sound_at->references++;
+			return sound_at;
 		}
 	}
 	return 0;
@@ -338,6 +363,16 @@ static font empty_font()
 	return new_font;
 }
 
+static sound empty_sound()
+{
+	sound new_sound;
+	new_sound.chunk = 0;
+	new_sound.loaded = false;
+	new_sound.references = 1;
+	new_sound.path_hash = UNDEFINED_PATH_HASH;
+	return new_sound;
+}
+
 static asset_task add_font_to_queue(font font)
 {
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
@@ -346,7 +381,7 @@ static asset_task add_font_to_queue(font font)
 	int index = array_push(&global_asset_collection.fonts, &font);
 	
 	asset_task task;
-	task.type = ASSET_FONT;
+	task.type = ASSET_TTF;
 	task.font = array_at(&global_asset_collection.fonts, index);
 	
 	mutex_lock(&asset_mutex);
@@ -364,8 +399,26 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 	int index = array_push(&global_asset_collection.images, &img);
 	
 	asset_task task;
-	task.type = is_bitmap ? ASSET_BITMAP : ASSET_IMAGE;
+	task.type = is_bitmap ? ASSET_BITMAP : ASSET_PNG;
 	task.image = array_at(&global_asset_collection.images, index);
+	
+	mutex_lock(&asset_mutex);
+	array_push(&global_asset_collection.queue.queue, &task);
+	mutex_unlock(&asset_mutex);
+
+	return task;
+}
+
+static asset_task add_sound_to_queue(sound sound)
+{
+	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
+	log_assert(CAN_ADD_NEW_SOUND(), "Attempted to process more sounds than specified with constant ASSET_SOUND_COUNT");
+
+	int index = array_push(&global_asset_collection.sounds, &sound);
+	
+	asset_task task;
+	task.type = ASSET_WAV;
+	task.sound = array_at(&global_asset_collection.sounds, index);
 	
 	mutex_lock(&asset_mutex);
 	array_push(&global_asset_collection.queue.queue, &task);
@@ -377,6 +430,22 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 ////////////////////////////////////////////////////
 // Loading
 ////////////////////////////////////////////////////
+sound* assets_load_wav_from_file(char* path)
+{
+	u32 hash = assets_hash_path(path);
+	sound* ref = find_sound_ref(hash);
+	if (ref) return ref;
+
+	platform_set_active_directory(binary_path);
+	file_content content = platform_read_file_content(path, "rb");
+
+	sound new_sound = empty_sound();
+	new_sound.path_hash = hash;
+	new_sound.start_addr = content.content;
+
+	return add_sound_to_queue(new_sound).sound;
+}
+
 font* assets_load_font_from_file(char* path, s16 size)
 {
 	u32 hash = assets_hash_path(path);
@@ -540,7 +609,7 @@ void _assets_switch_render_method()
 		if (current_render_driver() == DRIVER_GL)
 		{
 			asset_task task;
-			task.type = ASSET_IMAGE;
+			task.type = ASSET_PNG;
 			task.image = img_at;
 			task.valid = true;
 			array_push(&global_asset_collection.post_process_queue, &task);
@@ -559,7 +628,7 @@ void _assets_switch_render_method()
 		if (current_render_driver() == DRIVER_GL)
 		{
 			asset_task task;
-			task.type = ASSET_FONT;
+			task.type = ASSET_TTF;
 			task.font = font_at;
 			task.valid = true;
 			

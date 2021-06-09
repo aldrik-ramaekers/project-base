@@ -215,6 +215,19 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 {
 	_lib_loader_init();
 
+	// SDL2 audio.
+	{
+		if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+			log_info("Audio setup failed.");
+		}
+		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) < 0) {
+			log_info("Failed to open audio mixer.");
+		}
+		if (Mix_AllocateChannels(NUM_AUDIO_CHANNELS) < 0) {
+			log_info("Failed to allocate audio channels.");
+		}
+	}
+
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
 	

@@ -35,8 +35,6 @@ typedef struct t_backbuffer
 
 struct t_platform_window
 {
-	void (*update_func)(platform_window*);
-	void (*resize_func)(platform_window*,u32,u32);
 	Display *display;
 	Window parent;
 	XVisualInfo *visual_info;
@@ -70,6 +68,8 @@ struct t_platform_window
 	Atom _NET_WM_STATE;
 	
 	// shared window properties
+	void (*update_func)(platform_window*);
+	void (*resize_func)(platform_window*,u32,u32);
 	keyboard_input keyboard;
 	mouse_input mouse;
 	camera camera;

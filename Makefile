@@ -12,7 +12,7 @@ gcc_install_dir := $(subst gcc,,$(gcc_install_dir))
 ifeq ($(OS), Windows_NT)
 	install_dir = $(gcc_install_dir)../x86_64-w64-mingw32/
 	permissions = 
-	libs = 
+	libs = -lSDL2 -lSDL2_mixer
 
 	# Commands
 	install_deps_command = empty
@@ -66,7 +66,7 @@ build:
 	$(permissions) rm -rf "$(include_dir)"
 	$(permissions) mkdir -p "$(include_dir)"
 
-	$(permissions) ld -r -b binary -o build/data.o src/resources/mono.ttf
+	$(permissions) ld -r -b binary -o build/data.o src/resources/mono.ttf 
 
 	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file)-debug.o $(libs)
 	# $(permissions) gcc $(release_flags) $(main_file) -o build/$(output_file).o $(libs)

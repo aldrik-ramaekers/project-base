@@ -22,8 +22,6 @@ struct t_backbuffer
 
 struct t_platform_window
 {
-	void (*update_func)(platform_window*);
-	void (*resize_func)(platform_window*,u32,u32);
 	HWND window_handle;
 	HDC hdc;
 	HGLRC gl_context;
@@ -39,6 +37,8 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	void (*update_func)(platform_window*);
+	void (*resize_func)(platform_window*,u32,u32);
 	keyboard_input keyboard;
 	mouse_input mouse;
 	camera camera;
@@ -51,6 +51,7 @@ struct t_platform_window
 	bool has_focus;
 	cursor_type curr_cursor_type;
 	cursor_type next_cursor_type;
+	bool vsync_enabled;
 };
 
 extern BOOL GetPhysicallyInstalledSystemMemory(PULONGLONG TotalMemoryInKilobytes);
@@ -684,15 +685,16 @@ int _platform_init_multisample_format(HWND hWnd)
 	return 0;
 }
 
-void platform_toggle_vsync(bool on)
+void platform_toggle_vsync(platform_window* window, bool on)
 {
 	if (IMP_wglGetExtensionsStringEXT == 0) return;
 	if (strstr(IMP_wglGetExtensionsStringEXT(), "WGL_EXT_swap_control") == NULL)
 		return;
 
 	if (IMP_wglSwapIntervalEXT != 0) {
+		window->vsync_enabled = on;
 		IMP_wglSwapIntervalEXT(on);
-		log_info("Vsync enabled");
+		log_info("Vsync setting changed");
 	}
 }
 
@@ -745,7 +747,7 @@ void platform_setup_backbuffer(platform_window *window)
 			__load_fnc_wgl(wglGetExtensionsStringEXT);
 			__load_fnc_wgl(wglCreateContextAttribsARB);
 		}
-		platform_toggle_vsync(true);
+		platform_toggle_vsync(window, true);
 
 #if 1
 		// Multisampling madness
@@ -869,6 +871,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->gl_context = 0;
 	window->icon_loaded = false;
 	window->title = name;
+	window->vsync_enabled = false;
 
 	window->keyboard = keyboard_input_create();
 	window->mouse = mouse_input_create();

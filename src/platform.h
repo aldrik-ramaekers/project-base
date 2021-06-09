@@ -229,7 +229,7 @@ s32 	platform_get_memory_size();
 s32 	platform_get_cpu_count();
 
 //	:/Info	Toggle vsync. On by default.
-void 	platform_toggle_vsync(bool on);
+void 	platform_toggle_vsync(platform_window* window, bool on);
 
 void _platform_init_shared(int argc, char **argv, char* config_path);
 void _platform_destroy_shared();

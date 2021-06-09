@@ -35,6 +35,9 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+
 #pragma GCC push_options
 #pragma GCC diagnostic ignored "-Wunused-result"
 
@@ -105,6 +108,7 @@
 #include "external/utf8.h"
 #include "input.h"
 #include "assets.h"
+#include "audio.h"
 #include "memory_bucket.h"
 #include "render.h"
 #include "camera.h"
@@ -136,6 +140,7 @@
 #include "input.c"
 #include "array.c"
 #include "assets.c"
+#include "audio.c"
 #include "camera.c"
 #include "interface.c"
 #include "ui.c"
