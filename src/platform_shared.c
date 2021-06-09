@@ -226,6 +226,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 		if (Mix_AllocateChannels(NUM_AUDIO_CHANNELS) < 0) {
 			log_info("Failed to allocate audio channels.");
 		}
+		log_info("Done setting up audio.");
 	}
 
 	// get fullpath of the directory the exe is residing in
