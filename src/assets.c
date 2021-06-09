@@ -75,9 +75,15 @@ bool assets_do_post_process()
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);
 		
-		if (task->type == ASSET_WAV) {
+		if (task->type == ASSET_WAV || task->type == ASSET_MUSIC) {
 			task->sound->loaded = true;
-		}
+
+			#if 0
+			if (task->sound->is_music) {
+				mem_free(task->sound->start_addr);
+			}
+			#endif
+ 		}
 		if (task->type == ASSET_PNG || task->type == ASSET_BITMAP)
 		{
 			if (task->image->data && task->valid)
@@ -269,6 +275,12 @@ void *_assets_queue_worker()
 				buf.sound->chunk = Mix_QuickLoad_WAV(buf.sound->start_addr);
 				buf.valid = (buf.sound->chunk!=0);
 			}
+			else if (buf.type == ASSET_MUSIC)
+			{
+				buf.sound->music = Mix_LoadMUS((char*)buf.sound->start_addr);
+				//printf("loaded!: %p %s\n", buf.sound->music, (char*)buf.sound->start_addr);
+				buf.valid = (buf.sound->music!=0);
+			}
 			
 			mutex_lock(&asset_mutex);
 			
@@ -367,6 +379,7 @@ static sound empty_sound()
 {
 	sound new_sound;
 	new_sound.chunk = 0;
+	new_sound.is_music = false;
 	new_sound.loaded = false;
 	new_sound.references = 1;
 	new_sound.path_hash = UNDEFINED_PATH_HASH;
@@ -417,7 +430,7 @@ static asset_task add_sound_to_queue(sound sound)
 	int index = array_push(&global_asset_collection.sounds, &sound);
 	
 	asset_task task;
-	task.type = ASSET_WAV;
+	task.type = sound.is_music ? ASSET_MUSIC : ASSET_WAV;
 	task.sound = array_at(&global_asset_collection.sounds, index);
 	
 	mutex_lock(&asset_mutex);
@@ -430,6 +443,20 @@ static asset_task add_sound_to_queue(sound sound)
 ////////////////////////////////////////////////////
 // Loading
 ////////////////////////////////////////////////////
+sound* assets_load_music_from_file(char* path)
+{
+	u32 hash = assets_hash_path(path);
+	sound* ref = find_sound_ref(hash);
+	if (ref) return ref;
+
+	sound new_sound = empty_sound();
+	new_sound.path_hash = hash;
+	new_sound.start_addr = (u8*)path;
+	new_sound.is_music = true;
+
+	return add_sound_to_queue(new_sound).sound;
+}
+
 sound* assets_load_wav_from_file(char* path)
 {
 	u32 hash = assets_hash_path(path);

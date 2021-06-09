@@ -28,8 +28,6 @@
 #define NUM_AUDIO_CHANNELS 4
 #endif
 
-
-
 #ifndef ASSET_SOUND_COUNT
 #define ASSET_SOUND_COUNT 1
 #endif
@@ -74,8 +72,12 @@ typedef struct t_image {
 #include <SDL2/SDL_mixer.h>
 typedef struct t_sound
 {
-	Mix_Chunk* chunk;
-	u8 *start_addr;
+	union {
+		Mix_Chunk* chunk;
+		Mix_Music* music;
+	};
+	bool is_music;
+	u8 *start_addr; // When loading music, this contains the address of the path.
 	bool loaded;
 	s16 references;
 	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
@@ -113,6 +115,7 @@ typedef enum t_asset_task_type
 	ASSET_BITMAP,
 	ASSET_TTF,
 	ASSET_WAV,
+	ASSET_MUSIC,
 } asset_task_type;
 
 typedef struct t_asset_task
