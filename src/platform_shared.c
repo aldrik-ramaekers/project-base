@@ -309,7 +309,11 @@ void platform_handle_events()
 		_platform_handle_events_for_window(w);
 
 		if (w->do_draw) {
+
 			platform_window_make_current(w);
+
+			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
+			
 			platform_set_cursor(w, CURSOR_DEFAULT);
 			renderer->render_clear(w);
 			_camera_apply_transformations(w, &_global_camera);
@@ -317,6 +321,15 @@ void platform_handle_events()
 
             w->update_func(w);
 			if (i == 0) update_render_notifications();
+
+			// Update delta.
+			{
+				u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
+				u64 diff = current_stamp - update_start;
+				float diff_ms = diff / 1000000000.0f;
+				update_delta = diff_ms;
+			}
+
 			if (current_render_driver() == DRIVER_GL) IMP_glFinish();
 		    platform_window_swap_buffers(w);
         }
@@ -331,10 +344,12 @@ void platform_handle_events()
 	}
 
 #if 1
-	u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
-	u64 diff = current_stamp - __last_stamp;
-	float diff_ms = diff / 1000000000.0f;
-	frame_delta = diff_ms;
+	{
+		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
+		u64 diff = current_stamp - __last_stamp;
+		float diff_ms = diff / 1000000000.0f;
+		frame_delta = diff_ms;
+	}
 
 	#if 0
 	if (diff_ms < TARGET_FRAMERATE)

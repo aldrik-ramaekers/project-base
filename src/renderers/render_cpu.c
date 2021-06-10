@@ -754,4 +754,6 @@ render_driver render_cpu_driver =
 	cpu_render_set_rotation,
 	cpu_render_reset_rotation,
 	cpu_render_arc,
+
+	0,
 };

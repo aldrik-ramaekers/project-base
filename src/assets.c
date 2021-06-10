@@ -270,7 +270,11 @@ void *_assets_queue_worker()
 				bool result = assets_queue_worker_load_font(buf.font);
 				buf.valid = result;
 			}
-			else if (buf.type == ASSET_WAV)
+			
+			mutex_lock(&asset_mutex);
+
+			// SDL mixer cant handle multiple threads.
+			if (buf.type == ASSET_WAV)
 			{
 				buf.sound->chunk = Mix_QuickLoad_WAV(buf.sound->start_addr);
 				buf.valid = (buf.sound->chunk!=0);
@@ -281,8 +285,6 @@ void *_assets_queue_worker()
 				//printf("loaded!: %p %s\n", buf.sound->music, (char*)buf.sound->start_addr);
 				buf.valid = (buf.sound->music!=0);
 			}
-			
-			mutex_lock(&asset_mutex);
 			
 			log_assert(global_asset_collection.post_process_queue.reserved_length > 
 				   global_asset_collection.post_process_queue.length, "Attempted to process more assets than specified with constant ASSET_QUEUE_COUNT");

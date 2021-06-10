@@ -325,6 +325,52 @@ static s32 gl_render_text_with_cursor(font *font, s32 x, s32 y, char *text, colo
     return x_ - x;
 }
 
+static s32 gl_render_text_rd(font *font, s32 x, s32 y, char *text, color tint, u16 target_h)
+{
+	float size_multiplier = target_h/(float)font->size;
+
+	if (!font->loaded)
+        return 0;
+
+    IMP_glEnable(GL_TEXTURE_2D);
+    IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+
+    s32 x_ = x;
+    utf8_int32_t ch;
+    while ((text = utf8codepoint(text, &ch)) && ch)
+    {
+        if (ch == 9) ch = 32; // Turn tab into space.
+        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END) ch = 0x3f; // Default character for out of range glyphs.
+        if (ch == 10) ch = 0xB6; // What the hell is this?
+        if (ch == 13) continue; // Don't draw newlines.
+
+        glyph g = font->glyphs[ch];
+
+        s32 y_ = y + (font->px_h + g.yoff)*size_multiplier;
+        s32 x_to_render = x_ + (g.lsb*size_multiplier);
+
+        IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
+        IMP_glBegin(GL_QUADS);
+
+        IMP_glTexCoord2i(0, 0);
+        IMP_glVertex3i(x_to_render, y_, gl_render_depth);
+        IMP_glTexCoord2i(0, 1);
+        IMP_glVertex3i(x_to_render, y_ + g.height*size_multiplier, gl_render_depth);
+        IMP_glTexCoord2i(1, 1);
+        IMP_glVertex3i(x_to_render + g.width*size_multiplier, y_ + g.height*size_multiplier, gl_render_depth);
+        IMP_glTexCoord2i(1, 0);
+        IMP_glVertex3i(x_to_render + g.width*size_multiplier, y_, gl_render_depth);
+        IMP_glBindTexture(GL_TEXTURE_2D, 0);
+        IMP_glEnd();
+
+        x_ += (g.advance*size_multiplier);
+    }
+
+    IMP_glDisable(GL_TEXTURE_2D);
+
+    return x_ - x;
+}
+
 static s32 gl_render_text(font *font, s32 x, s32 y, char *text, color tint)
 {
     if (!font->loaded)
@@ -337,18 +383,10 @@ static s32 gl_render_text(font *font, s32 x, s32 y, char *text, color tint)
     utf8_int32_t ch;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
-        utf8_int32_t ch_next;
-        utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == 10)
-            ch = 0xB6;
-        if (ch == 13)
-            continue;
+        if (ch == 9) ch = 32; // Turn tab into space.
+        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END) ch = 0x3f; // Default character for out of range glyphs.
+        if (ch == 10) ch = 0xB6; // What the hell is this?
+        if (ch == 13) continue; // Don't draw newlines.
 
         glyph g = font->glyphs[ch];
 
@@ -370,6 +408,8 @@ static s32 gl_render_text(font *font, s32 x, s32 y, char *text, color tint)
         IMP_glEnd();
 
         /* add kerning */
+		//utf8_int32_t ch_next;
+        //utf8codepoint(text, &ch_next);
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
         x_ += (g.advance);
     }
@@ -784,4 +824,6 @@ render_driver render_gl_driver =
 	gl_render_set_rotation,
 	gl_render_reset_rotation,
 	gl_render_arc,
+
+	gl_render_text_rd,
 };
