@@ -9,6 +9,7 @@
 
 void audio_play_sound(sound* s,  s8 channel);
 void audio_set_sound_volume(sound* s, float p);
+void audio_set_music_volume(float p);
 void audio_set_mixer_volume(s8 channel, float p);
 bool audio_music_is_playing();
 

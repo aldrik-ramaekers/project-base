@@ -13,6 +13,11 @@ void audio_set_sound_volume(sound* s, float p)
 	else Mix_VolumeChunk(s->chunk, 128*p);
 }
 
+void audio_set_music_volume(float p)
+{
+	Mix_VolumeMusic(128*p);
+}
+
 void audio_set_mixer_volume(s8 channel, float p)
 {
 	Mix_Volume(channel, 128*p);
