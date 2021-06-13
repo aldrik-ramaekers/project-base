@@ -212,6 +212,7 @@ vec2 	platform_get_window_size(platform_window *window);
 s32 	platform_filter_matches(array *filters, char *string, char **matched_filter);
 bool 	platform_delete_file(char *path);
 s32		platform_get_titlebar_height();
+void 	platform_toggle_fullscreen(platform_window* window, bool fullscreen);
 
 //	:/Info	Check if the window is still open. Should be used in the main loop.
 //	:/Ret	true when open, false when closed.

@@ -55,6 +55,7 @@ __def_proc( void, glPopMatrix, ())
 __def_proc( WINBOOL, GetSaveFileNameA, (LPOPENFILENAMEA))
 __def_proc( WINBOOL, GetOpenFileNameA, (LPOPENFILENAMEA))
 
+__def_proc( int, GetDeviceCaps, (HDC hdc, int index))
 __def_proc( HPEN, CreatePen, (int iStyle,int cWidth,COLORREF color))
 __def_proc( HBRUSH, CreateBrushIndirect, (CONST LOGBRUSH *plbrush))
 __def_proc( HGDIOBJ, SelectObject, (HDC hdc,HGDIOBJ h))
@@ -130,4 +131,5 @@ void _lib_loader_init()
     __load_fnc_or_exit(SetPixelFormat, libGdi32);
     __load_fnc_or_exit(StretchDIBits, libGdi32);
     __load_fnc_or_exit(SwapBuffers, libGdi32);
+	__load_fnc_or_exit(GetDeviceCaps, libGdi32);
 }

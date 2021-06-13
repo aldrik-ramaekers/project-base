@@ -47,6 +47,8 @@ struct t_platform_window
 	backbuffer backbuffer;
 	s32 width;
 	s32 height;
+	s32 pre_fullscreen_width;
+	s32 pre_fullscreen_height;
 	bool is_open;
 	bool has_focus;
 	cursor_type curr_cursor_type;
@@ -359,8 +361,10 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 				width-current_window_to_handle->width, height-current_window_to_handle->height);
 		}
 
-		current_window_to_handle->width = width;
-		current_window_to_handle->height = height;
+		if (width != 0) {
+			current_window_to_handle->width = width;
+			current_window_to_handle->height = height;
+		}
 		
 		if (current_render_driver() == DRIVER_CPU)
 			_allocate_backbuffer(current_window_to_handle);
@@ -587,6 +591,48 @@ void platform_show_window(platform_window *window)
 void platform_hide_window(platform_window *window)
 {
 	ShowWindow(window->window_handle, SW_HIDE);
+}
+
+void platform_toggle_fullscreen(platform_window* window, bool fullscreen)
+{	
+	if (fullscreen) {
+		HDC windowHDC = GetDC(window->window_handle);
+		s32 fullscreenWidth  = IMP_GetDeviceCaps(windowHDC, DESKTOPHORZRES);
+		s32 fullscreenHeight = IMP_GetDeviceCaps(windowHDC, DESKTOPVERTRES);
+		s32 colourBits       = IMP_GetDeviceCaps(windowHDC, BITSPIXEL);
+		s32 refreshRate      = IMP_GetDeviceCaps(windowHDC, VREFRESH);
+
+		{
+			window->pre_fullscreen_width = window->width;
+			window->pre_fullscreen_height = window->height;
+			DEVMODE fullscreenSettings;
+
+			EnumDisplaySettings(NULL, 0, &fullscreenSettings);
+			fullscreenSettings.dmPelsWidth        = fullscreenWidth;
+			fullscreenSettings.dmPelsHeight       = fullscreenHeight;
+			fullscreenSettings.dmBitsPerPel       = colourBits;
+			fullscreenSettings.dmDisplayFrequency = refreshRate;
+			fullscreenSettings.dmFields           = DM_PELSWIDTH |
+													DM_PELSHEIGHT |
+													DM_BITSPERPEL |
+													DM_DISPLAYFREQUENCY;
+
+			SetWindowLongPtr(window->window_handle, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
+			SetWindowLongPtr(window->window_handle, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+			SetWindowPos(window->window_handle, HWND_TOPMOST, 0, 0, fullscreenWidth, fullscreenHeight, SWP_SHOWWINDOW);
+			ChangeDisplaySettings(&fullscreenSettings, CDS_FULLSCREEN);
+			ShowWindow(window->window_handle, SW_MAXIMIZE);
+		}
+	}
+	else {
+		SetWindowLongPtr(window->window_handle, GWL_EXSTYLE, WS_EX_LEFT);
+		SetWindowLongPtr(window->window_handle, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+		ChangeDisplaySettings(NULL, CDS_RESET);
+		SetWindowPos(window->window_handle, HWND_NOTOPMOST, 0, 0, window->pre_fullscreen_width, window->pre_fullscreen_height+platform_get_titlebar_height(), SWP_SHOWWINDOW);
+		ShowWindow(window->window_handle, SW_RESTORE);
+	}
+
+	log_info("Fullscreen setting changed");
 }
 
 bool _wgl_is_extension_supported(const char *extension)
@@ -839,7 +885,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32, u32))
 {
 	if (width < min_w) width = min_w;
-	if (height < min_h) width = min_h;
+	if (height < min_h) height = min_h;
 	if (width > max_w) width = max_w;
 	if (height > max_h) width = max_h;
 
