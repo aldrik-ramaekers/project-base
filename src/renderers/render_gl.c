@@ -465,6 +465,14 @@ static s32 gl_render_text_cutoff(font *font, s32 x, s32 y, char *text, color tin
         s32 y__ = y_ + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
 
+		if (x_to_render+g.advance > x + cutoff_width)
+        {
+            x_ = x;
+            y_ += font->size;
+			y__ = y_ + font->px_h + g.yoff;
+            x_to_render = x_;
+        }
+
         IMP_glBindTexture(GL_TEXTURE_2D, g.textureID);
         IMP_glBegin(GL_QUADS);
 
