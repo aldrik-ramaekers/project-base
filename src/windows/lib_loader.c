@@ -18,6 +18,8 @@ __def_proc( int, wglGetSwapIntervalEXT, (void));
 __def_proc( const char *, wglGetExtensionsStringEXT, (void));
 __def_proc( HGLRC, wglCreateContextAttribsARB, (HDC,HGLRC,const int*));
 
+
+__def_proc( void, glGetBooleanv, (GLenum,GLboolean*));
 __def_proc( void, glDepthMask, (GLboolean));
 __def_proc( void, glColorMask, (GLboolean,GLboolean,GLboolean,GLboolean));
 __def_proc( void, glDepthFunc, (GLenum));
@@ -82,6 +84,7 @@ void _lib_loader_init()
 	__load_fnc_or_exit(wglGetCurrentDC, libOpengl32);
 	__load_fnc_or_exit(glGetString, libOpengl32);
 
+	__load_fnc_or_exit(glGetBooleanv, libOpengl32);
     __load_fnc_or_exit(glDepthMask, libOpengl32);
     __load_fnc_or_exit(glColorMask, libOpengl32);
     __load_fnc_or_exit(glDepthFunc, libOpengl32);

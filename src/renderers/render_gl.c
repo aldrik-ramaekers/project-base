@@ -708,14 +708,21 @@ static void gl_render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, 
 	else IMP_glScissor(x - 1, y - 1 + h, w + 1, h + 1);
 }
 
-static vec4 gl_render_get_scissor(platform_window *window)
+static vec4 gl_render_get_scissor()
 {
+	GLboolean enabled = false;
+	IMP_glGetBooleanv(GL_SCISSOR_TEST,&enabled);
     vec4 vec;
-    IMP_glGetIntegerv(GL_SCISSOR_BOX, (GLint *)(&vec));
-    vec.x += 1;
-    vec.w -= 1;
-    vec.h -= 1;
-    vec.y += 1;
+
+	if (enabled) {
+		IMP_glGetIntegerv(GL_SCISSOR_BOX, (GLint *)(&vec));
+		vec.x += 1;
+    	vec.w -= 1;
+		vec.h -= 1;
+		vec.y += 1;
+	} else {
+		vec = (vec4){0,0,99999,99999};
+	}
     return vec;
 }
 
