@@ -276,7 +276,7 @@ void *_assets_queue_worker()
 			// SDL mixer cant handle multiple threads.
 			if (buf.type == ASSET_WAV)
 			{
-				buf.sound->chunk = Mix_QuickLoad_WAV(buf.sound->start_addr);
+				buf.sound->chunk = Mix_LoadWAV_RW((SDL_RWops*)buf.sound->start_addr, 1);
 				buf.valid = (buf.sound->chunk!=0);
 			}
 			else if (buf.type == ASSET_MUSIC)
@@ -465,12 +465,9 @@ sound* assets_load_wav_from_file(char* path)
 	sound* ref = find_sound_ref(hash);
 	if (ref) return ref;
 
-	platform_set_active_directory(binary_path);
-	file_content content = platform_read_file_content(path, "rb");
-
 	sound new_sound = empty_sound();
 	new_sound.path_hash = hash;
-	new_sound.start_addr = content.content;
+	new_sound.start_addr = (u8*)SDL_RWFromFile(path, "rb");
 
 	return add_sound_to_queue(new_sound).sound;
 }
