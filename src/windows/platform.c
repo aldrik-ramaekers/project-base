@@ -994,7 +994,6 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 		ShowWindow(window->window_handle, SW_HIDE);
 	else
 		ShowWindow(window->window_handle, SW_SHOW);
-			
 	window->is_open = true;
 			
 	TRACKMOUSEEVENT track;
@@ -1005,7 +1004,8 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	platform_get_focus(window);
 	
 	_platform_register_window(window);
-	
+	ShowWindow(window->window_handle, SW_RESTORE);
+	SetForegroundWindow(window->window_handle);
 	return window;
 }
 
