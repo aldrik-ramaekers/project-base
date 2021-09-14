@@ -4,6 +4,16 @@
 *  All rights reserved.
 */
 
+inline bool mouse_interacts_peak(s32 x, s32 y, s32 w, s32 h)
+{
+	// Mouse is in rectangle and mouse has not been clicked yet.
+	vec4 area = renderer->render_get_scissor();
+	bool result = (!_global_mouse.is_hovering_item) && 
+				  (_global_mouse.x >= x && _global_mouse.x <= x+w && _global_mouse.y >= y && _global_mouse.y <= y+h) &&
+				  (_global_mouse.x >= area.x && _global_mouse.x <= area.x+area.w && _global_mouse.y >= area.y && _global_mouse.y <= area.y+area.h);
+	return result;
+}
+
 inline bool mouse_interacts(s32 x, s32 y, s32 w, s32 h)
 {
 	// Mouse is in rectangle and mouse has not been clicked yet.

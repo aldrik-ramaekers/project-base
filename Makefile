@@ -23,7 +23,7 @@ ifeq ($(OS), Windows_NT)
 else
 	install_dir = /usr/
 	permissions = sudo
-	libs = -lX11 -lm -ldl
+	libs = -lX11 -lm -ldl -lSDL2 -lSDL2_mixer
 	# -Wl,-Bstatic -ldl -Wl,-Bdynamic
 
 	# Commands
@@ -59,6 +59,8 @@ install_deps:
 	sudo apt-get --yes --force-yes install libglu1-mesa-dev
 	sudo apt-get --yes --force-yes install libgl1-mesa-dev
 	sudo apt-get --yes --force-yes install libxrandr-dev
+	sudo apt-get --yes --force-yes install libsdl2-dev
+	sudo apt-get --yes --force-yes install libsdl2-mixer-dev
 
 # Build (Windows + Linux)
 build:

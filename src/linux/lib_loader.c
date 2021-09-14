@@ -14,6 +14,7 @@ __def_proc( GLXFBConfig*, glXChooseFBConfig, ( Display *dpy, int screen, const i
 __def_proc( int, glXGetFBConfigAttrib, (Display *dpy, GLXFBConfig config, int attribute, int *value))
 __def_proc( XVisualInfo*, glXGetVisualFromFBConfig, (Display *dpy, GLXFBConfig config))
 __def_proc( void, glXSwapBuffers, (Display *dpy, GLXDrawable drawable))
+__def_proc( void, glGetBooleanv, (GLenum,GLboolean*));
 __def_proc( void, glDepthMask, (GLboolean));
 __def_proc( void, glColorMask, (GLboolean,GLboolean,GLboolean,GLboolean));
 __def_proc( void, glDepthFunc, (GLenum));

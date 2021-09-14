@@ -217,6 +217,7 @@ bool is_right_released();
 bool is_right_clicked();
 
 bool mouse_interacts(s32 x, s32 y, s32 w, s32 h);
+bool mouse_interacts_peak(s32 x, s32 y, s32 w, s32 h);
 
 bool keyboard_is_key_down(s16 key);
 bool keyboard_is_key_pressed(s16 key);

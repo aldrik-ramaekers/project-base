@@ -1389,6 +1389,11 @@ inline void platform_window_swap_buffers(platform_window *window)
 	}
 }
 
+void platform_toggle_vsync(platform_window* window, bool on)
+{
+	// placeholder.
+}
+
 u64 platform_get_time(time_type time_type, time_precision precision)
 {
 	s32 type = CLOCK_REALTIME;
