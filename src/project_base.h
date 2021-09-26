@@ -22,7 +22,6 @@
 //			- return error when asset file is not found
 //			- append .config/ before config on linux
 //			- make sure a valid render config is found on linux
-//			- replace all int with s32
 //			- remove all unused functions @Unused
 //			- prefix private functions with _ like platform_destroy_shared
 //			- make custom popup windows so we can get rid of zenity and windows deps
@@ -116,6 +115,7 @@
 #include "render.h"
 #include "camera.h"
 #include "platform.h"
+#include "im_ui.h"
 #include "ui.h"
 #include "notification.h"
 #include "string_utils.h"
@@ -144,6 +144,7 @@
 #include "assets.c"
 #include "audio.c"
 #include "camera.c"
+#include "im_ui.c"
 #include "ui.c"
 #include "notification.c"
 #include "string_utils.c"

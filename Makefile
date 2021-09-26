@@ -1,7 +1,7 @@
 MAKEFLAGS += -s
 MAKEFLAGS += --always-make
 
-main_file = src/main.c
+main_file = src/entry.c
 output_file = libprojectbase
 flags = -m64 -c -Wall -Wno-maybe-uninitialized -DMODE_DEBUG -g
 release_flags = -m64 -c -Wall -O3
@@ -71,10 +71,10 @@ build:
 	$(permissions) ld -r -b binary -o build/data.o src/resources/mono.ttf 
 
 	$(permissions) gcc $(flags) $(main_file) -o build/$(output_file)-debug.o $(libs)
-	$(permissions) gcc $(release_flags) $(main_file) -o build/$(output_file).o $(libs)
+	#$(permissions) gcc $(release_flags) $(main_file) -o build/$(output_file).o $(libs)
 
 	$(permissions) ar rcs build/$(output_file)-debug.a build/$(output_file)-debug.o build/data.o
-	$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
+	#$(permissions) ar rcs build/$(output_file).a build/$(output_file).o build/data.o
 
 	make $(install_lib_command)
 

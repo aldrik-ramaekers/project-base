@@ -52,7 +52,7 @@ typedef struct t_render_driver
 {
 	char*	name;
 	void 	(*set_render_depth)(s32 depth);
-	void 	(*render_clear)(platform_window *window);
+	void 	(*render_clear)(platform_window *window, color tint);
 	void 	(*render_image)(image *image, s32 x, s32 y, s32 width, s32 height);
 	void 	(*render_image_tint)(image *image, s32 x, s32 y, s32 width, s32 height, color tint);
 	s32 	(*render_text)(font *font, s32 x, s32 y, char *text, color tint);
@@ -75,6 +75,7 @@ typedef struct t_render_driver
 	void	(*render_reset_rotation)(float32 rotation, float32 x, float32 y);
 	void 	(*render_arc)(float x1, float y1, float x2, float y2, float radius, bool arcDirection, bool useBiggerArc, color c, float thickness);
 	s32 	(*render_text_rd)(font *font, s32 x, s32 y, char *text, color tint, u16 target_h);
+	void	(*render_rounded_rectangle)(float x, float y, float width, float height, color color, float radius, int innerPad);
 } render_driver;
 
 // Current driver

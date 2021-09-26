@@ -43,6 +43,7 @@ __def_proc( void, glColor4f, (GLfloat red,GLfloat green,GLfloat blue,GLfloat alp
 __def_proc( void, glTexCoord2i, (GLint s,GLint t))
 __def_proc( void, glTexCoord2f, (GLfloat s,GLfloat t))
 __def_proc( void, glVertex3i, (GLint x,GLint y,GLint z))
+__def_proc( void, glVertex2f, (GLfloat, GLfloat))
 __def_proc( void, glEnd, (void))
 __def_proc( void, glDisable, (GLenum cap))
 __def_proc( void, glPixelStorei, (GLenum pname,GLint param))
@@ -108,6 +109,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(glTexCoord2i, libOpengl32);
 	__load_fnc_or_exit(glTexCoord2f, libOpengl32);
     __load_fnc_or_exit(glVertex3i, libOpengl32);
+	__load_fnc_or_exit(glVertex2f, libOpengl32);
     __load_fnc_or_exit(glEnd, libOpengl32);
     __load_fnc_or_exit(glDisable, libOpengl32);
     __load_fnc_or_exit(glPixelStorei, libOpengl32);

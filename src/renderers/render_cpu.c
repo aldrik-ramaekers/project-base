@@ -141,7 +141,7 @@ static void cpu_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint
     }
 }
 
-static void cpu_render_clear(platform_window *window)
+static void cpu_render_clear(platform_window *window, color tint)
 {
     drawing_window = window;
     cpu_render_reset_scissor();
@@ -755,5 +755,6 @@ render_driver render_cpu_driver =
 	cpu_render_reset_rotation,
 	cpu_render_arc,
 
+	0,
 	0,
 };

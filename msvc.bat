@@ -20,4 +20,5 @@ lib /OUT:projectbase-debug.lib icon.res ..\libs\SDL2.lib ..\libs\SDL2_mixer.lib 
 cl /Z7 /DMODE_DEBUG /std:c11 ..\examples\example_window.c /Feexample_window.exe projectbase-debug.lib icon.res
 cd ..
 
+REM call build\example_window.exe
 call devenv build\example_window.exe

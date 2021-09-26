@@ -326,7 +326,7 @@ void platform_handle_events()
 			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
 			
 			platform_set_cursor(w, CURSOR_DEFAULT);
-			renderer->render_clear(w);
+			renderer->render_clear(w, rgb(255,255,255));
 			_camera_apply_transformations(w, &_global_camera);
 			renderer->render_reset_scissor();
 

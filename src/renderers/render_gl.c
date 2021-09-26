@@ -8,9 +8,9 @@ static u8 gl_render_depth = 1;
 static vec4 current_scissor;
 static float global_rotation = 0.0f;
 
-static void gl_render_clear(platform_window *window)
+static void gl_render_clear(platform_window *window, color tint)
 {
-    IMP_glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    IMP_glClearColor(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
     IMP_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -807,6 +807,118 @@ static void gl_render_arc(float x1, float y1, float x2, float y2, float radius, 
     gl__render_arc(angle1, angle2, radius, xCenter, yCenter, useBiggerArc, tint, thickness);
 }
 
+#define ROUNDING_POINT_COUNT 16      // Larger values makes circle smoother.
+void gl_render_rounded_rect(float x, float y, float width, float height, color tint, float radius, int innerPad)
+{
+	y += height;
+    vec2f top_left[ROUNDING_POINT_COUNT];
+    vec2f bottom_left[ROUNDING_POINT_COUNT];
+    vec2f top_right[ROUNDING_POINT_COUNT];
+    vec2f bottom_right[ROUNDING_POINT_COUNT];
+
+    if( radius == 0.0 )
+    {
+        radius = min(width, height);
+        radius *= 0.10; // 10%
+    }
+
+    int i = 0;
+    float x_offset, y_offset;
+    float step = ( 2.0f * M_PI ) / (ROUNDING_POINT_COUNT * 4),
+          angle = 0.0f;
+
+    unsigned int index = 0, segment_count = ROUNDING_POINT_COUNT;
+    vec2f bottom_left_corner = { x + radius, y - height + radius }; 
+
+
+    while( i != segment_count )
+    {
+        x_offset = cosf( angle );
+        y_offset = sinf( angle );
+
+
+        top_left[ index ].x = bottom_left_corner.x - 
+                              ( x_offset * radius );
+        top_left[ index ].y = ( height - ( radius * 2.0f ) ) + 
+                                bottom_left_corner.y - 
+                              ( y_offset * radius );
+
+
+        top_right[ index ].x = ( width - ( radius * 2.0f ) ) + 
+                                 bottom_left_corner.x + 
+                               ( x_offset * radius ) + (i == 0 ? -1 : 0);
+        top_right[ index ].y = ( height - ( radius * 2.0f ) ) + 
+                                 bottom_left_corner.y -
+                               ( y_offset * radius );
+
+
+        bottom_right[ index ].x = ( width - ( radius * 2.0f ) ) +
+                                    bottom_left_corner.x + 
+                                  ( x_offset * radius ) + (i == 0 ? -1 : 0);
+        bottom_right[ index ].y = bottom_left_corner.y + 
+                                  ( y_offset * radius );
+
+
+        bottom_left[ index ].x = bottom_left_corner.x - 
+                                 ( x_offset * radius );
+        bottom_left[ index ].y = bottom_left_corner.y +
+                                 ( y_offset * radius );
+
+#if 1
+        top_left[ index ].x = (top_left[ index ].x)+innerPad;
+        top_left[ index ].y = (top_left[ index ].y)-innerPad;
+
+
+        top_right[ index ].x = (top_right[ index ].x)-innerPad;
+        top_right[ index ].y = (top_right[ index ].y)-innerPad;
+
+
+        bottom_right[ index ].x = (bottom_right[ index ].x)-innerPad;
+        bottom_right[ index ].y = (bottom_right[ index ].y)+innerPad;
+
+
+        bottom_left[ index ].x =  (bottom_left[ index ].x)+innerPad;
+        bottom_left[ index ].y =  (bottom_left[ index ].y)+innerPad;
+#endif
+
+        angle -= step;
+
+        ++index;
+
+        ++i;
+    }
+	
+	IMP_glBindTexture(GL_TEXTURE_2D, 0);
+    IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+    IMP_glBegin( GL_TRIANGLE_STRIP );
+    {
+        // Top
+        for( i = segment_count - 1 ; i >= 0 ; i--)
+        {
+            IMP_glVertex3i( top_left[ i ].x, top_left[ i ].y, gl_render_depth);
+            IMP_glVertex3i( top_right[ i ].x, top_right[ i ].y, gl_render_depth );
+        }
+
+        // In order to stop and restart the strip.
+        IMP_glVertex3i( top_right[ 0 ].x, top_right[ 0 ].y, gl_render_depth );
+        IMP_glVertex3i( top_right[ 0 ].x, top_right[ 0 ].y, gl_render_depth );
+
+        // Center
+        IMP_glVertex3i( top_right[ 0 ].x, top_right[ 0 ].y, gl_render_depth );
+        IMP_glVertex3i( top_left[ 0 ].x, top_left[ 0 ].y, gl_render_depth );
+        IMP_glVertex3i( bottom_right[ 0 ].x, bottom_right[ 0 ].y, gl_render_depth );
+        IMP_glVertex3i( bottom_left[ 0 ].x, bottom_left[ 0 ].y, gl_render_depth );
+
+        // Bottom
+        for( i = 0; i != segment_count ; i++ )
+        {
+            IMP_glVertex3i( bottom_right[ i ].x, bottom_right[ i ].y, gl_render_depth );    
+            IMP_glVertex3i( bottom_left[ i ].x, bottom_left[ i ].y, gl_render_depth );                                    
+        }    
+    }
+    IMP_glEnd();
+}
+
 render_driver render_gl_driver =
 {
 	"GL",
@@ -841,4 +953,5 @@ render_driver render_gl_driver =
 	gl_render_arc,
 
 	gl_render_text_rd,
+	gl_render_rounded_rect,
 };
