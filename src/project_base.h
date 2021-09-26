@@ -36,16 +36,21 @@
 #define INCLUDE_PROJECT_BASE
 
 #define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-
-#pragma GCC push_options
-#pragma GCC diagnostic ignored "-Wunused-result"
+#include "SDL2/SDL.h"
 
 #define PROJECT_BASE_NAME "Project-base"
 #define PROJECT_BASE_VERSION "2.0.0"
 
 #ifndef TARGET_FRAMERATE
 #define TARGET_FRAMERATE (1000/30.0)
+#endif
+
+#if defined(_MSC_VER)
+#define COMPILER_MSVC
+#endif
+
+#if defined(__GNUC__) || defined(__MINGW32__) || defined(__MINGW64__)
+#define COMPILER_GCC
 #endif
 
 #ifdef _WIN32
@@ -95,14 +100,12 @@
 #include "memory.h"
 #include "external/cJSON.h"
 
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "external/stb_image.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_truetype.h"
-#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 
 #include "lib_loader.h"
 #include "external/utf8.h"
@@ -113,7 +116,6 @@
 #include "render.h"
 #include "camera.h"
 #include "platform.h"
-#include "interface.h"
 #include "ui.h"
 #include "notification.h"
 #include "string_utils.h"
@@ -142,7 +144,6 @@
 #include "assets.c"
 #include "audio.c"
 #include "camera.c"
-#include "interface.c"
 #include "ui.c"
 #include "notification.c"
 #include "string_utils.c"
@@ -150,7 +151,5 @@
 #include "localization.c"
 #include "memory_bucket.c"
 #include "external/cJSON.c"
-
-#pragma GCC pop_options
 
 #endif

@@ -2,12 +2,17 @@
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __load_fnc_wgl_or_exit(_ptr) IMP_##_ptr = (DEF_##_ptr)IMP_wglGetProcAddress(#_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __load_fnc_wgl(_ptr) IMP_##_ptr = (DEF_##_ptr)IMP_wglGetProcAddress(#_ptr);
-#define __def_proc(_return, _name, _params) typedef _return APIENTRY (*DEF_##_name)_params; DEF_##_name IMP_##_name;
+#define __def_proc(_return, _name, _params) typedef _return (_stdcall *DEF_##_name)_params; DEF_##_name IMP_##_name;
+
+//typedef HGLRC (*DEF_wglCreateContext)(HDC); 
+//DEF_wglCreateContext IMP_wglCreateContext;
+//typedef bool (*DEF_wglShareLists)(HGLRC,HGLRC); 
+//DEF_wglShareLists IMP_wglShareLists;
 
 __def_proc( HGLRC, wglCreateContext, (HDC));
-__def_proc( WINBOOL, wglShareLists, (HGLRC,HGLRC));
-__def_proc( WINBOOL, wglMakeCurrent, (HDC,HGLRC));
-__def_proc( WINBOOL, wglDeleteContext, (HGLRC));
+__def_proc( bool, wglShareLists, (HGLRC,HGLRC));
+__def_proc( bool, wglMakeCurrent, (HDC,HGLRC));
+__def_proc( bool, wglDeleteContext, (HGLRC));
 
 __def_proc( PROC, wglGetProcAddress, (LPCSTR));
 __def_proc( HDC , wglGetCurrentDC, (void));
@@ -54,20 +59,20 @@ __def_proc( void, glLineWidth, (GLfloat))
 __def_proc( void, glPushMatrix, ())
 __def_proc( void, glPopMatrix, ())
 
-__def_proc( WINBOOL, GetSaveFileNameA, (LPOPENFILENAMEA))
-__def_proc( WINBOOL, GetOpenFileNameA, (LPOPENFILENAMEA))
+__def_proc( bool, GetSaveFileNameA, (LPOPENFILENAMEA))
+__def_proc( bool, GetOpenFileNameA, (LPOPENFILENAMEA))
 
 __def_proc( int, GetDeviceCaps, (HDC hdc, int index))
 __def_proc( HPEN, CreatePen, (int iStyle,int cWidth,COLORREF color))
 __def_proc( HBRUSH, CreateBrushIndirect, (CONST LOGBRUSH *plbrush))
 __def_proc( HGDIOBJ, SelectObject, (HDC hdc,HGDIOBJ h))
-__def_proc( WINBOOL, Rectangle, (HDC hdc,int left,int top,int right,int bottom))
-__def_proc( WINBOOL, DeleteObject, (HGDIOBJ ho))
+__def_proc( bool, Rectangle, (HDC hdc,int left,int top,int right,int bottom))
+__def_proc( bool, DeleteObject, (HGDIOBJ ho))
 __def_proc( int, ChoosePixelFormat, (HDC hdc,CONST PIXELFORMATDESCRIPTOR *ppfd))
 __def_proc( int, DescribePixelFormat, (HDC hdc,int iPixelFormat,UINT nBytes,LPPIXELFORMATDESCRIPTOR ppfd))
-__def_proc( WINBOOL, SetPixelFormat, (HDC hdc,int format,CONST PIXELFORMATDESCRIPTOR *ppfd))
+__def_proc( bool, SetPixelFormat, (HDC hdc,int format,CONST PIXELFORMATDESCRIPTOR *ppfd))
 __def_proc( int, StretchDIBits, (HDC ,int ,int ,int ,int ,int ,int ,int ,int ,CONST VOID *,CONST BITMAPINFO *,UINT ,DWORD ))
-__def_proc( WINBOOL, SwapBuffers, (HDC))
+__def_proc( bool, SwapBuffers, (HDC))
 
 void _lib_loader_init()
 {

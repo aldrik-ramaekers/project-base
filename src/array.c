@@ -22,7 +22,7 @@ bool array_exists(array *array)
 	return array->entry_size;
 }
 
-int array_push(array *array, void *data)
+int array_push(array *array, u8 *data)
 {
 	log_assert(array, "Array cannot be null");
 	log_assert(data, "Data to insert cannot be null");
@@ -51,7 +51,7 @@ int array_push(array *array, void *data)
 	return result;
 }
 
-int array_push_size(array *array, void *data, s32 entry_size)
+int array_push_size(array *array, u8 *data, s32 entry_size)
 {
 	log_assert(array, "Array cannot be null");
 	log_assert(data, "Data to insert cannot be null");
@@ -135,7 +135,7 @@ void array_remove_at(array *array, u32 at)
 	mutex_unlock(&array->mutex);
 }
 
-void array_remove(array *array, void *ptr)
+void array_remove(array *array, u8 *ptr)
 {
 	mutex_lock(&array->mutex);
 	int offset = ptr - array->data;
@@ -144,14 +144,14 @@ void array_remove(array *array, void *ptr)
 	mutex_unlock(&array->mutex);
 }
 
-void array_remove_by(array *array, void *data)
+void array_remove_by(array *array, u8 *data)
 {
 	log_assert(array, "Array cannot be null");
 	
 	mutex_lock(&array->mutex);
 	for (int i = 0; i < array->length; i++)
 	{
-		void *d = array_at(array, i);
+		u8 *d = array_at(array, i);
 		if (memcmp(d, data, array->entry_size) == 0)
 		{
 			array_remove_at(array, i);
@@ -168,7 +168,7 @@ void *array_at(array *array, u32 at)
 	log_assert(at >= 0, "Index to return cannot be smaller than 0.");
 	log_assert(at < array->length, "Index to return is out of bounds.");
 	
-	void *result =  array->data + (at * array->entry_size);
+	u8 *result =  array->data + (at * array->entry_size);
 	mutex_unlock(&array->mutex);
 	return result;
 }
@@ -190,15 +190,16 @@ void array_swap(array *array, u32 swap1, u32 swap2)
 	log_assert(swap2 < array->length, "Destination index to swap is out of bounds.");
 	if (swap1 == swap2) return;
 	
-	void *swap1_at = array_at(array, swap1);
-	void *swap2_at = array_at(array, swap2);
+	u8 *swap1_at = array_at(array, swap1);
+	u8 *swap2_at = array_at(array, swap2);
 	
 	mutex_lock(&array->mutex);
-	char swap1_buffer[array->entry_size];
+	char* swap1_buffer = mem_alloc(array->entry_size);
 	memcpy(swap1_buffer, swap1_at, array->entry_size);
 	memcpy(swap1_at, swap2_at, array->entry_size);
 	memcpy(swap2_at, swap1_buffer, array->entry_size);
 	mutex_unlock(&array->mutex);
+	mem_free(swap1_buffer);
 }
 
 array array_copy(array *arr)

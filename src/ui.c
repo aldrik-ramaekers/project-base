@@ -787,7 +787,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			history_entry.text = mem_alloc(strlen(state->buffer)+1);
 			history_entry.cursor_offset = last_cursor_pos;
 			string_copyn(history_entry.text, state->buffer, MAX_INPUT_LENGTH);
-			array_push(&state->future, &history_entry);
+			array_push(&state->future, (uint8_t *)&history_entry);
 			
 			global_ui_context.keyboard->text_changed = true;
 			
@@ -807,7 +807,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 			history_entry.text = mem_alloc(strlen(state->buffer)+1);
 			history_entry.cursor_offset = last_cursor_pos;
 			string_copyn(history_entry.text, state->buffer, MAX_INPUT_LENGTH);
-			array_push(&state->history, &history_entry);
+			array_push(&state->history, (uint8_t *)&history_entry);
 			
 			global_ui_context.keyboard->text_changed = true;
 			
@@ -830,7 +830,7 @@ bool ui_push_textbox(textbox_state *state, char *placeholder)
 					history_entry.text = mem_alloc(strlen(state->buffer)+1);
 					history_entry.cursor_offset = last_cursor_pos;
 					string_copyn(history_entry.text, state->buffer, MAX_INPUT_LENGTH);
-					array_push(&state->history, &history_entry);
+					array_push(&state->history, (uint8_t *)&history_entry);
 				}
 			}
 			

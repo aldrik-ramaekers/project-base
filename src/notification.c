@@ -18,7 +18,7 @@ void push_notification(char *message)
 	new_notification.message = mem_alloc(len);
 	new_notification.duration = 0;
 	string_copyn(new_notification.message, message, len);
-	array_push(&global_notifications, &new_notification);
+	array_push(&global_notifications, (uint8_t *)&new_notification);
 }
 
 void update_render_notifications()

@@ -40,11 +40,11 @@ void localization_load(u8 *start_addr, u8 *end_addr, u8 *img_start, u8 *img_end,
 			translation.identifier = buffer+entry->offset;
 			translation.translation = buffer+trans->offset;
 			
-			array_push(&mo.translations, &translation);
+			array_push(&mo.translations, (uint8_t *)&translation);
 		}
 	}
 
-	array_push(&global_localization.mo_files, &mo);
+	array_push(&global_localization.mo_files, (uint8_t *)&mo);
 }
 
 char* locale_get_name()

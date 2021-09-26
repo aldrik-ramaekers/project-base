@@ -42,7 +42,7 @@ void* _registered_alloc(u64 size)
 	mem_entry new_entry;
 	new_entry.ptr = addr;
 	new_entry.len = size;
-	array_push(&_mem_registry, &new_entry);
+	array_push(&_mem_registry, (uint8_t*)&new_entry);
 	mutex_unlock(&_mem_mut);
 	return addr;
 }

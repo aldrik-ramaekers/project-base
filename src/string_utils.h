@@ -63,7 +63,7 @@ typedef struct t_text_match
 
 bool string_match(char *first, char *second);
 bool string_equals(char *first, char *second);
-bool string_contains_ex(char *big, char *small, array *text_matches, bool *cancel_search);
+bool string_contains_ex(char *big, char *sml, array *text_matches, bool *cancel_search);
 
 s32 	string_length(char *buffer);
 array 	string_split(char *text);

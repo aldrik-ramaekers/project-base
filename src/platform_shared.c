@@ -241,7 +241,18 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 		thread asset_queue_worker_thread = thread_start(_assets_queue_worker, NULL);
 		thread_detach(&asset_queue_worker_thread);
 	}
+
+#if defined(COMPILER_GCC)
 	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
+#elif defined(COMPILER_MSVC)
+	HRSRC src = FindResourceA(NULL, "IMG_MONOTTF", "BOOBA"); //nocheckin
+	HGLOBAL pos = LoadResource(NULL, src);
+	char* ptr = LockResource(pos);
+	DWORD size = SizeofResource(NULL, src);
+
+	ui_init(assets_load_font(ptr, ptr+size, 16));
+#endif
+
 	localization_init();
 
 	_settings_init(config_path);
@@ -262,11 +273,11 @@ void _platform_register_window(platform_window* window) {
 		array_reserve(&window_registry, 10);
 	}
 
-	array_push(&window_registry, &window);
+	array_push(&window_registry, (uint8_t*)&window);
 }
 
 void _platform_unregister_window(platform_window* window) {
-	array_remove_by(&window_registry, &window);
+	array_remove_by(&window_registry, (uint8_t*)&window);
 }
 
 void _switch_render_method(bool use_gpu)

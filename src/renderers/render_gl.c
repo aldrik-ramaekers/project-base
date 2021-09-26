@@ -767,7 +767,7 @@ static void gl__render_arc(float angle1, float angle2, float radius, float x, fl
     s32 buffer_size = ARC_VERTEX_COUNT * 2;
 
     // Create opengl geometry
-    GLfloat pos[buffer_size];
+    GLfloat pos[200];
     for (int i = 0; i < ARC_VERTEX_COUNT; i++)
     {
         pos[i * 2] = sin((float)i / (ARC_VERTEX_COUNT - 1) * (angle2 - angle1) + angle1) * radius + x;

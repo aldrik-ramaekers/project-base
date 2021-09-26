@@ -17,7 +17,7 @@ typedef struct t_array
 	u32		reserved_length;
 	u64		entry_size;
 	u32		reserve_jump;
-	void*	data;
+	u8*	data;
 	mutex	mutex;
 } array;
 
@@ -31,21 +31,21 @@ bool 	array_exists(array *arr);
 
 //	:/Info	Add an item to the end of the array.
 //	:/Ret	The index of the new item within the array.
-int 	array_push(array *arr, void *data);
+int 	array_push(array *arr, u8 *data);
 
 //	:/Info	Add an item of given size `entry_size` to the end of the array. Remaining item space is filled with 0.
 //			Writing an item bigger than the entry size specified in `array_create` is not allowed.
 //	:/Ret	The index of the new item within the array.
-int 	array_push_size(array *arr, void *data, s32 entry_size);
+int 	array_push_size(array *arr, u8 *data, s32 entry_size);
 
 //	:/Info	Remove the item at the given index.
 void 	array_remove_at(array *arr, u32 at);
 
 //	:/Info	Remove an item by the given address returned by `array_at`.
-void 	array_remove(array *arr, void *ptr);
+void 	array_remove(array *arr, u8 *ptr);
 
 //	:/Info	Remove an item with the given data.
-void 	array_remove_by(array *arr, void *data);
+void 	array_remove_by(array *arr, u8 *data);
 
 //	:/Info	Retrieve the item at the given index.
 //	:/Ret	The address within the array pointing to the data.

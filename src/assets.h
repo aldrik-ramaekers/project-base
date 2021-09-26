@@ -53,7 +53,7 @@ typedef struct t_image {
 	s32 width;
 	s32 height;
 	s32 channels;
-	void *data;
+	u8 *data;
 	s16 references;
 	u32 textureID;
 	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
@@ -69,7 +69,7 @@ typedef struct t_image {
 #define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
 #define CAN_ADD_NEW_SOUND() (global_asset_collection.sounds.reserved_length > global_asset_collection.sounds.length)
 
-#include <SDL2/SDL_mixer.h>
+#include "SDL2/SDL_mixer.h"
 typedef struct t_sound
 {
 	union {
@@ -91,7 +91,7 @@ typedef struct t_glyph
 	s32 lsb;
 	s32 xoff;
 	s32 yoff;
-	void *bitmap;
+	u8 *bitmap;
 	u32 textureID;
 } glyph;
 

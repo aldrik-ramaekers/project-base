@@ -289,7 +289,7 @@ void *_assets_queue_worker()
 			log_assert(global_asset_collection.post_process_queue.reserved_length > 
 				   global_asset_collection.post_process_queue.length, "Attempted to process more assets than specified with constant ASSET_QUEUE_COUNT");
 			
-			array_push(&global_asset_collection.post_process_queue, &buf);
+			array_push(&global_asset_collection.post_process_queue, (uint8_t *)&buf);
 			
 			global_asset_collection.load_threads_busy--; // Very important to do this last or assets may be flagged as done loading early.
 			mutex_unlock(&asset_mutex);
@@ -393,14 +393,14 @@ static asset_task add_font_to_queue(font font)
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
 	log_assert(CAN_ADD_NEW_FONT(), "Attempted to process more fonts than specified with constant ASSET_FONT_COUNT");
 
-	int index = array_push(&global_asset_collection.fonts, &font);
+	int index = array_push(&global_asset_collection.fonts, (uint8_t *)&font);
 	
 	asset_task task;
 	task.type = ASSET_TTF;
 	task.font = array_at(&global_asset_collection.fonts, index);
 	
 	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, &task);
+	array_push(&global_asset_collection.queue.queue, (uint8_t *)&task);
 	mutex_unlock(&asset_mutex);
 
 	return task;
@@ -411,14 +411,14 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
 	log_assert(CAN_ADD_NEW_IMAGE(), "Attempted to process more images than specified with constant ASSET_IMAGE_COUNT");
 
-	int index = array_push(&global_asset_collection.images, &img);
+	int index = array_push(&global_asset_collection.images, (uint8_t *)&img);
 	
 	asset_task task;
 	task.type = is_bitmap ? ASSET_BITMAP : ASSET_PNG;
 	task.image = array_at(&global_asset_collection.images, index);
 	
 	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, &task);
+	array_push(&global_asset_collection.queue.queue, (uint8_t *)&task);
 	mutex_unlock(&asset_mutex);
 
 	return task;
@@ -429,14 +429,14 @@ static asset_task add_sound_to_queue(sound sound)
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
 	log_assert(CAN_ADD_NEW_SOUND(), "Attempted to process more sounds than specified with constant ASSET_SOUND_COUNT");
 
-	int index = array_push(&global_asset_collection.sounds, &sound);
+	int index = array_push(&global_asset_collection.sounds, (uint8_t *)&sound);
 	
 	asset_task task;
 	task.type = sound.is_music ? ASSET_MUSIC : ASSET_WAV;
 	task.sound = array_at(&global_asset_collection.sounds, index);
 	
 	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, &task);
+	array_push(&global_asset_collection.queue.queue, (uint8_t *)&task);
 	mutex_unlock(&asset_mutex);
 
 	return task;
@@ -638,7 +638,7 @@ void _assets_switch_render_method()
 			task.type = ASSET_PNG;
 			task.image = img_at;
 			task.valid = true;
-			array_push(&global_asset_collection.post_process_queue, &task);
+			array_push(&global_asset_collection.post_process_queue, (uint8_t *)&task);
 		}
 		else
 		{
@@ -658,7 +658,7 @@ void _assets_switch_render_method()
 			task.font = font_at;
 			task.valid = true;
 			
-			array_push(&global_asset_collection.post_process_queue, &task);
+			array_push(&global_asset_collection.post_process_queue, (uint8_t *)&task);
 		}
 		else
 		{

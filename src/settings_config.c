@@ -70,7 +70,7 @@ static void get_config_from_string(settings_config *config, char *string)
 		++string;
 	}
 	
-	array_push(&config->settings, &current_entry);
+	array_push(&config->settings, (uint8_t *)&current_entry);
 }
 
 void _settings_init(char *directory)
@@ -96,7 +96,7 @@ void _settings_init(char *directory)
 		return;
 	}
 	
-	string_convert_crlf_to_lf(content.content);
+	string_convert_crlf_to_lf((char*)content.content);
 	
 	s32 token_offset = 0;
 	for (s32 i = 0; i < content.content_length; i++)
@@ -196,7 +196,7 @@ void settings_set_string(char *name, char *value)
 		new_entry.value = mem_alloc(len+1);
 		string_copyn(new_entry.value, value, len+1);
 		
-		array_push(&_settings_file.settings, &new_entry);
+		array_push(&_settings_file.settings, (uint8_t *)&new_entry);
 	}
 }
 
@@ -231,7 +231,7 @@ void settings_set_number(char *name, s64 value)
 		len = strlen(num_buf);
 		new_entry.value = mem_alloc(len+1);
 		string_copyn(new_entry.value, num_buf, len+1);
-		array_push(&_settings_file.settings, &new_entry);
+		array_push(&_settings_file.settings, (uint8_t *)&new_entry);
 	}
 }
 

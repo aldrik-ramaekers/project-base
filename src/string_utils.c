@@ -156,7 +156,7 @@ bool string_contains_ex(char *text_to_search, char *text_to_find, array *text_ma
 					new_match.word_match_len = word_match_len_val;
 					new_match.line_start = line_start_ptr;
 					new_match.line_info = 0;
-					array_push(text_matches, &new_match);
+					array_push(text_matches, (uint8_t *)&new_match);
 				}
 				
 				final_result = true;
@@ -679,7 +679,7 @@ array string_split(char *text)
 		if (ch == ',')
 		{
 			current_filter[filter_len] = 0;
-			array_push(&result, current_filter);
+			array_push(&result, (uint8_t*)current_filter);
 			filter_len = 0;
 		}
 		else
@@ -697,7 +697,7 @@ array string_split(char *text)
 		text++;
 	}
 	current_filter[filter_len] = 0;
-	array_push(&result, current_filter);
+	array_push(&result, (uint8_t*)current_filter);
 	
 	return result;
 }

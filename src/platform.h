@@ -45,7 +45,7 @@ typedef struct t_search_info
 typedef struct t_file_content
 {
 	s64 content_length;
-	void *content;
+	u8 *content;
 	s16 file_error;
 } file_content;
 

@@ -8,7 +8,6 @@
 #include <time.h>
 #include <locale.h>
 #include <wingdi.h>
-#include <gdiplus.h>
 #include <shlobj.h>
 #include "../external/LooplessSizeMove.c"
 
@@ -559,13 +558,14 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 void platform_window_set_title(platform_window *window, char *name)
 {
 	s32 len = strlen(name)+1;
-	wchar_t wc[len];
+	wchar_t* wc = mem_alloc(len);
 	mbstowcs(wc, name, len);
 	
 	LONG_PTR originalWndProc = GetWindowLongPtrW(window->window_handle, GWLP_WNDPROC);
 	SetWindowLongPtrW(window->window_handle, GWLP_WNDPROC, (LONG_PTR) DefWindowProcW);
 	SetWindowTextW(window->window_handle, wc);
 	SetWindowLongPtrW(window->window_handle, GWLP_WNDPROC, originalWndProc);
+	mem_free(wc);
 }
 
 vec2 platform_get_window_size(platform_window *window)
@@ -1394,7 +1394,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 					string_copyn(f.matched_filter, matched_filter, len+1);
 					
 					mutex_lock(&list->mutex);
-					array_push_size(list, &f, sizeof(found_file));
+					array_push_size(list, (uint8_t*)&f, sizeof(found_file));
 					mutex_unlock(&list->mutex);
 				}
 			}
@@ -1443,7 +1443,7 @@ void platform_list_files_block(array *list, char *start_dir, array filters, bool
 				string_copyn(f.matched_filter, matched_filter, len+1);
 				
 				mutex_lock(&list->mutex);
-				array_push_size(list, &f, sizeof(found_file));
+				array_push_size(list, (uint8_t*)&f, sizeof(found_file));
 				mutex_unlock(&list->mutex);
 			}
 		}

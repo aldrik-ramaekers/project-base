@@ -17,7 +17,7 @@ inline memory_bucket memory_bucket_init(s32 bucket_size)
 	bucket.data = mem_alloc(bucket_size);
 	bucket.length = bucket_size;
 	bucket.cursor = 0;
-	array_push(&collection.buckets, &bucket);
+	array_push(&collection.buckets, (uint8_t *)&bucket);
 	return collection;
 }
 
@@ -43,7 +43,7 @@ void* memory_bucket_reserve(memory_bucket *bucket, s32 reserve_length)
 	new_bucket.data = mem_alloc(bucket_entry->length);
 	new_bucket.length = bucket_entry->length;
 	new_bucket.cursor = 0;
-	array_push(&bucket->buckets, &new_bucket);
+	array_push(&bucket->buckets, (uint8_t *)&new_bucket);
 	mutex_unlock(&bucket->bucket_mutex);
 	
 	return new_bucket.data;
