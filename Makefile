@@ -64,6 +64,7 @@ install_deps:
 
 # Build (Windows + Linux)
 build:
+	$(permissions) rm -rf "build/"
 	$(permissions) mkdir -p "build/"
 	$(permissions) rm -rf "$(include_dir)"
 	$(permissions) mkdir -p "$(include_dir)"
