@@ -36,7 +36,7 @@
 #define INCLUDE_PROJECT_BASE
 
 #define SDL_MAIN_HANDLED
-#include "SDL2/SDL.h"
+#include "external/SDL2/SDL.h"
 
 #define PROJECT_BASE_NAME "Project-base"
 #define PROJECT_BASE_VERSION "2.0.0"

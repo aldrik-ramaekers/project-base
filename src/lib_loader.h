@@ -10,15 +10,15 @@
 //	:/Title	Library loader
 //	:/Text	Contains functions to load the necessary libraries.
 
-#include "GL/gl.h"
+#include "external/GL/gl.h"
 #ifdef OS_WIN
-#include "GL/wglext.h"
+#include "external/GL/wglext.h"
 #endif
 #ifdef OS_LINUX
-#include "GL/glx.h"
+#include "external/GL/glx.h"
 #endif
-#include "GL/glu.h"
-#include "GL/glext.h"
+#include "external/GL/glu.h"
+#include "external/GL/glext.h"
 
 //	:/Info	Load all required dynamic libraries. Will exit the application when a library or function is missing.
 void _lib_loader_init();

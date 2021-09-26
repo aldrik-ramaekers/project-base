@@ -69,7 +69,7 @@ typedef struct t_image {
 #define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
 #define CAN_ADD_NEW_SOUND() (global_asset_collection.sounds.reserved_length > global_asset_collection.sounds.length)
 
-#include "SDL2/SDL_mixer.h"
+#include "external/SDL2/SDL_mixer.h"
 typedef struct t_sound
 {
 	union {
