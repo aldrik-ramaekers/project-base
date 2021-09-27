@@ -36,9 +36,17 @@ void create_ui() {
 
 			qui_create_toolbar_item(toolbar, "Help");
 		}
+		toolbar = qui_create_toolbar(layout);
+		{
+			
+		}
+
 		qui_create_button(layout, "Hello!");
 
-		qui_create_fixed_container(layout, 200);
+		qui_create_fixed_container(layout, 100);
+		qui_create_flex_container(layout, 1);
+		qui_create_flex_container(layout, 2);
+		qui_create_size_container(layout, TOP, 100);
 	}
 }
 

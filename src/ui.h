@@ -13,6 +13,7 @@
 #define INTERACTIVE_ELEMENT_MARGIN_W 3
 #define INTERACTIVE_ELEMENT_MARGIN_H 3
 
+#define DRAG_BAR_SIZE 7
 #define TOOLBAR_ITEM_OPTION_W 300
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
@@ -76,6 +77,11 @@ typedef struct t_qui_size_container
 	} direction;
 } qui_size_container;
 
+typedef struct t_qui_flex_container
+{
+	u8 flex;
+} qui_flex_container;
+
 typedef struct t_qui_button 
 {
 	char* text;
@@ -112,7 +118,8 @@ qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text);
 qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text);
 qui_widget* qui_create_vertical_layout(qui_widget* qui); // Vertical layout always fills their entire parent!
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When placed in vertical layout, size = height, else size = width
-qui_widget* qui_create_size_container(qui_widget* qui, u8 dir);
+qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
+qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

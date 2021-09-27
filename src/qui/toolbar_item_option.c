@@ -116,5 +116,11 @@ qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text)
 	wg->type = WIDGET_TOOLBAR_ITEM_OPTION;
 	wg->width = TOOLBAR_ITEM_OPTION_W;
 	wg->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
+
+	if (qui->type == WIDGET_TOOLBAR_ITEM) {
+		qui_widget* master_widget = _qui_find_parent_of_type(wg, WIDGET_MAIN);
+		if (master_widget) array_push(&master_widget->special_children, (uint8_t*)&wg);
+		else log_assert(0, "QUI needs a master element created by qui_setup()");
+	}
 	return wg;
 }

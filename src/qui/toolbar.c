@@ -1,4 +1,9 @@
 void _qui_close_entire_toolbar(qui_widget* el) {
+	qui_widget* toolbar_el = 0;
+	if (el->type == WIDGET_TOOLBAR) toolbar_el = el;
+	else toolbar_el = _qui_find_parent_of_type(el, WIDGET_TOOLBAR);
+	log_assert(toolbar_el, "Toolbar item option is not under a toolbar");
+	el = toolbar_el;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		log_assert(w->type == WIDGET_TOOLBAR_ITEM, "Toolbar can only have toolbar item widgets as children");
@@ -12,9 +17,6 @@ qui_widget* qui_create_toolbar(qui_widget* qui)
 	wg->width = 500;
 	wg->height = TOOLBAR_H;
 	wg->type = WIDGET_TOOLBAR;
-	qui_widget* master_widget = _qui_find_parent_of_type(wg, WIDGET_MAIN);
-	if (master_widget) array_push(&master_widget->special_children, (uint8_t*)&wg);
-	else log_assert(0, "QUI needs a master element created by qui_setup()");
 	return wg;
 }
 
@@ -33,6 +35,7 @@ void _qui_update_toolbar(qui_widget* el) {
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		w->x = TOOLBAR_ITEM_OFFSETX + el->x + offsetx;
+		w->y = el->y;
 		offsetx += w->width;
 	}
 }

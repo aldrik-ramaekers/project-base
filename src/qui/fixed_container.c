@@ -4,7 +4,6 @@ void _qui_update_fixed_container(qui_widget* el) {
 	}
 }
 
-
 void _qui_render_fixed_container(qui_widget* el) {
 	renderer->render_rectangle(el->x, el->y, el->width, el->height, rgb(0,255,0));
 }

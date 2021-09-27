@@ -9,6 +9,8 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent);
 #include "qui/toolbar_item_option.c"
 #include "qui/vertical_layout.c"
 #include "qui/fixed_container.c"
+#include "qui/size_container.c"
+#include "qui/flex_container.c"
 
 //////// General setup
 qui_widget* qui_setup()
@@ -60,9 +62,9 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	return wg;
 }
 
-// Mark types that should be drawn on top of everything else.
+// Mark types that should be drawn on top of everything else. These types will be added to special_children array.
 bool _qui_is_widget_popup_type(qui_widget* el) {
-	return el->type == WIDGET_TOOLBAR || el->type == WIDGET_TOOLBAR_ITEM || el->type == WIDGET_TOOLBAR_ITEM_OPTION; // Add combo box here when implemented.
+	return el->type == WIDGET_TOOLBAR_ITEM_OPTION; // Add combo box here when implemented.
 }
 
 void _qui_render_widget(qui_widget* el, bool draw_special) {
@@ -74,6 +76,8 @@ void _qui_render_widget(qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_render_toolbar_item_option(el);
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
+	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(el);
+	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(el);
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		_qui_render_widget(w, draw_special);
@@ -102,6 +106,8 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(el);
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
+	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(el);
+	if (el->type == WIDGET_FLEX_CONTAINER) _qui_update_flex_container(el);
 }
 
 void qui_render(platform_window* window, qui_widget* el) {
@@ -133,7 +139,7 @@ void qui_update(platform_window* window, qui_widget* el) {
 	if (is_left_clicked_peak()) {
 		for (s32 i = 0; i < el->special_children.length; i++) {
 			qui_widget* w = *(qui_widget**)array_at(&el->special_children, i);
-			if (w->type == WIDGET_TOOLBAR) _qui_close_entire_toolbar(w);
+			if (w->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_close_entire_toolbar(w);
 		}
 	}
 
