@@ -34,6 +34,9 @@ qui_widget* qui_setup()
 	active_ui_style.widget_border_outter_highlighted = rgb(80, 160, 240);
 	active_ui_style.widget_border_outter_hovered = rgb(27, 27, 27);
 
+	active_ui_style.widget_resize_bar_background = active_ui_style.widget_background_static;
+	active_ui_style.widget_panel_background = rgb(35, 35, 35);
+
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
 	wg->special_children = array_create(sizeof(qui_widget*));
@@ -62,7 +65,6 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	return wg;
 }
 
-// Mark types that should be drawn on top of everything else. These types will be added to special_children array.
 bool _qui_is_widget_popup_type(qui_widget* el) {
 	return el->type == WIDGET_TOOLBAR_ITEM_OPTION; // Add combo box here when implemented.
 }

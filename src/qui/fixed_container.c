@@ -1,7 +1,4 @@
 void _qui_update_fixed_container(qui_widget* el) {
-	if (el->parent->type == WIDGET_VERTICAL_LAYOUT) {
-		el->width = el->parent->width;
-	}
 }
 
 void _qui_render_fixed_container(qui_widget* el) {
@@ -10,6 +7,8 @@ void _qui_render_fixed_container(qui_widget* el) {
 
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size)
 {
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Fixed container can only be added to vertical or horizontal layout");
+
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_FIXED_CONTAINER;
 	if (qui && qui->type == WIDGET_VERTICAL_LAYOUT) {

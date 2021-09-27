@@ -13,6 +13,7 @@ void _qui_close_entire_toolbar(qui_widget* el) {
 
 qui_widget* qui_create_toolbar(qui_widget* qui)
 {
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Toolbar can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->width = 500;
 	wg->height = TOOLBAR_H;

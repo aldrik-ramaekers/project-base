@@ -1,6 +1,4 @@
 void _qui_update_button(qui_widget* el) {
-	el->width = renderer->calculate_text_width(global_ui_context.font_small, 
-		((qui_button*)el->data)->text) + (BUTTON_PADDING_W*2);
 	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
 		((qui_button*)el->data)->state = HOVERED;
 		if (is_left_down()) {
@@ -61,6 +59,7 @@ void _qui_render_button(qui_widget* el) {
 
 qui_widget* qui_create_button(qui_widget* qui, char* text)
 {
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Button can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	qui_button* data = mem_alloc(sizeof(qui_button));
 	data->text = text;

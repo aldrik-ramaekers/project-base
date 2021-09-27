@@ -13,7 +13,7 @@
 #define INTERACTIVE_ELEMENT_MARGIN_W 3
 #define INTERACTIVE_ELEMENT_MARGIN_H 3
 
-#define DRAG_BAR_SIZE 7
+#define DRAG_BAR_SIZE 8
 #define TOOLBAR_ITEM_OPTION_W 300
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
@@ -25,6 +25,9 @@ typedef struct t_qui_style
 	color widget_text;
 	color clear_color;
 	color collapse_color;
+
+	color widget_resize_bar_background;
+	color widget_panel_background;
 
 	color widget_background_static;
 	color widget_background_interactive_idle;

@@ -42,6 +42,7 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		w->x = el->x + w->margin_x;
 		w->y = el->y + offsety + w->margin_y;
+		w->width = el->width - w->margin_x*2;
 		offsety += w->height + w->margin_y*2;
 	}
 }

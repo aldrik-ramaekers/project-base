@@ -32,10 +32,12 @@ void _qui_update_toolbar_item(qui_widget* el) {
 }
 
 void _qui_render_toolbar_item_options_bounds(qui_widget* el) {
-	if (el->children.length == 0) return;
-	qui_widget* first_option = *(qui_widget**)array_at(&el->children, 0);
+	qui_widget* parent = el->parent;
+	if (parent->children.length == 0) return;
+	qui_widget* first_option = *(qui_widget**)array_at(&parent->children, 0);
+	if (first_option != el) return;
 	s32 height_per_item = first_option->height;
-	s32 total_height_of_options = el->children.length*height_per_item;
+	s32 total_height_of_options = parent->children.length*height_per_item;
 
 	renderer->render_rectangle_outline(first_option->x-1, first_option->y-1, TOOLBAR_ITEM_OPTION_W+2, total_height_of_options+2, 1, active_ui_style.widget_border_outter_static);
 }
@@ -64,7 +66,7 @@ void _qui_render_toolbar_item(qui_widget* el) {
 		el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), 
 		text, active_ui_style.widget_text);
 
-	if (state == OPEN) _qui_render_toolbar_item_options_bounds(el);
+	//if (state == OPEN) _qui_render_toolbar_item_options_bounds(el);
 }
 
 qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text)

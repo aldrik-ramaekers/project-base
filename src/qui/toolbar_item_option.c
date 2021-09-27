@@ -103,11 +103,14 @@ void _qui_render_toolbar_item_option(qui_widget* el) {
 		renderer->render_triangle(el->x + el->width - (arrow_s*2), el->y + (el->height/2)-(arrow_s/2), arrow_s, arrow_s, active_ui_style.collapse_color, TRIANGLE_RIGHT);
 	}
 
-	if (state == HOVERED) _qui_render_toolbar_item_options_bounds(el);
+	_qui_render_toolbar_item_options_bounds(el);
 }
 
 qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text)
 {
+	log_assert(qui->type == WIDGET_TOOLBAR_ITEM ||
+			   qui->type == WIDGET_TOOLBAR_ITEM_OPTION, "Toolbar item option can only be added to toolbar item or toolbar item option");
+
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	qui_button* data = mem_alloc(sizeof(qui_button));
 	data->text = text;
