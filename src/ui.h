@@ -10,6 +10,9 @@
 #define TOOLBAR_ITEM_PADDING_W 10
 #define TOOLBAR_ITEM_PADDING_OPTION_H 6
 
+#define INTERACTIVE_ELEMENT_MARGIN_W 3
+#define INTERACTIVE_ELEMENT_MARGIN_H 3
+
 #define TOOLBAR_ITEM_OPTION_W 300
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
@@ -51,6 +54,7 @@ typedef enum t_qui_widget_type
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
 	WIDGET_FIXED_CONTAINER,
+	WIDGET_SIZE_CONTAINER,
 	WIDGET_FLEX_CONTAINER,
 } qui_widget_type;
 
@@ -61,6 +65,16 @@ typedef enum t_qui_widget_state
 	HOVERED,
 	OPEN,
 } qui_widget_state;
+
+typedef struct t_qui_size_container
+{
+	enum {
+		TOP,
+		RIGHT,
+		BOTTOM,
+		LEFT,
+	} direction;
+} qui_size_container;
 
 typedef struct t_qui_button 
 {
@@ -83,6 +97,8 @@ typedef struct t_qui_widget
 	u16 height;
 	s16 x;
 	s16 y;
+	u8 margin_x;
+	u8 margin_y;
 	qui_widget_type type;
 	u8* data; // Widget specific data.
 } qui_widget;
@@ -96,6 +112,7 @@ qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text);
 qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text);
 qui_widget* qui_create_vertical_layout(qui_widget* qui); // Vertical layout always fills their entire parent!
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When placed in vertical layout, size = height, else size = width
+qui_widget* qui_create_size_container(qui_widget* qui, u8 dir);
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

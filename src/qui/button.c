@@ -70,5 +70,7 @@ qui_widget* qui_create_button(qui_widget* qui, char* text)
 	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
 	wg->x = 50;
 	wg->y = 50;
+	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
+	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;
 }

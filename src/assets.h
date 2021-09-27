@@ -7,6 +7,8 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
+#include "resources/mono.h"
+
 //	:/Title	Assets
 //	:/Text	The asset system is responsible for loading images, fonts and sound
 //			into memory and the active render device. The asset system is multi-threaded.

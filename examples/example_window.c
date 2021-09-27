@@ -38,7 +38,7 @@ void create_ui() {
 		}
 		qui_create_button(layout, "Hello!");
 
-		qui_create_fixed_container(layout, 200);		
+		qui_create_fixed_container(layout, 200);
 	}
 }
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     platform_init(argc, argv, CONFIG_DIRECTORY);
 
     window = platform_open_window("Hello!",
-                900, 900, 900, 900, 900, 900, update_render_ui2, 0);
+                700, 700, 1200, 900, 500, 500, update_render_ui2, 0);
 
 	create_ui();
 

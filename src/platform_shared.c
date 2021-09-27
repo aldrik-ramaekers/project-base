@@ -242,17 +242,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 		thread_detach(&asset_queue_worker_thread);
 	}
 
-#if defined(COMPILER_GCC)
-	ui_init(assets_load_font(_binary_src_resources_mono_ttf_start, _binary_src_resources_mono_ttf_end, 16));
-#elif defined(COMPILER_MSVC)
-	HRSRC src = FindResourceA(NULL, "IMG_MONOTTF", "BOOBA"); //nocheckin
-	HGLOBAL pos = LoadResource(NULL, src);
-	char* ptr = LockResource(pos);
-	DWORD size = SizeofResource(NULL, src);
-
-	ui_init(assets_load_font(ptr, ptr+size, 16));
-#endif
-
+	ui_init(assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16));
 	localization_init();
 
 	_settings_init(config_path);
