@@ -14,6 +14,7 @@ void _qui_update_toolbar_item(qui_widget* el) {
 	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
 		if (*state == IDLE) *state = HOVERED;
 		if (is_left_clicked()) {
+			_qui_close_entire_toolbar(el->parent);
 			*state = OPEN;
 		}
 	}

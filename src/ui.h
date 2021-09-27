@@ -20,6 +20,7 @@ typedef struct t_qui_style
 {
 	color widget_text;
 	color clear_color;
+	color collapse_color;
 
 	color widget_background_static;
 	color widget_background_interactive_idle;
@@ -40,10 +41,17 @@ typedef struct t_qui_style
 typedef enum t_qui_widget_type 
 {
 	WIDGET_MAIN,
+
+	// Interactive elements.
 	WIDGET_BUTTON,
 	WIDGET_TOOLBAR,
 	WIDGET_TOOLBAR_ITEM,
 	WIDGET_TOOLBAR_ITEM_OPTION,
+
+	// Layout elements.
+	WIDGET_VERTICAL_LAYOUT,
+	WIDGET_FIXED_CONTAINER,
+	WIDGET_FLEX_CONTAINER,
 } qui_widget_type;
 
 typedef enum t_qui_widget_state 
@@ -71,7 +79,6 @@ typedef struct t_qui_widget
 	array children;
 	array special_children; // Only used by master widget.
 	struct t_qui_widget* parent;
-	bool done_this_frame;
 	u16 width;
 	u16 height;
 	s16 x;
@@ -87,6 +94,8 @@ qui_widget* qui_create_button(qui_widget* qui, char* text);
 qui_widget* qui_create_toolbar(qui_widget* qui);
 qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text);
 qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text);
+qui_widget* qui_create_vertical_layout(qui_widget* qui); // Vertical layout always fills their entire parent!
+qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When placed in vertical layout, size = height, else size = width
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

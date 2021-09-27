@@ -27,7 +27,9 @@ inline bool mouse_interacts(s32 x, s32 y, s32 w, s32 h)
 
 inline bool is_left_down()
 {
-	return _global_mouse.left_state & MOUSE_DOWN;
+	bool result = _global_mouse.left_state & MOUSE_DOWN;
+	if (result) reset_left_down();
+	return result;
 }
 
 inline bool is_left_released()
@@ -328,6 +330,9 @@ inline bool keyboard_is_shortcut_down(s32 shortcut_keys[2])
 
 inline void reset_left_click() {
 	_global_mouse.left_state &= ~MOUSE_CLICK;
+}
+inline void reset_left_down() {
+	_global_mouse.left_state &= ~MOUSE_DOWN;
 }
 inline void reset_right_click() {
 	_global_mouse.right_state &= ~MOUSE_CLICK;

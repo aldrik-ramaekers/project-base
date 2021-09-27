@@ -6,6 +6,9 @@ void _qui_update_button(qui_widget* el) {
 		if (is_left_down()) {
 			((qui_button*)el->data)->state = DOWN;
 		}
+		if (is_left_clicked()) {
+			// Handle event.
+		}
 	}
 	else {
 		((qui_button*)el->data)->state = IDLE;

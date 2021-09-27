@@ -672,7 +672,9 @@ static void gl_render_triangle(s32 x, s32 y, s32 w, s32 h, color tint, triangle_
     }
     else if (dir == TRIANGLE_RIGHT)
     {
-        log_assert(0, "TRIANGLE_RIGHT not implemented");
+        IMP_glVertex3i(x + h, y + (w / 2), gl_render_depth);
+        IMP_glVertex3i(x, y, gl_render_depth);
+        IMP_glVertex3i(x, y + w, gl_render_depth);
     }
 
     IMP_glEnd();

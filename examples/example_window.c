@@ -14,18 +14,32 @@ void update_render_ui2(platform_window* window)
 void create_ui() {
 	ui = qui_setup();
 
-	qui_create_button(ui, "Hello!");
+	qui_widget* layout = qui_create_vertical_layout(ui);
+	{
+		qui_widget* toolbar = qui_create_toolbar(layout);
+		{
+			qui_widget* toolbar_file = qui_create_toolbar_item(toolbar, "File");
+			{
+				qui_widget* sub1 = qui_create_toolbar_item_option(toolbar_file, "Open File");
+				{
+					qui_create_toolbar_item_option(toolbar_file, "Create File");
+					qui_create_toolbar_item_option(toolbar_file, "Find File");
+					qui_create_toolbar_item_option(toolbar_file, "A Very Very Very Long Option");
 
-	qui_widget* toolbar = qui_create_toolbar(ui);
-	qui_widget* toolbar_file = qui_create_toolbar_item(toolbar, "File");
-	qui_create_toolbar_item(toolbar, "Help");
+					qui_widget* sub2 = qui_create_toolbar_item_option(sub1, "Sub menu");
+					{
+						qui_create_toolbar_item_option(sub2, "Sub menu 2");
+						qui_create_toolbar_item_option(sub2, "Sub menu 3");
+					}
+				}
+			}
 
-	qui_widget* sub1 = qui_create_toolbar_item_option(toolbar_file, "Open File");
-	qui_create_toolbar_item_option(toolbar_file, "Create File");
-	qui_create_toolbar_item_option(toolbar_file, "Find File");
-	qui_widget* sub2 = qui_create_toolbar_item_option(sub1, "Sub menu");
-	qui_create_toolbar_item_option(sub2, "Sub menu 2");
-	qui_create_toolbar_item_option(sub2, "Sub menu 3");
+			qui_create_toolbar_item(toolbar, "Help");
+		}
+		qui_create_button(layout, "Hello!");
+
+		qui_create_fixed_container(layout, 200);		
+	}
 }
 
 int main(int argc, char **argv)
