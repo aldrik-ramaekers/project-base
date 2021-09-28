@@ -59,7 +59,7 @@ void _qui_render_button(qui_widget* el) {
 
 qui_widget* qui_create_button(qui_widget* qui, char* text)
 {
-	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Button can only be added to vertical or horizontal layout");
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Button can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	qui_button* data = mem_alloc(sizeof(qui_button));
 	data->text = text;

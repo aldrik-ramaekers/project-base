@@ -54,9 +54,11 @@ typedef enum t_qui_widget_type
 	WIDGET_TOOLBAR,
 	WIDGET_TOOLBAR_ITEM,
 	WIDGET_TOOLBAR_ITEM_OPTION,
+	WIDGET_DRAGBAR,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
+	WIDGET_HORIZONTAL_LAYOUT,
 	WIDGET_FIXED_CONTAINER,
 	WIDGET_SIZE_CONTAINER,
 	WIDGET_FLEX_CONTAINER,
@@ -123,6 +125,7 @@ qui_widget* qui_create_vertical_layout(qui_widget* qui); // Vertical layout alwa
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When placed in vertical layout, size = height, else size = width
 qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
+qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

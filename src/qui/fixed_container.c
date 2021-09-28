@@ -7,12 +7,17 @@ void _qui_render_fixed_container(qui_widget* el) {
 
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size)
 {
-	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Fixed container can only be added to vertical or horizontal layout");
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Fixed container can only be added to vertical or horizontal layout");
 
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_FIXED_CONTAINER;
+
+
 	if (qui && qui->type == WIDGET_VERTICAL_LAYOUT) {
 		wg->height = size;
+	}
+	else if (qui && qui->type == WIDGET_HORIZONTAL_LAYOUT) {
+		wg->width = size;
 	}
 	else {
 		log_assert(0, "Fixed container must be placed in vertical or horizontal layout");

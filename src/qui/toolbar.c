@@ -13,7 +13,7 @@ void _qui_close_entire_toolbar(qui_widget* el) {
 
 qui_widget* qui_create_toolbar(qui_widget* qui)
 {
-	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT, "Toolbar can only be added to vertical or horizontal layout");
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Toolbar can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->width = 500;
 	wg->height = TOOLBAR_H;
@@ -27,10 +27,6 @@ void _qui_render_toolbar(qui_widget* el) {
 }
 
 void _qui_update_toolbar(qui_widget* el) {
-	if (el->parent) {
-		el->width = el->parent->width;
-	}
-
 	#define TOOLBAR_ITEM_OFFSETX (10)
 	s32 offsetx = 0;
 	for (s32 i = 0; i < el->children.length; i++) {

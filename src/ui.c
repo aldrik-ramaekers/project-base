@@ -8,7 +8,9 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent);
 #include "qui/toolbar_item.c"
 #include "qui/toolbar_item_option.c"
 #include "qui/vertical_layout.c"
+#include "qui/horizontal_layout.c"
 #include "qui/fixed_container.c"
+#include "qui/dragbar.c"
 #include "qui/size_container.c"
 #include "qui/flex_container.c"
 
@@ -76,10 +78,13 @@ void _qui_render_widget(qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_render_toolbar_item(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_render_toolbar_item_option(el);
+	if (el->type == WIDGET_DRAGBAR) _qui_render_dragbar(el);
+
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(el);
 	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(el);
+	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(el);
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		_qui_render_widget(w, draw_special);
@@ -106,10 +111,13 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(el);
+	if (el->type == WIDGET_DRAGBAR) _qui_update_dragbar(el);
+
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(el);
 	if (el->type == WIDGET_FLEX_CONTAINER) _qui_update_flex_container(el);
+	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(el);
 }
 
 void qui_render(platform_window* window, qui_widget* el) {

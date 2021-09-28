@@ -1,4 +1,4 @@
-void _qui_update_vertical_layout(qui_widget* el) {
+void _qui_update_horizontal_layout(qui_widget* el) {
 	if (el->parent) {
 		el->x = el->parent->x;
 		el->y = el->parent->y;
@@ -30,8 +30,8 @@ void _qui_update_vertical_layout(qui_widget* el) {
 			qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 			if (w->type == WIDGET_FLEX_CONTAINER) {
 				qui_flex_container* data = (qui_flex_container*)w->data;
-				w->height = (height_per_flex*data->flex) + rogue_pixels;
-				rogue_pixels = 0;
+				w->height = (height_per_flex*data->flex);
+				if (i == 0) w->height += rogue_pixels;
 			}
 		}
 	}
@@ -48,14 +48,14 @@ void _qui_update_vertical_layout(qui_widget* el) {
 }
 
 
-void _qui_render_vertical_layout(qui_widget* el) {
-	//renderer->render_rectangle(el->x, el->y, el->width, el->height, rgb(255,0,0));
+void _qui_render_horizontal_layout(qui_widget* el) {
+	renderer->render_rectangle(el->x, el->y, el->width, el->height, rgb(255,0,0));
 }
 
-qui_widget* qui_create_vertical_layout(qui_widget* qui)
+qui_widget* qui_create_horizontal_layout(qui_widget* qui)
 {
-	log_assert(qui, "Vertical layout must have a parent widget");
+	log_assert(qui, "Horizontal layout must have a parent widget");
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	wg->type = WIDGET_VERTICAL_LAYOUT;
+	wg->type = WIDGET_HORIZONTAL_LAYOUT;
 	return wg;
 }
