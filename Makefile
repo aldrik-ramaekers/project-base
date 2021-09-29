@@ -111,6 +111,7 @@ tests_linux:
 
 ## Examples (Windows + Linux)
 examples:
+	cp -a "examples/data/." "build/data"
 	make $(create_examples_command)
 
 examples_windows:

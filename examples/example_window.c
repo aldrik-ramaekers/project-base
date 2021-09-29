@@ -37,15 +37,23 @@ void create_ui() {
 			qui_create_toolbar_item(toolbar, "Help");
 		}
 
+		qui_widget* itembar = qui_create_itembar(layout);
+		{
+			qui_create_button_with_icon(itembar, "data/file.png");
+			qui_create_button_with_icon(itembar, "data/folder.png");
+		}
+
 		qui_create_button(layout, "Hello!");
 
 		qui_create_fixed_container(layout, 100);
 		qui_create_flex_container(layout, 1);
 		qui_create_flex_container(layout, 2);
-		qui_widget* bottom_resize_box = qui_create_size_container(layout, TOP, 100);
+		qui_widget* bottom_resize_box = qui_create_size_container(layout, DIRECTION_TOP, 100);
 		{
 			qui_widget* layout1 = qui_create_horizontal_layout(bottom_resize_box);
 			{
+				qui_create_button(layout1, "Hello!");
+				qui_create_button(layout1, "Hello 2!");
 				//qui_create_flex_container(layout1, 1);
 				//qui_create_flex_container(layout1, 2);
 			}

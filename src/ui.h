@@ -18,6 +18,7 @@
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
 
+#define ITEMBAR_H 30
 #define TOOLBAR_H 22
 
 typedef struct t_qui_style
@@ -64,6 +65,14 @@ typedef enum t_qui_widget_type
 	WIDGET_FLEX_CONTAINER,
 } qui_widget_type;
 
+typedef enum t_qui_border {
+	BORDER_NONE = 0,
+	BORDER_TOP = 1,
+	BORDER_RIGHT = 2,
+	BORDER_BOTTOM = 4,
+	BORDER_LEFT = 8,
+} qui_border;
+
 typedef enum t_qui_widget_state 
 {
 	IDLE,
@@ -75,21 +84,24 @@ typedef enum t_qui_widget_state
 typedef struct t_qui_size_container
 {
 	enum {
-		TOP,
-		RIGHT,
-		BOTTOM,
-		LEFT,
+		DIRECTION_TOP,
 	} direction;
 } qui_size_container;
 
+typedef struct t_qui_fixed_container {
+	qui_border border;
+} qui_fixed_container;
+
 typedef struct t_qui_flex_container
 {
+	qui_border border;
 	u8 flex;
 } qui_flex_container;
 
 typedef struct t_qui_button 
 {
 	char* text;
+	image* icon;
 	qui_widget_state state;
 } qui_button;
 

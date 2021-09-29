@@ -11,6 +11,7 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent);
 #include "qui/horizontal_layout.c"
 #include "qui/fixed_container.c"
 #include "qui/dragbar.c"
+#include "qui/itembar.c"
 #include "qui/size_container.c"
 #include "qui/flex_container.c"
 
