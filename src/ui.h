@@ -111,10 +111,13 @@ typedef struct t_qui_label
 	char* text;
 } qui_label;
 
+typedef struct t_qui_widget qui_widget;
+
 typedef struct t_qui_dropdown
 {
 	qui_widget_state state;
 	bool released;
+	qui_widget* selected_child;
 } qui_dropdown;
 
 typedef struct t_qui_button 

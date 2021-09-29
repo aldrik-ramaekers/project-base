@@ -160,6 +160,7 @@ void qui_update(platform_window* window, qui_widget* el) {
 		for (s32 i = 0; i < el->special_children.length; i++) {
 			qui_widget* w = *(qui_widget**)array_at(&el->special_children, i);
 			if (w->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_close_entire_toolbar(w);
+			if (w->type == WIDGET_DROPDOWN_OPTION) _qui_close_dropdown(w);
 		}
 	}
 

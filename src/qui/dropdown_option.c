@@ -1,6 +1,9 @@
+void _qui_dropdown_set_selected_child(qui_widget* widget);
+
 void _qui_close_dropdown(qui_widget* el) {
-	qui_widget* dropdown = el->parent;
-	((qui_dropdown*)dropdown->data)->state = IDLE;
+	qui_widget* dropdown = _qui_find_parent_of_type(el, WIDGET_DROPDOWN);
+	if (dropdown) ((qui_dropdown*)dropdown->data)->state = IDLE;
+	else log_assert(0, "Element is not within a dropdown");
 }
 
 bool _qui_is_dropdown_option_sibling_hovered(qui_widget* el) {
@@ -30,7 +33,7 @@ void _qui_update_dropdown_option(qui_widget* el) {
 	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
 		if (*state == IDLE) *state = HOVERED;
 		if (is_left_clicked()) {
-			// Throw event here
+			_qui_dropdown_set_selected_child(el);
 			_qui_close_dropdown(el);
 		}
 	}
@@ -44,7 +47,6 @@ void _qui_render_dropdown_option(qui_widget* el) {
 		return;
 	}
 	
-	qui_toolbar_item* data = ((qui_toolbar_item*)el->data);
 	char* text = ((qui_toolbar_item*)el->data)->text;
 	int state = ((qui_toolbar_item*)el->data)->state;
 
@@ -69,6 +71,9 @@ void _qui_render_dropdown_option(qui_widget* el) {
 	const s32 DROPDOWN_OPTION_TEXT_OFFSET = 10;
 	renderer->render_text(global_ui_context.font_small, 
 		el->x + DROPDOWN_OPTION_TEXT_OFFSET, el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), text, active_ui_style.widget_text);
+
+	// It makes more sense that this is done on dropdown.c but then it wont be at the same z-index as a dropdown option.
+	_qui_render_dropdown_options_bounds(el->parent);
 }
 
 qui_widget* qui_create_dropdown_option(qui_widget* qui, char* text)
@@ -80,6 +85,8 @@ qui_widget* qui_create_dropdown_option(qui_widget* qui, char* text)
 	data->text = text;
 	data->state = IDLE;
 	data->icon = 0;
+	data->is_toggle = false;
+	data->released = false;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN_OPTION;
 	wg->width = 0;

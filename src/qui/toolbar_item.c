@@ -75,6 +75,7 @@ qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text)
 	qui_toolbar_item* data = mem_alloc(sizeof(qui_toolbar_item));
 	data->text = text;
 	data->state = IDLE;
+	data->icon = 0;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_TOOLBAR_ITEM;
 	wg->height = TOOLBAR_H-1;

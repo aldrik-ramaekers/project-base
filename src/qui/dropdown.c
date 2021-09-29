@@ -1,3 +1,16 @@
+void _qui_dropdown_set_selected_child(qui_widget* el) {
+	qui_widget* dropdown = _qui_find_parent_of_type(el, WIDGET_DROPDOWN);
+	if (dropdown) {
+		qui_dropdown* data = (qui_dropdown*)dropdown->data;
+		data->selected_child = el;
+	}
+	else {
+		log_assert(0, "Dropdown option is not inside a dropdown");
+	}
+
+	// TODO: throw event here.
+}
+
 void _qui_update_dropdown(qui_widget* el) {
 	qui_dropdown* data = ((qui_dropdown*)el->data);
 	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
@@ -5,6 +18,9 @@ void _qui_update_dropdown(qui_widget* el) {
 		if (is_left_clicked()) {
 			data->state = OPEN;
 		}
+	}
+	else {
+		if (data->state != OPEN) data->state = IDLE;
 	}
 
 	el->width = 0;
@@ -67,21 +83,18 @@ void _qui_render_dropdown(qui_widget* el) {
 		background, 5.0f, 2);
 
 	s32 offset_y = (el->height/2)-(global_ui_context.font_small->px_h/2);
-	#if 0
-	if (data->text) {
-		char* text = ((qui_dropdown*)el->data)->text;
+
+	if (data->selected_child) {
+		char* text = ((qui_button*)(data->selected_child->data))->text;
 		renderer->render_text(global_ui_context.font_small, 
 			el->x+offset_y,
 			el->y+offset_y, 
 			text, active_ui_style.widget_text);
 	}
-	#endif
 
 	s32 triangle_s = global_ui_context.font_small->px_h;
 	renderer->render_triangle(el->x + el->width - triangle_s - offset_y, el->y + offset_y, 
 		triangle_s, triangle_s, active_ui_style.collapse_color, TRIANGLE_DOWN);
-
-	if (state == OPEN)_qui_render_dropdown_options_bounds(el);
 }
 
 qui_widget* qui_create_dropdown(qui_widget* qui)
@@ -89,6 +102,9 @@ qui_widget* qui_create_dropdown(qui_widget* qui)
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Dropdown can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	qui_dropdown* data = mem_alloc(sizeof(qui_dropdown));
+	data->selected_child = 0;
+	data->released = false;
+	data->state = IDLE;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN;
 	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
