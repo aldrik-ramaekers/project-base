@@ -813,6 +813,7 @@ static void gl_render_arc(float x1, float y1, float x2, float y2, float radius, 
 void gl_render_rounded_rect(float x, float y, float width, float height, color tint, float radius, int innerPad)
 {
 	y += height;
+	width += 1; // Idk why this is needed.
     vec2f top_left[ROUNDING_POINT_COUNT];
     vec2f bottom_left[ROUNDING_POINT_COUNT];
     vec2f top_right[ROUNDING_POINT_COUNT];

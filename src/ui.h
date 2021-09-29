@@ -18,6 +18,9 @@
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
 
+#define LABEL_PADDING_W 0
+#define LABEL_PADDING_H (BUTTON_PADDING_H)
+
 #define ITEMBAR_H 30
 #define TOOLBAR_H 22
 
@@ -56,6 +59,7 @@ typedef enum t_qui_widget_type
 	WIDGET_TOOLBAR_ITEM,
 	WIDGET_TOOLBAR_ITEM_OPTION,
 	WIDGET_DRAGBAR,
+	WIDGET_LABEL,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -90,24 +94,34 @@ typedef struct t_qui_size_container
 
 typedef struct t_qui_fixed_container {
 	qui_border border;
+	u8 border_size;
 } qui_fixed_container;
 
 typedef struct t_qui_flex_container
 {
 	qui_border border;
+	u8 border_size;
 	u8 flex;
 } qui_flex_container;
+
+typedef struct t_qui_label
+{
+	char* text;
+} qui_label;
 
 typedef struct t_qui_button 
 {
 	char* text;
 	image* icon;
 	qui_widget_state state;
+	bool is_toggle;
+	bool released;
 } qui_button;
 
 typedef struct t_qui_toolbar_item 
 {
 	char* text;
+	image* icon;
 	qui_widget_state state;
 } qui_toolbar_item;
 
@@ -138,6 +152,8 @@ qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When place
 qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
+
+void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

@@ -1,8 +1,9 @@
 void _qui_update_button(qui_widget* el) {
+	qui_button* data = ((qui_button*)el->data);
 	if (el->parent->type == WIDGET_HORIZONTAL_LAYOUT) {
-		if (((qui_button*)el->data)->text) {
+		if (data->text) {
 			el->width = renderer->calculate_text_width(global_ui_context.font_small, 
-				((qui_button*)el->data)->text) + (BUTTON_PADDING_W*2);
+				(data->text)) + (BUTTON_PADDING_W*2);
 		}
 		else {
 			el->width = el->height;
@@ -10,16 +11,39 @@ void _qui_update_button(qui_widget* el) {
 	}
 
 	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
-		((qui_button*)el->data)->state = HOVERED;
-		if (is_left_down()) {
-			((qui_button*)el->data)->state = DOWN;
+		if (!data->is_toggle) {
+			data->state = HOVERED;
+			if (is_left_down()) data->state = DOWN;
 		}
+		else {
+			#if 1
+			if (is_left_clicked()) {
+				if (data->released) {
+					if (data->is_toggle && data->state == DOWN) {
+						data->state = HOVERED;
+					}
+					else {
+						data->state = DOWN;
+					}
+				}
+
+				data->released = false;
+			}
+			else {
+				data->released = true;
+				if (!data->is_toggle || (data->is_toggle && data->state == IDLE)) {
+					data->state = HOVERED;
+				}
+			}
+			#endif
+		}
+
 		if (is_left_clicked()) {
 			// Handle event.
 		}
 	}
 	else {
-		((qui_button*)el->data)->state = IDLE;
+		if (!data->is_toggle || (data->is_toggle && data->state == HOVERED)) data->state = IDLE;
 	}
 }
 
@@ -52,7 +76,7 @@ void _qui_render_button(qui_widget* el) {
 		el->y,el->width, 
 		el->height, 
 		outter, 5.0f, 0);
-	
+
 	renderer->render_rounded_rectangle(el->x,
 		el->y,
 		el->width, 
@@ -64,7 +88,7 @@ void _qui_render_button(qui_widget* el) {
 		el->width, 
 		el->height,
 		background, 5.0f, 2);
-	
+
 	if (data->text) {
 		char* text = ((qui_button*)el->data)->text;
 		s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
@@ -80,21 +104,23 @@ void _qui_render_button(qui_widget* el) {
 	}
 }
 
+qui_widget* qui_create_toggle_button_with_icon(qui_widget* qui, char* path)
+{
+	qui_widget* wg = qui_create_button(qui, 0);
+	((qui_button*)wg->data)->icon = assets_load_image_from_file(path);
+	((qui_button*)wg->data)->is_toggle = true;
+	wg->margin_x = 2;
+	wg->margin_y = 2;
+	return wg;
+}
+
+
 qui_widget* qui_create_button_with_icon(qui_widget* qui, char* path)
 {
-	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Button can only be added to vertical or horizontal layout");
-	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_button* data = mem_alloc(sizeof(qui_button));
-	data->text = 0;
-	data->icon = assets_load_image_from_file(path);
-	data->state = IDLE;
-	wg->data = (u8*)data;
-	wg->type = WIDGET_BUTTON;
-	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
-	wg->x = 50;
-	wg->y = 50;
-	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W/3;
-	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H/3;
+	qui_widget* wg = qui_create_button(qui, 0);
+	((qui_button*)wg->data)->icon = assets_load_image_from_file(path);
+	wg->margin_x = 2;
+	wg->margin_y = 2;
 	return wg;
 }
 
@@ -105,12 +131,11 @@ qui_widget* qui_create_button(qui_widget* qui, char* text)
 	qui_button* data = mem_alloc(sizeof(qui_button));
 	data->text = text;
 	data->icon = 0;
+	data->is_toggle = false;
 	data->state = IDLE;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_BUTTON;
 	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
-	wg->x = 50;
-	wg->y = 50;
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

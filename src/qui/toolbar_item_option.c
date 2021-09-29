@@ -69,6 +69,7 @@ void _qui_render_toolbar_item_option(qui_widget* el) {
 		return;
 	}
 	
+	qui_toolbar_item* data = ((qui_toolbar_item*)el->data);
 	char* text = ((qui_toolbar_item*)el->data)->text;
 	int state = ((qui_toolbar_item*)el->data)->state;
 
@@ -92,10 +93,19 @@ void _qui_render_toolbar_item_option(qui_widget* el) {
 	#define TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT 30
 	#define TOOLBAR_ITEM_OPTION_TEXT_PAD_RIGHT 100
 	s32 text_width_available = (el->width - TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT - TOOLBAR_ITEM_OPTION_TEXT_PAD_RIGHT);
+
+	// Draw text.
 	renderer->render_text_ellipsed(global_ui_context.font_small, 
 		el->x+TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT,
 		el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), 
 		text_width_available, text, active_ui_style.widget_text);
+
+	// Draw icon.
+	if (data->icon) {
+		const s32 ICON_PAD = 4;
+		s32 icon_s = el->height - (ICON_PAD*2);
+		renderer->render_image(data->icon, el->x + (TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT/2) - (icon_s/2), el->y + ICON_PAD, icon_s, icon_s);
+	}
 
 	// Draw collapse arrow.
 	if (el->children.length) {
@@ -106,15 +116,23 @@ void _qui_render_toolbar_item_option(qui_widget* el) {
 	_qui_render_toolbar_item_options_bounds(el);
 }
 
+qui_widget* qui_create_toolbar_item_option_with_icon(qui_widget* qui, char* text, char* icon)
+{
+	qui_widget* wg = qui_create_toolbar_item_option(qui, text);
+	((qui_toolbar_item*)wg->data)->icon = assets_load_image_from_file(icon);
+	return wg;
+}
+
 qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text)
 {
 	log_assert(qui->type == WIDGET_TOOLBAR_ITEM ||
 			   qui->type == WIDGET_TOOLBAR_ITEM_OPTION, "Toolbar item option can only be added to toolbar item or toolbar item option");
 
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_button* data = mem_alloc(sizeof(qui_button));
+	qui_toolbar_item* data = mem_alloc(sizeof(qui_toolbar_item));
 	data->text = text;
 	data->state = IDLE;
+	data->icon = 0;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_TOOLBAR_ITEM_OPTION;
 	wg->width = TOOLBAR_ITEM_OPTION_W;

@@ -20,42 +20,56 @@ void create_ui() {
 		{
 			qui_widget* toolbar_file = qui_create_toolbar_item(toolbar, "File");
 			{
-				qui_widget* sub1 = qui_create_toolbar_item_option(toolbar_file, "Open File");
+				qui_widget* sub1 = qui_create_toolbar_item_option_with_icon(toolbar_file, "Open File", "data/file.png");
 				{
-					qui_create_toolbar_item_option(toolbar_file, "Create File");
-					qui_create_toolbar_item_option(toolbar_file, "Find File");
-					qui_create_toolbar_item_option(toolbar_file, "A Very Very Very Long Option");
-
 					qui_widget* sub2 = qui_create_toolbar_item_option(sub1, "Sub menu");
 					{
 						qui_create_toolbar_item_option(sub2, "Sub menu 2");
 						qui_create_toolbar_item_option(sub2, "Sub menu 3");
 					}
 				}
+				qui_create_toolbar_item_option(toolbar_file, "Create File");
+				qui_create_toolbar_item_option_with_icon(toolbar_file, "Open Folder", "data/folder.png");
+				qui_create_toolbar_item_option_with_icon(toolbar_file, "Reload", "data/undo.png");
 			}
 
-			qui_create_toolbar_item(toolbar, "Help");
+			qui_widget* toolbar_help = qui_create_toolbar_item(toolbar, "Help");
+			{
+				qui_create_toolbar_item_option(toolbar_help, "Website");
+				qui_create_toolbar_item_option_with_icon(toolbar_help, "Support", "data/question.png");
+			}
 		}
 
 		qui_widget* itembar = qui_create_itembar(layout);
 		{
 			qui_create_button_with_icon(itembar, "data/file.png");
-			qui_create_button_with_icon(itembar, "data/folder.png");
+			qui_create_toggle_button_with_icon(itembar, "data/folder.png");
+
+			qui_create_itembar_separator(itembar);
+
+			qui_create_button_with_icon(itembar, "data/undo.png");
+			qui_create_button_with_icon(itembar, "data/redo.png");
+			qui_create_button_with_icon(itembar, "data/play.png");
+			qui_create_button_with_icon(itembar, "data/pause.png");
+
+			qui_create_itembar_separator(itembar);
+
+			qui_create_label(itembar, "Time display:");
+			qui_create_button(itembar, "Milli");
 		}
 
 		qui_create_button(layout, "Hello!");
-
-		qui_create_fixed_container(layout, 100);
 		qui_create_flex_container(layout, 1);
-		qui_create_flex_container(layout, 2);
+
 		qui_widget* bottom_resize_box = qui_create_size_container(layout, DIRECTION_TOP, 100);
 		{
 			qui_widget* layout1 = qui_create_horizontal_layout(bottom_resize_box);
 			{
-				qui_create_button(layout1, "Hello!");
-				qui_create_button(layout1, "Hello 2!");
-				//qui_create_flex_container(layout1, 1);
-				//qui_create_flex_container(layout1, 2);
+				qui_widget* box_left = qui_create_flex_container(layout1, 1);
+				qui_flex_container_set_border(box_left, BORDER_RIGHT, 3);
+
+				qui_widget* box_right = qui_create_flex_container(layout1, 1);
+				qui_flex_container_set_border(box_right, BORDER_LEFT, 3);
 			}
 		}
 	}
