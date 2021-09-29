@@ -55,7 +55,11 @@ void create_ui() {
 			qui_create_itembar_separator(itembar);
 
 			qui_create_label(itembar, "Time display:");
-			qui_create_button(itembar, "Milli");
+			qui_widget* time_dropdown = qui_create_dropdown(itembar);
+			{
+				qui_create_dropdown_option(time_dropdown, "Milliseconds");
+				qui_create_dropdown_option(time_dropdown, "Seconds");
+			}
 		}
 
 		qui_create_button(layout, "Hello!");

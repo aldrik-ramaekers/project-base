@@ -60,6 +60,8 @@ typedef enum t_qui_widget_type
 	WIDGET_TOOLBAR_ITEM_OPTION,
 	WIDGET_DRAGBAR,
 	WIDGET_LABEL,
+	WIDGET_DROPDOWN,
+	WIDGET_DROPDOWN_OPTION,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -109,6 +111,12 @@ typedef struct t_qui_label
 	char* text;
 } qui_label;
 
+typedef struct t_qui_dropdown
+{
+	qui_widget_state state;
+	bool released;
+} qui_dropdown;
+
 typedef struct t_qui_button 
 {
 	char* text;
@@ -152,6 +160,7 @@ qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When place
 qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
+qui_widget* qui_create_dropdown(qui_widget* qui);
 
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 

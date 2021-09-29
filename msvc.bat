@@ -12,6 +12,8 @@ mkdir build >nul 2>nul
 mkdir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\projectbase\" >nul 2>nul
 robocopy "src" "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\projectbase" /E
 
+robocopy "examples\data" "build\data" /E
+
 cd build
 rc /fo icon.res ../icon.rc
 cl /Z7 /DMODE_DEBUG /std:c11 /nologo /c ..\src\entry.c /Feprojectbase-debug.lib
