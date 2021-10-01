@@ -18,6 +18,8 @@
 #define BUTTON_PADDING_W 30
 #define BUTTON_PADDING_H 8
 
+#define TABCONTROL_BUTTON_PADDING_W 5
+
 #define LABEL_PADDING_W 0
 #define LABEL_PADDING_H (BUTTON_PADDING_H)
 
@@ -106,11 +108,13 @@ typedef struct t_qui_size_container
 	s32 max;
 	s32 drag_start_size;
 	s32 mouse_drag_start_pos;
+	qui_border border;
+	u8 border_size;
 } qui_size_container;
 
 typedef struct t_tabcontrol_panel 
 {
-	bool open;
+	qui_widget_state state;
 	char* text;
 	qui_widget* container;
 } tabcontrol_panel;

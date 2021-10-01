@@ -76,6 +76,9 @@ void create_ui() {
 				qui_widget* tabcontrol = qui_create_tabcontrol(horizontal_split);
 				{
 					qui_create_tabcontrol_panel(tabcontrol, "Data");
+					qui_create_tabcontrol_panel(tabcontrol, "Options");
+					qui_create_tabcontrol_panel(tabcontrol, "Display");
+					qui_create_tabcontrol_panel(tabcontrol, "Appointments");
 				}
 			}
 		}

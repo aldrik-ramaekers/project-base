@@ -87,20 +87,23 @@ vec4 get_scissor_within_current_scissor(vec4 current, vec4 area) {
 	return (vec4){x,y,w-x,h-y};
 }
 
-s32 scissor_index = 0;
-vec4 scissor_stack[100] = {0};
+s32 scissor_index = 0;  // TODO: move this to state struct.
+vec4 scissor_stack[100] = {0}; // TODO: move this to state struct.
 void _qui_render_widget(platform_window* window, qui_widget* el, bool draw_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != draw_special) return;
 
+	log_assert(scissor_index < 100, "Thats a very deep UI!");
 	scissor_stack[scissor_index] = scissor_index == 0 ? 
 		(vec4){el->x, el->y, el->width, el->height} : 
 		get_scissor_within_current_scissor(scissor_stack[scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
 
-	renderer->render_set_scissor(window, scissor_stack[scissor_index].x, 
-		scissor_stack[scissor_index].y, 
-		scissor_stack[scissor_index].w, 
-		scissor_stack[scissor_index].h);
+	if (!is_special) {
+		renderer->render_set_scissor(window, scissor_stack[scissor_index].x, 
+			scissor_stack[scissor_index].y, 
+			scissor_stack[scissor_index].w, 
+			scissor_stack[scissor_index].h);
+	}
 
 	scissor_index++;
 

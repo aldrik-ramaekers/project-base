@@ -3,6 +3,7 @@ void _qui_update_flex_container(qui_widget* el) {
 
 void _qui_render_flex_container(qui_widget* el) {
 	qui_flex_container* data = (qui_flex_container*)el->data;
+	renderer->render_rectangle(el->x, el->y, el->width, el->height, el->color_background);
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
