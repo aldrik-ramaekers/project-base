@@ -60,33 +60,60 @@ void create_ui() {
 				qui_create_dropdown_option(time_dropdown, "Milliseconds");
 				qui_create_dropdown_option(time_dropdown, "Seconds");
 			}
+
+			qui_create_button(itembar, "Run");
 		}
 
-		qui_create_button(layout, "Hello!");
-		qui_create_flex_container(layout, 1);
+		qui_widget* central_container = qui_create_flex_container(layout, 1);
+		{
+			qui_widget* horizontal_split = qui_create_horizontal_layout(central_container);
+			{
+				qui_widget* left_panel = qui_create_fixed_container(horizontal_split, 100);
+				{
+					(void)left_panel;
+					// Tree
+				}
+				qui_widget* tabcontrol = qui_create_tabcontrol(horizontal_split);
+				{
+					qui_create_tabcontrol_panel(tabcontrol, "Data");
+				}
+			}
+		}
 
 		qui_widget* bottom_resize_box = qui_create_size_container(layout, DIRECTION_TOP, 100);
 		{
+			qui_set_size_container_bounds(bottom_resize_box, 50, 200);
+
 			qui_widget* layout1 = qui_create_horizontal_layout(bottom_resize_box);
 			{
 				qui_widget* box_left = qui_create_flex_container(layout1, 1);
-				qui_flex_container_set_border(box_left, BORDER_RIGHT, 3);
+				{
+					qui_widget* box_left_layout = qui_create_horizontal_layout(box_left);
+					{
+						// Table
+					}		
+				}
 
+				qui_create_separator(layout1, 8);
 				qui_widget* box_right = qui_create_flex_container(layout1, 1);
-				qui_flex_container_set_border(box_right, BORDER_LEFT, 3);
 			}
 		}
 	}
+}
+
+void resize_ui(platform_window* window, u32 w, u32 h)
+{
+	qui_update(window, ui);
 }
 
 int main(int argc, char **argv)
 {    
     platform_init(argc, argv, CONFIG_DIRECTORY);
 
-    window = platform_open_window("Hello!",
-                700, 700, 1200, 900, 500, 500, update_render_ui2, 0);
-
 	create_ui();
+    window = platform_open_window("Hello!",
+                700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui);
+
 
     while(platform_keep_running(window)) {
 		window->do_draw = true;

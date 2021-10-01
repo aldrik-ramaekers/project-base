@@ -25,6 +25,11 @@ inline bool mouse_interacts(s32 x, s32 y, s32 w, s32 h)
 	return result;
 }
 
+inline bool is_left_down_peak()
+{
+	return _global_mouse.left_state & MOUSE_DOWN;
+}
+
 inline bool is_left_down()
 {
 	bool result = _global_mouse.left_state & MOUSE_DOWN;

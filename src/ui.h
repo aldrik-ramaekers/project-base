@@ -58,10 +58,11 @@ typedef enum t_qui_widget_type
 	WIDGET_TOOLBAR,
 	WIDGET_TOOLBAR_ITEM,
 	WIDGET_TOOLBAR_ITEM_OPTION,
-	WIDGET_DRAGBAR,
 	WIDGET_LABEL,
 	WIDGET_DROPDOWN,
 	WIDGET_DROPDOWN_OPTION,
+	WIDGET_TABCONTROL,
+	WIDGET_TABCONTROL_PANEL,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -92,6 +93,10 @@ typedef struct t_qui_size_container
 	enum {
 		DIRECTION_TOP,
 	} direction;
+	u32 min;
+	u32 max;
+	s32 drag_start_size;
+	s32 mouse_drag_start_pos;
 } qui_size_container;
 
 typedef struct t_qui_fixed_container {
@@ -149,6 +154,7 @@ typedef struct t_qui_widget
 	u8 margin_y;
 	qui_widget_type type;
 	u8* data; // Widget specific data.
+	color color_background;
 } qui_widget;
 
 qui_style active_ui_style;
@@ -165,6 +171,7 @@ qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 qui_widget* qui_create_dropdown(qui_widget* qui);
 
+void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 
 void qui_render(platform_window* window, qui_widget* qui);

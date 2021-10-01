@@ -13,7 +13,10 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent);
 #include "qui/dragbar.c"
 #include "qui/itembar.c"
 #include "qui/label.c"
+#include "qui/separator.c"
 #include "qui/dropdown.c"
+#include "qui/tabcontrol.c"
+#include "qui/tabcontrol_panel.c"
 #include "qui/dropdown_option.c"
 #include "qui/size_container.c"
 #include "qui/flex_container.c"
@@ -66,6 +69,7 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->y = 0;
 	wg->margin_x = 0;
 	wg->margin_y = 0;
+	wg->color_background = rgba(0,0,0,0);
 	wg->parent = parent;
 	array_push(&parent->children, (uint8_t*)&wg);
 	return wg;
@@ -82,10 +86,10 @@ void _qui_render_widget(qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_render_toolbar_item(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_render_toolbar_item_option(el);
-	if (el->type == WIDGET_DRAGBAR) _qui_render_dragbar(el);
 	if (el->type == WIDGET_LABEL) _qui_render_label(el);
 	if (el->type == WIDGET_DROPDOWN) _qui_render_dropdown(el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_render_dropdown_option(el);
+	if (el->type == WIDGET_TABCONTROL) _qui_render_tabcontrol(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
@@ -118,10 +122,10 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(el);
-	if (el->type == WIDGET_DRAGBAR) _qui_update_dragbar(el);
 	if (el->type == WIDGET_LABEL) _qui_update_label(el);
 	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
+	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);

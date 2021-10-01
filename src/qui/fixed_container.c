@@ -13,12 +13,13 @@ void _qui_render_container_borders(qui_widget* el, qui_border border, u8 border_
 		renderer->render_rectangle(el->x, el->y, border_size, el->height, active_ui_style.widget_border_outter_static);
 	}
 	if (border & BORDER_TOP) {
-		log_assert(0, "Not implemented");
+		renderer->render_rectangle(el->x, el->y, el->width, border_size, active_ui_style.widget_border_outter_static);
 	}
 }
 
 void _qui_render_fixed_container(qui_widget* el) {
 	qui_fixed_container* data = (qui_fixed_container*)el->data;
+	renderer->render_rectangle(el->x, el->y, el->width, el->height, el->color_background);
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
@@ -41,4 +42,9 @@ qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size)
 		wg->width = size;
 	}
 	return wg;
+}
+
+void qui_fixed_container_set_border(qui_widget* el, qui_border border, u8 border_size) {
+	((qui_fixed_container*)el->data)->border = border;
+	((qui_fixed_container*)el->data)->border_size = border_size;
 }

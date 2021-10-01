@@ -209,6 +209,7 @@ void reset_left_click();
 void reset_right_click();
 
 bool is_left_down();
+bool is_left_down_peak();
 bool is_left_released();
 bool is_left_clicked();
 bool is_left_clicked_peak();
