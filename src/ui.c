@@ -79,9 +79,31 @@ bool _qui_is_widget_popup_type(qui_widget* el) {
 	return el->type == WIDGET_TOOLBAR_ITEM_OPTION || el->type == WIDGET_DROPDOWN_OPTION;
 }
 
-void _qui_render_widget(qui_widget* el, bool draw_special) {
+vec4 get_scissor_within_current_scissor(vec4 current, vec4 area) {
+	s32 x = area.x > current.x ? area.x : current.x;
+	s32 y = area.y > current.y ? area.y : current.y;
+	s32 w = (x + area.w) > (current.x + current.w) ? (current.x + current.w) : (x + area.w);
+	s32 h = (y + area.h) > (current.y + current.h) ? (current.y + current.h) : (y + area.h);
+	return (vec4){x,y,w-x,h-y};
+}
+
+s32 scissor_index = 0;
+vec4 scissor_stack[100] = {0};
+void _qui_render_widget(platform_window* window, qui_widget* el, bool draw_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != draw_special) return;
+
+	scissor_stack[scissor_index] = scissor_index == 0 ? 
+		(vec4){el->x, el->y, el->width, el->height} : 
+		get_scissor_within_current_scissor(scissor_stack[scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
+
+	renderer->render_set_scissor(window, scissor_stack[scissor_index].x, 
+		scissor_stack[scissor_index].y, 
+		scissor_stack[scissor_index].w, 
+		scissor_stack[scissor_index].h);
+
+	scissor_index++;
+
 	if (el->type == WIDGET_BUTTON) _qui_render_button(el);
 	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_render_toolbar_item(el);
@@ -90,6 +112,7 @@ void _qui_render_widget(qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_DROPDOWN) _qui_render_dropdown(el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_render_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_render_tabcontrol(el);
+	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_render_tabcontrol_panel(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
@@ -98,8 +121,9 @@ void _qui_render_widget(qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(el);
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_render_widget(w, draw_special);
+		_qui_render_widget(window, w, draw_special);
 	}
+	scissor_index--;
 }
 
 qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type) {
@@ -126,6 +150,7 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
+	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
@@ -137,15 +162,22 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 void qui_render(platform_window* window, qui_widget* el) {
 	renderer->render_clear(window, active_ui_style.clear_color);
 	renderer->set_render_depth(1);
+	scissor_stack[0] = (vec4){0,0,0,0};
+	scissor_index = 0;
+	renderer->render_reset_scissor();
 
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_render_widget(w, false);
+		_qui_render_widget(window, w, false);
 	}
+	renderer->set_render_depth(1);
+	scissor_stack[0] = (vec4){0,0,0,0};
+	scissor_index = 0;
+	renderer->render_reset_scissor();
 
 	for (s32 i = 0; i < el->special_children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->special_children, i);
-		_qui_render_widget(w, true);
+		_qui_render_widget(window, w, true);
 	}
 }
 

@@ -48,6 +48,14 @@ typedef struct t_vec2f
     float y;
 } vec2f;
 
+typedef struct t_vec4
+{
+    s32 x;
+    s32 y;
+	s32 w;
+    s32 h;
+} vec4;
+
 typedef struct t_image {
 	u8 *start_addr;
 	u8 *end_addr;

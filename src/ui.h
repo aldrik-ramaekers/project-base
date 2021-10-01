@@ -80,6 +80,15 @@ typedef enum t_qui_border {
 	BORDER_LEFT = 8,
 } qui_border;
 
+typedef struct t_qui_widget qui_widget;
+
+typedef struct t_layout_widget
+{
+	s32 size;
+	s32 fixed_size;
+	s32 size_left_for_flex;
+} layout_widget;
+
 typedef enum t_qui_widget_state 
 {
 	IDLE,
@@ -93,13 +102,21 @@ typedef struct t_qui_size_container
 	enum {
 		DIRECTION_TOP,
 	} direction;
-	u32 min;
-	u32 max;
+	s32 min;
+	s32 max;
 	s32 drag_start_size;
 	s32 mouse_drag_start_pos;
 } qui_size_container;
 
-typedef struct t_qui_fixed_container {
+typedef struct t_tabcontrol_panel 
+{
+	bool open;
+	char* text;
+	qui_widget* container;
+} tabcontrol_panel;
+
+typedef struct t_qui_fixed_container 
+{
 	qui_border border;
 	u8 border_size;
 } qui_fixed_container;
@@ -115,8 +132,6 @@ typedef struct t_qui_label
 {
 	char* text;
 } qui_label;
-
-typedef struct t_qui_widget qui_widget;
 
 typedef struct t_qui_dropdown
 {
@@ -146,8 +161,8 @@ typedef struct t_qui_widget
 	array children;
 	array special_children; // Only used by master widget.
 	struct t_qui_widget* parent;
-	u16 width;
-	u16 height;
+	s32 width;
+	s32 height;
 	s16 x;
 	s16 y;
 	u8 margin_x;

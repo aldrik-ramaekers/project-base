@@ -6,6 +6,8 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 		el->height = el->parent->height;
 	}
 
+	layout_widget* data = (layout_widget*)el->data;
+
 	// Calculate size for flex elements.
 	s32 fixed_width = 0;
 	s32 flex_size = 0;
@@ -22,8 +24,9 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 	}
 
 	// Resize flex elements here.
+	s32 width_remaining_for_flex_containers = el->width - fixed_width;
+	data->size_left_for_flex = width_remaining_for_flex_containers;
 	if (flex_size) {
-		s32 width_remaining_for_flex_containers = el->width - fixed_width;
 		s32 width_per_flex = width_remaining_for_flex_containers / flex_size;
 		s32 rogue_pixels = width_remaining_for_flex_containers - (width_per_flex*flex_size);
 		for (s32 i = 0; i < el->children.length; i++) {
@@ -45,6 +48,8 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 		w->height = el->height - w->margin_y*2;
 		offsetx += w->width + w->margin_x*2;
 	}
+	data->size = el->width;
+	data->fixed_size = fixed_width;
 }
 
 
@@ -56,6 +61,10 @@ qui_widget* qui_create_horizontal_layout(qui_widget* qui)
 {
 	log_assert(qui, "Horizontal layout must have a parent widget");
 	qui_widget* wg = _qui_create_empty_widget(qui);
+	layout_widget* data = mem_alloc(sizeof(layout_widget));
+	data->fixed_size = 0;
+	data->size_left_for_flex = 0;
+	wg->data = (u8*)data;
 	wg->type = WIDGET_HORIZONTAL_LAYOUT;
 	return wg;
 }

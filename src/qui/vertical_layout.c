@@ -6,6 +6,8 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		el->height = el->parent->height;
 	}
 
+	layout_widget* data = (layout_widget*)el->data;
+
 	// Calculate size for flex elements.
 	s32 fixed_height = 0;
 	s32 flex_size = 0;
@@ -22,8 +24,9 @@ void _qui_update_vertical_layout(qui_widget* el) {
 	}
 
 	// Resize flex elements here.
+	s32 height_remaining_for_flex_containers = el->height - fixed_height;
+	data->size_left_for_flex = height_remaining_for_flex_containers;
 	if (flex_size) {
-		s32 height_remaining_for_flex_containers = el->height - fixed_height;
 		s32 height_per_flex = height_remaining_for_flex_containers / flex_size;
 		s32 rogue_pixels = height_remaining_for_flex_containers - (height_per_flex*flex_size);
 		for (s32 i = 0; i < el->children.length; i++) {
@@ -45,6 +48,8 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		w->width = el->width - w->margin_x*2;
 		offsety += w->height + w->margin_y*2;
 	}
+	data->size = el->height;
+	data->fixed_size = fixed_height;
 }
 
 
@@ -57,5 +62,9 @@ qui_widget* qui_create_vertical_layout(qui_widget* qui)
 	log_assert(qui, "Vertical layout must have a parent widget");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_VERTICAL_LAYOUT;
+	layout_widget* data = mem_alloc(sizeof(layout_widget));
+	data->fixed_size = 0;
+	data->size_left_for_flex = 0;
+	wg->data = (u8*)data;
 	return wg;
 }

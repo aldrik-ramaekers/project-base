@@ -1,3 +1,16 @@
+static void _qui_update_tabcontrol_buttons(qui_widget* el) {
+	qui_widget* layout = *(qui_widget**)array_at(&el->children, 0);
+	qui_widget* button_bar = *(qui_widget**)array_at(&layout->children, 0);
+
+	s32 offsetx = 0;
+	for (s32 i = 0; i < button_bar->children.length; i++) {
+		qui_widget* w = *(qui_widget**)array_at(&button_bar->children, i);
+		w->x = button_bar->x + offsetx;
+		offsetx += w->width;
+		w->y = button_bar->y;
+	}
+}
+
 void _qui_update_tabcontrol(qui_widget* el) {
 	log_assert(el->parent, "Tabcontrol does not have a parent");
 	log_assert(el->parent->type == WIDGET_FLEX_CONTAINER, "Tabcontrol parent must be a flex container");
@@ -6,6 +19,8 @@ void _qui_update_tabcontrol(qui_widget* el) {
 	el->y = el->parent->y;
 	el->width = el->parent->width;
 	el->height = el->parent->height;
+
+	_qui_update_tabcontrol_buttons(el);
 }
 
 void _qui_render_tabcontrol(qui_widget* el) {
@@ -18,5 +33,9 @@ qui_widget* qui_create_tabcontrol(qui_widget* qui)
 	qui_widget* wg = qui_create_flex_container(qui, 1);
 	qui_widget* wg2 = _qui_create_empty_widget(wg);
 	wg2->type = WIDGET_TABCONTROL;
+
+	qui_widget* layout = qui_create_vertical_layout(wg2);
+	qui_create_fixed_container(layout, 50);
+	qui_create_flex_container(layout, 1);
 	return wg2;
 }

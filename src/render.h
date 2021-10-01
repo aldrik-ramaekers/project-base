@@ -14,14 +14,6 @@ typedef struct t_color {
 	u8 a;
 } color;
 
-typedef struct t_vec4
-{
-	s32 x;
-	s32 y;
-	s32 w;
-	s32 h;
-} vec4;
-
 typedef struct t_render_target
 {
 	s32 x;

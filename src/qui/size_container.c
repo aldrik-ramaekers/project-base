@@ -1,5 +1,23 @@
+static void _qui_size_cotainer_set_bounds(qui_widget* el) {
+	qui_size_container* data = (qui_size_container*)el->data;
+
+	layout_widget* layout = (layout_widget*)el->parent->data;
+
+	s32 size_left = 0;
+	if (el->parent->type == WIDGET_VERTICAL_LAYOUT) {
+		size_left = layout->size_left_for_flex + el->height;
+	}
+	else {
+		size_left = layout->size_left_for_flex + el->width;
+	}
+
+	data->max = size_left;
+	data->min = DRAG_BAR_SIZE;
+}
 
 void _qui_update_size_container(qui_widget* el) {
+	_qui_size_cotainer_set_bounds(el);
+
 	qui_widget* layout = *(qui_widget**)array_at(&el->children, 0);
 	qui_widget* dragbar = *(qui_widget**)array_at(&layout->children, 0);
 
@@ -22,8 +40,6 @@ void _qui_update_size_container(qui_widget* el) {
 	if (data->drag_start_size != -1) {
 		s32 diff = _global_mouse.y - data->mouse_drag_start_pos;
 		el->height = data->drag_start_size - diff;
-
-		// MOUSE_OFFSCREEN verneukt dit
 		if (el->height < data->min) el->height = data->min;
 		if (el->height > data->max) el->height = data->max;
 	}
@@ -31,15 +47,6 @@ void _qui_update_size_container(qui_widget* el) {
 
 void _qui_render_size_container(qui_widget* el) {
 	
-}
-
-void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max) {
-	qui_widget* size_container = _qui_find_parent_of_type(el, WIDGET_SIZE_CONTAINER);
-	log_assert(size_container, "Function can only be called on size container");
-	qui_size_container* data = (qui_size_container*)size_container->data;
-	data->max = max;
-	data->min = min;
-	if (data->min < DRAG_BAR_SIZE) data->min = DRAG_BAR_SIZE;
 }
 
 qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size)

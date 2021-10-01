@@ -82,8 +82,6 @@ void create_ui() {
 
 		qui_widget* bottom_resize_box = qui_create_size_container(layout, DIRECTION_TOP, 100);
 		{
-			qui_set_size_container_bounds(bottom_resize_box, 50, 200);
-
 			qui_widget* layout1 = qui_create_horizontal_layout(bottom_resize_box);
 			{
 				qui_widget* box_left = qui_create_flex_container(layout1, 1);
