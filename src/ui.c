@@ -75,7 +75,7 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->margin_x = 0;
 	wg->margin_y = 0;
 	wg->parent = parent;
-	array_push(&parent->children, (uint8_t*)&wg);
+	if (parent) array_push(&parent->children, (uint8_t*)&wg);
 	return wg;
 }
 

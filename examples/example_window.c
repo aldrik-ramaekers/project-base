@@ -70,6 +70,7 @@ void create_ui() {
 			{
 				qui_widget* left_panel = qui_create_fixed_container(horizontal_split, 100);
 				{
+					qui_fixed_container_set_border(left_panel, BORDER_RIGHT, 2);
 					(void)left_panel;
 					// Tree
 				}

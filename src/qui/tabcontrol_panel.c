@@ -1,3 +1,6 @@
+void _qui_render_flex_container(qui_widget* el);
+void _qui_update_flex_container(qui_widget* el);
+
 static bool _qui_tabcontrol_panel_close_siblings(qui_widget* el) {
 	qui_widget* button_bar = el->parent;
 	for (s32 i = 0; i < button_bar->children.length; i++) {
@@ -10,6 +13,7 @@ static bool _qui_tabcontrol_panel_close_siblings(qui_widget* el) {
 
 void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	tabcontrol_panel* data = (tabcontrol_panel*)el->data;
+
 	s32 tw = renderer->calculate_text_width(global_ui_context.font_small, data->text);
 	el->width = tw + (TABCONTROL_BUTTON_PADDING_W*2);
 	el->height = el->parent->height; // Parent is fixed container button bar.
@@ -44,7 +48,9 @@ void _qui_render_tabcontrol_panel(qui_widget* el) {
 		outter = active_ui_style.widget_border_outter_hovered;
 		inner = active_ui_style.widget_border_inner_highlighted;
 		background = active_ui_style.widget_background_interactive_highlighted;
+
 	}
+	((qui_flex_container*)data->container->data)->color_background = background;
 
 	#define EXTRA_HEIGHT_FOR_INTENTIONAL_OVERFLOW (10)
 	el->height += EXTRA_HEIGHT_FOR_INTENTIONAL_OVERFLOW;
@@ -83,11 +89,13 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 
 	qui_widget* layout = *(qui_widget**)array_at(&qui->children, 0);
 	qui_widget* button_bar = *(qui_widget**)array_at(&layout->children, 1);
+	qui_widget* container = *(qui_widget**)array_at(&layout->children, 2);
+	qui_widget* container_layout = *(qui_widget**)array_at(&container->children, 0);
 	qui_widget* wg = _qui_create_empty_widget(button_bar);
 	wg->type = WIDGET_TABCONTROL_PANEL;
 
 	tabcontrol_panel* data = (tabcontrol_panel*)mem_alloc(sizeof(tabcontrol_panel));
-	data->container = 0;
+	data->container = qui_create_flex_container(container_layout, 1);
 	data->state = IDLE;
 	data->text = title;
 	wg->data = (u8*)data;

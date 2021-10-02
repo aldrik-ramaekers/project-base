@@ -201,6 +201,7 @@ qui_widget* qui_create_dropdown(qui_widget* qui);
 
 void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);
+void qui_fixed_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);

@@ -28,7 +28,6 @@ void _qui_update_tabcontrol(qui_widget* el) {
 }
 
 void _qui_render_tabcontrol(qui_widget* el) {
-	renderer->render_rectangle(el->x, el->y, el->width, el->height, rgb(255,0,0));
 }
 
 qui_widget* qui_create_tabcontrol(qui_widget* qui)
@@ -39,9 +38,11 @@ qui_widget* qui_create_tabcontrol(qui_widget* qui)
 	wg2->type = WIDGET_TABCONTROL;
 
 	qui_widget* layout = qui_create_vertical_layout(wg2);
-	qui_create_fixed_container(layout, 5);
-	qui_create_fixed_container(layout, 30);
-	qui_widget* container = qui_create_flex_container(layout, 1);
-	((qui_flex_container*)container->data)->color_background = rgb(0,0,255);
+	qui_create_fixed_container(layout, 5); // Extra padding top.
+	qui_widget* button_row = qui_create_fixed_container(layout, 30); // Container for the buttons.
+	((qui_fixed_container*)button_row->data)->border = BORDER_BOTTOM;
+
+	qui_widget* container = qui_create_flex_container(layout, 1); // Flex container for tab content.
+	qui_create_horizontal_layout(container); // Vertical layout containing all tabs. (added in tabcontrol_panel.c)
 	return wg2;
 }
