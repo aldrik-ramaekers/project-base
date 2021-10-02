@@ -19,10 +19,7 @@ void _qui_update_tabcontrol(qui_widget* el) {
 	log_assert(el->parent, "Tabcontrol does not have a parent");
 	log_assert(el->parent->type == WIDGET_FLEX_CONTAINER, "Tabcontrol parent must be a flex container");
 
-	el->x = el->parent->x;
-	el->y = el->parent->y;
-	el->width = el->parent->width;
-	el->height = el->parent->height;
+	_qui_fill_parent(el);
 	_qui_update_tabcontrol_buttons(el);
 }
 

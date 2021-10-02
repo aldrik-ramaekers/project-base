@@ -4,6 +4,7 @@ qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type);
 qui_widget* _qui_create_empty_widget(qui_widget* parent);
 vec4 get_vec4_within_current_vec4(vec4 current, vec4 area);
 bool _qui_mouse_interacts(qui_state* state, vec4 area);
+void _qui_fill_parent(qui_widget* el);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -18,6 +19,7 @@ bool _qui_mouse_interacts(qui_state* state, vec4 area);
 #include "qui/separator.c"
 #include "qui/dropdown.c"
 #include "qui/tabcontrol.c"
+#include "qui/scroll.c"
 #include "qui/tabcontrol_panel.c"
 #include "qui/dropdown_option.c"
 #include "qui/size_container.c"
@@ -29,6 +31,7 @@ qui_widget* qui_setup()
 	active_ui_style.widget_text = rgb(249, 249, 249);
 	active_ui_style.clear_color = rgb(38, 38, 38);
 	active_ui_style.collapse_color = rgb(173, 194, 216);
+	active_ui_style.scroll_background = rgb(45, 45, 45);
 
 	active_ui_style.widget_background_static = rgb(31, 31, 31);
 	active_ui_style.widget_background_interactive_idle = rgb(51, 51, 51);
@@ -63,6 +66,13 @@ qui_widget* qui_setup()
 }
 
 //////// General qui functions
+void _qui_fill_parent(qui_widget* el) {
+	el->x = el->parent->x;
+	el->y = el->parent->y;
+	el->width = el->parent->width;
+	el->height = el->parent->height;
+}
+
 bool _qui_mouse_interacts(qui_state* state, vec4 area) {
 	return !state->is_dragging && mouse_interacts(area.x, area.y, area.w, area.h);
 }

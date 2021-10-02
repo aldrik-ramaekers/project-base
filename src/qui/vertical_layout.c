@@ -1,9 +1,6 @@
 void _qui_update_vertical_layout(qui_widget* el) {
 	if (el->parent) {
-		el->x = el->parent->x;
-		el->y = el->parent->y;
-		el->width = el->parent->width;
-		el->height = el->parent->height;
+		_qui_fill_parent(el);
 	}
 
 	layout_widget* data = (layout_widget*)el->data;

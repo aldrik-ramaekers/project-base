@@ -27,11 +27,14 @@
 #define ITEMBAR_H 30
 #define TOOLBAR_H 22
 
+#define SCROLLBAR_W 15
+
 typedef struct t_qui_style
 {
 	color widget_text;
 	color clear_color;
 	color collapse_color;
+	color scroll_background;
 
 	color widget_resize_bar_background;
 	color widget_panel_background;

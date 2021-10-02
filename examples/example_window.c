@@ -91,7 +91,7 @@ void create_ui() {
 								qui_create_button(tab_itembar, "Cancel");
 								qui_create_button(tab_itembar, "Save Changes");
 							}
-						}		
+						}
 					}
 
 					qui_create_tabcontrol_panel(tabcontrol, "Options");
@@ -109,8 +109,8 @@ void create_ui() {
 				{
 					qui_widget* box_left_layout = qui_create_horizontal_layout(box_left);
 					{
-						// Table
-					}		
+						qui_create_vertical_scroll(box_left_layout);
+					}
 				}
 
 				qui_create_separator(layout1, 8);
