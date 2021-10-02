@@ -42,6 +42,6 @@ qui_widget* qui_create_tabcontrol(qui_widget* qui)
 	qui_create_fixed_container(layout, 5);
 	qui_create_fixed_container(layout, 30);
 	qui_widget* container = qui_create_flex_container(layout, 1);
-	container->color_background = rgb(0,0,255);
+	((qui_flex_container*)container->data)->color_background = rgb(0,0,255);
 	return wg2;
 }

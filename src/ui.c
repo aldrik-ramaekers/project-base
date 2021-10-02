@@ -2,6 +2,7 @@ void _qui_close_entire_toolbar(qui_widget* el);
 void _qui_close_entire_toolbar_item(qui_widget* el);
 qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type);
 qui_widget* _qui_create_empty_widget(qui_widget* parent);
+vec4 get_vec4_within_current_vec4(vec4 current, vec4 area);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -49,7 +50,11 @@ qui_widget* qui_setup()
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
 	wg->special_children = array_create(sizeof(qui_widget*));
-	wg->data = 0;
+	qui_state* state = mem_alloc(sizeof(qui_state));
+	state->scissor_index = 0;
+	memset(state->scissor_stack, 0, sizeof(state->scissor_stack));
+	state->window = 0;
+	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
 	wg->x = 0;
 	wg->y = 0;
@@ -69,7 +74,6 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->y = 0;
 	wg->margin_x = 0;
 	wg->margin_y = 0;
-	wg->color_background = rgba(0,0,0,0);
 	wg->parent = parent;
 	array_push(&parent->children, (uint8_t*)&wg);
 	return wg;
@@ -79,7 +83,7 @@ bool _qui_is_widget_popup_type(qui_widget* el) {
 	return el->type == WIDGET_TOOLBAR_ITEM_OPTION || el->type == WIDGET_DROPDOWN_OPTION;
 }
 
-vec4 get_scissor_within_current_scissor(vec4 current, vec4 area) {
+vec4 get_vec4_within_current_vec4(vec4 current, vec4 area) {
 	s32 x = area.x > current.x ? area.x : current.x;
 	s32 y = area.y > current.y ? area.y : current.y;
 	s32 w = (x + area.w) > (current.x + current.w) ? (current.x + current.w) : (x + area.w);
@@ -87,25 +91,21 @@ vec4 get_scissor_within_current_scissor(vec4 current, vec4 area) {
 	return (vec4){x,y,w-x,h-y};
 }
 
-s32 scissor_index = 0;  // TODO: move this to state struct.
-vec4 scissor_stack[100] = {0}; // TODO: move this to state struct.
-void _qui_render_widget(platform_window* window, qui_widget* el, bool draw_special) {
+void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != draw_special) return;
 
-	log_assert(scissor_index < 100, "Thats a very deep UI!");
-	scissor_stack[scissor_index] = scissor_index == 0 ? 
+	log_assert(state->scissor_index < 100, "Thats a very deep UI!");
+	state->scissor_stack[state->scissor_index] = state->scissor_index == 0 ? 
 		(vec4){el->x, el->y, el->width, el->height} : 
-		get_scissor_within_current_scissor(scissor_stack[scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
+		get_vec4_within_current_vec4(state->scissor_stack[state->scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
 
 	if (!is_special) {
-		renderer->render_set_scissor(window, scissor_stack[scissor_index].x, 
-			scissor_stack[scissor_index].y, 
-			scissor_stack[scissor_index].w, 
-			scissor_stack[scissor_index].h);
+		renderer->render_set_scissor(state->window, state->scissor_stack[state->scissor_index].x, 
+			state->scissor_stack[state->scissor_index].y, 
+			state->scissor_stack[state->scissor_index].w, 
+			state->scissor_stack[state->scissor_index].h);
 	}
-
-	scissor_index++;
 
 	if (el->type == WIDGET_BUTTON) _qui_render_button(el);
 	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
@@ -122,11 +122,12 @@ void _qui_render_widget(platform_window* window, qui_widget* el, bool draw_speci
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(el);
 	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(el);
 	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(el);
+	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_render_widget(window, w, draw_special);
+		_qui_render_widget(state, w, draw_special);
 	}
-	scissor_index--;
+	state->scissor_index--;
 }
 
 qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type) {
@@ -138,13 +139,22 @@ qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type) {
 	return 0;
 }
 
-void _qui_update_widget(qui_widget* el, bool update_special) {
+void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != update_special) return;
+
+	log_assert(state->scissor_index < 100, "Thats a very deep UI!");
+	state->scissor_stack[state->scissor_index] = state->scissor_index == 0 ? 
+		(vec4){el->x, el->y, el->width, el->height} : 
+		get_vec4_within_current_vec4(state->scissor_stack[state->scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
+
+	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_update_widget(w, update_special);
+		_qui_update_widget(state, w, update_special);
 	}
+	state->scissor_index--;
+
 	if (el->type == WIDGET_BUTTON) _qui_update_button(el);
 	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(el);
@@ -153,7 +163,7 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
-	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(el);
+	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
@@ -163,35 +173,43 @@ void _qui_update_widget(qui_widget* el, bool update_special) {
 }
 
 void qui_render(platform_window* window, qui_widget* el) {
+	log_assert(el->type == WIDGET_MAIN, "qui_render must be called with the main widget");
+
+	qui_state* state = (qui_state*)el->data;
+
 	renderer->render_clear(window, active_ui_style.clear_color);
-	renderer->set_render_depth(1);
-	scissor_stack[0] = (vec4){0,0,0,0};
-	scissor_index = 0;
+	state->scissor_stack[0] = (vec4){0,0,0,0};
+	state->scissor_index = 0;
+	state->window = window;
 	renderer->render_reset_scissor();
 
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_render_widget(window, w, false);
+		_qui_render_widget(state, w, false);
 	}
-	renderer->set_render_depth(1);
-	scissor_stack[0] = (vec4){0,0,0,0};
-	scissor_index = 0;
+
+	state->scissor_stack[0] = (vec4){0,0,0,0};
+	state->scissor_index = 0;
 	renderer->render_reset_scissor();
 
 	for (s32 i = 0; i < el->special_children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->special_children, i);
-		_qui_render_widget(window, w, true);
+		_qui_render_widget(state, w, true);
 	}
 }
 
 void qui_update(platform_window* window, qui_widget* el) {
+	log_assert(el->type == WIDGET_MAIN, "qui_update must be called with the main widget");
+
+	qui_state* state = (qui_state*)el->data;
+
 	el->width = window->width;
 	el->height = window->height;
 
 	// Update popup types first.
 	for (s32 i = 0; i < el->special_children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->special_children, i);
-		_qui_update_widget(w, true);
+		_qui_update_widget(state, w, true);
 	}
 
 	// If mouse press was not handled by popup types, they should be closed.
@@ -206,6 +224,6 @@ void qui_update(platform_window* window, qui_widget* el) {
 	// Update everything else.
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
-		_qui_update_widget(w, false);
+		_qui_update_widget(state, w, false);
 	}
 }

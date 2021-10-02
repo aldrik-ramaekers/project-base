@@ -8,13 +8,14 @@ static bool _qui_tabcontrol_panel_close_siblings(qui_widget* el) {
 	return false;
 }
 
-void _qui_update_tabcontrol_panel(qui_widget* el) {
+void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	tabcontrol_panel* data = (tabcontrol_panel*)el->data;
 	s32 tw = renderer->calculate_text_width(global_ui_context.font_small, data->text);
 	el->width = tw + (TABCONTROL_BUTTON_PADDING_W*2);
 	el->height = el->parent->height; // Parent is fixed container button bar.
 
-	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
+	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
+	if (mouse_interacts(actual_area.x, actual_area.y, actual_area.w, actual_area.h)) {
 		if (data->state == IDLE) data->state = HOVERED;
 		if (is_left_clicked()) {
 			data->state = OPEN;

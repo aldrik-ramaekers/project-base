@@ -19,7 +19,7 @@ void _qui_render_container_borders(qui_widget* el, qui_border border, u8 border_
 
 void _qui_render_fixed_container(qui_widget* el) {
 	qui_fixed_container* data = (qui_fixed_container*)el->data;
-	renderer->render_rectangle(el->x, el->y, el->width, el->height, el->color_background);
+	renderer->render_rectangle(el->x, el->y, el->width, el->height, data->color_background);
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
@@ -33,6 +33,7 @@ qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size)
 	qui_fixed_container* data = mem_alloc(sizeof(qui_fixed_container));
 	data->border = BORDER_NONE;
 	data->border_size = 1;
+	data->color_background = rgba(0,0,0,0);
 	wg->data = (u8*)data;
 
 	if (qui && qui->type == WIDGET_VERTICAL_LAYOUT) {

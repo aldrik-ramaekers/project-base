@@ -47,7 +47,7 @@ void _qui_update_size_container(qui_widget* el) {
 
 void _qui_render_size_container(qui_widget* el) {
 	qui_size_container* data = (qui_size_container*)el->data;
-	renderer->render_rectangle(el->x, el->y, el->width, el->height, el->color_background);
+	renderer->render_rectangle(el->x, el->y, el->width, el->height, data->color_background);
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
@@ -61,6 +61,7 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size)
 	data->max = 9999;
 	data->min = 0;
 	data->mouse_drag_start_pos = -1;
+	data->color_background = rgba(0,0,0,0);
 	data->border = BORDER_NONE;
 	data->border_size = 0;
 	data->drag_start_size = -1;

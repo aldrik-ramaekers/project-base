@@ -99,8 +99,16 @@ typedef enum t_qui_widget_state
 	OPEN,
 } qui_widget_state;
 
+typedef struct t_tabcontrol_panel 
+{
+	qui_widget_state state;
+	char* text;
+	qui_widget* container;
+} tabcontrol_panel;
+
 typedef struct t_qui_size_container
 {
+	color color_background;
 	enum {
 		DIRECTION_TOP,
 	} direction;
@@ -112,21 +120,16 @@ typedef struct t_qui_size_container
 	u8 border_size;
 } qui_size_container;
 
-typedef struct t_tabcontrol_panel 
-{
-	qui_widget_state state;
-	char* text;
-	qui_widget* container;
-} tabcontrol_panel;
-
 typedef struct t_qui_fixed_container 
 {
+	color color_background;
 	qui_border border;
 	u8 border_size;
 } qui_fixed_container;
 
 typedef struct t_qui_flex_container
 {
+	color color_background;
 	qui_border border;
 	u8 border_size;
 	u8 flex;
@@ -160,6 +163,13 @@ typedef struct t_qui_toolbar_item
 	qui_widget_state state;
 } qui_toolbar_item;
 
+typedef struct t_qui_state
+{
+	platform_window* window;
+	s32 scissor_index;
+	vec4 scissor_stack[100];
+} qui_state;
+
 typedef struct t_qui_widget 
 {
 	array children;
@@ -173,7 +183,6 @@ typedef struct t_qui_widget
 	u8 margin_y;
 	qui_widget_type type;
 	u8* data; // Widget specific data.
-	color color_background;
 } qui_widget;
 
 qui_style active_ui_style;
