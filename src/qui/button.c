@@ -1,4 +1,4 @@
-void _qui_update_button(qui_widget* el) {
+void _qui_update_button(qui_state* main_state, qui_widget* el) {
 	qui_button* data = ((qui_button*)el->data);
 	if (el->parent->type == WIDGET_HORIZONTAL_LAYOUT) {
 		if (data->text) {
@@ -10,7 +10,8 @@ void _qui_update_button(qui_widget* el) {
 		}
 	}
 
-	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
+	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
+	if (_qui_mouse_interacts(main_state, actual_area)) {
 		if (!data->is_toggle) {
 			data->state = HOVERED;
 			if (is_left_down()) data->state = DOWN;

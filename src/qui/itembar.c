@@ -1,9 +1,17 @@
+qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border)
+{
+	qui_widget* wg = qui_create_itembar(qui);
+	((qui_fixed_container*)(wg->parent->data))->border = border;
+	((qui_fixed_container*)(wg->parent->data))->border_size = 1;
+	return wg;
+}
+
 qui_widget* qui_create_itembar(qui_widget* qui)
 {
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Fixed container can only be added to vertical or horizontal layout");
 
 	qui_widget* wg = qui_create_fixed_container(qui, ITEMBAR_H);
-	((qui_fixed_container*)(wg->data))->border |= BORDER_BOTTOM;
+	((qui_fixed_container*)(wg->data))->border |= BORDER_NONE;
 
 	qui_widget* layout = 0;
 	if (qui && qui->type == WIDGET_VERTICAL_LAYOUT) {

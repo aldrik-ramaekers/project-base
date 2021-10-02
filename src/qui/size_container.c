@@ -15,7 +15,7 @@ static void _qui_size_cotainer_set_bounds(qui_widget* el) {
 	data->min = DRAG_BAR_SIZE;
 }
 
-void _qui_update_size_container(qui_widget* el) {
+void _qui_update_size_container(qui_state* state, qui_widget* el) {
 	_qui_size_cotainer_set_bounds(el);
 
 	qui_widget* layout = *(qui_widget**)array_at(&el->children, 0);
@@ -26,10 +26,12 @@ void _qui_update_size_container(qui_widget* el) {
 	if (!is_left_down_peak()) {
 		data->drag_start_size = -1;
 		data->mouse_drag_start_pos = -1;
+		state->is_dragging = false;
 	}
 
 	if (mouse_interacts(dragbar->x, dragbar->y, dragbar->width, dragbar->height)) {
 		if (is_left_down()) {
+			state->is_dragging = true;
 			if (data->drag_start_size == -1) {
 				data->drag_start_size = el->height;
 				data->mouse_drag_start_pos = _global_mouse.y;

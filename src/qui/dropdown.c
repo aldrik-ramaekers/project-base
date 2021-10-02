@@ -11,9 +11,11 @@ void _qui_dropdown_set_selected_child(qui_widget* el) {
 	// TODO: throw event here.
 }
 
-void _qui_update_dropdown(qui_widget* el) {
+void _qui_update_dropdown(qui_state* main_state, qui_widget* el) {
 	qui_dropdown* data = ((qui_dropdown*)el->data);
-	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
+
+	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
+	if (_qui_mouse_interacts(main_state, actual_area)) {
 		if (data->state == IDLE) data->state = HOVERED;
 		if (is_left_clicked()) {
 			data->state = OPEN;

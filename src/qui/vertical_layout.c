@@ -10,6 +10,7 @@ void _qui_update_vertical_layout(qui_widget* el) {
 
 	// Calculate size for flex elements.
 	s32 fixed_height = 0;
+	s32 reserved_height = 0;
 	s32 flex_size = 0;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
@@ -19,13 +20,16 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		}
 		else {
 			qui_flex_container* data = (qui_flex_container*)w->data;
-			flex_size += data->flex;
+			if (w->visible) {
+				flex_size += data->flex;
+				reserved_height += MINIMUM_FLEX_SIZE;
+			}
 		}
 	}
 
 	// Resize flex elements here.
 	s32 height_remaining_for_flex_containers = el->height - fixed_height;
-	data->size_left_for_flex = height_remaining_for_flex_containers;
+	data->size_left_for_flex = height_remaining_for_flex_containers - reserved_height;
 	if (flex_size) {
 		s32 height_per_flex = height_remaining_for_flex_containers / flex_size;
 		s32 rogue_pixels = height_remaining_for_flex_containers - (height_per_flex*flex_size);
@@ -33,6 +37,10 @@ void _qui_update_vertical_layout(qui_widget* el) {
 			qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 			if (w->type == WIDGET_FLEX_CONTAINER) {
 				qui_flex_container* data = (qui_flex_container*)w->data;
+				if (!w->visible) {
+					w->height = 0;
+					continue;
+				}
 				w->height = (height_per_flex*data->flex) + rogue_pixels;
 				rogue_pixels = 0;
 			}
@@ -49,7 +57,9 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		offsety += w->height + w->margin_y*2;
 	}
 	data->size = el->height;
-	data->fixed_size = fixed_height;
+	data->fixed_size = fixed_height + reserved_height;
+
+	if (el->height < fixed_height) el->height = fixed_height;
 }
 
 
@@ -60,6 +70,9 @@ void _qui_render_vertical_layout(qui_widget* el) {
 qui_widget* qui_create_vertical_layout(qui_widget* qui)
 {
 	log_assert(qui, "Vertical layout must have a parent widget");
+	log_assert(qui->type == WIDGET_FIXED_CONTAINER || qui->type == WIDGET_FLEX_CONTAINER || 
+		qui->type == WIDGET_SIZE_CONTAINER || qui->type == WIDGET_MAIN || qui->type == WIDGET_TABCONTROL, 
+		"Horizontal layout can only be added to container, main widget or tabcontrol");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_VERTICAL_LAYOUT;
 	layout_widget* data = mem_alloc(sizeof(layout_widget));

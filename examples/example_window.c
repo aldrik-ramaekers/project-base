@@ -40,7 +40,7 @@ void create_ui() {
 			}
 		}
 
-		qui_widget* itembar = qui_create_itembar(layout);
+		qui_widget* itembar = qui_create_itembar_with_border(layout, BORDER_BOTTOM);
 		{
 			qui_create_button_with_icon(itembar, "data/file.png");
 			qui_create_toggle_button_with_icon(itembar, "data/folder.png");
@@ -76,7 +76,24 @@ void create_ui() {
 				}
 				qui_widget* tabcontrol = qui_create_tabcontrol(horizontal_split);
 				{
-					qui_create_tabcontrol_panel(tabcontrol, "Data");
+					qui_widget* tab_data_panel = qui_create_tabcontrol_panel(tabcontrol, "Data");
+					{
+						qui_widget* tab_layout = qui_create_vertical_layout(tab_data_panel);
+						{
+							qui_widget* tab_container = qui_create_flex_container(tab_layout, 1);
+							{
+
+							}
+							qui_widget* tab_itembar = qui_create_itembar_with_border(tab_layout, BORDER_TOP);
+							{
+								qui_create_button(tab_itembar, "Refresh");
+								qui_create_itembar_separator(tab_itembar);
+								qui_create_button(tab_itembar, "Cancel");
+								qui_create_button(tab_itembar, "Save Changes");
+							}
+						}		
+					}
+
 					qui_create_tabcontrol_panel(tabcontrol, "Options");
 					qui_create_tabcontrol_panel(tabcontrol, "Display");
 					qui_create_tabcontrol_panel(tabcontrol, "Appointments");

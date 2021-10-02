@@ -23,7 +23,6 @@ void _qui_update_tabcontrol(qui_widget* el) {
 	el->y = el->parent->y;
 	el->width = el->parent->width;
 	el->height = el->parent->height;
-
 	_qui_update_tabcontrol_buttons(el);
 }
 

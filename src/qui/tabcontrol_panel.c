@@ -6,7 +6,11 @@ static bool _qui_tabcontrol_panel_close_siblings(qui_widget* el) {
 	for (s32 i = 0; i < button_bar->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&button_bar->children, i);
 		tabcontrol_panel* data = (tabcontrol_panel*)w->data;
-		if (w != el) data->state = IDLE;
+		if (w != el) {
+			data->state = IDLE;
+			data->container->visible = false;
+		}
+
 	}
 	return false;
 }
@@ -19,10 +23,11 @@ void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	el->height = el->parent->height; // Parent is fixed container button bar.
 
 	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
-	if (mouse_interacts(actual_area.x, actual_area.y, actual_area.w, actual_area.h)) {
+	if (_qui_mouse_interacts(main_state, actual_area)) {
 		if (data->state == IDLE) data->state = HOVERED;
 		if (is_left_clicked()) {
 			data->state = OPEN;
+			data->container->visible = true;
 			_qui_tabcontrol_panel_close_siblings(el);
 		}
 	}
@@ -96,8 +101,15 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 
 	tabcontrol_panel* data = (tabcontrol_panel*)mem_alloc(sizeof(tabcontrol_panel));
 	data->container = qui_create_flex_container(container_layout, 1);
+	data->container->visible = false;
 	data->state = IDLE;
 	data->text = title;
+	
+	if (button_bar->children.length == 1) {
+		data->state = OPEN;
+		data->container->visible = true;
+	}
+
 	wg->data = (u8*)data;
-	return wg;
+	return data->container;
 }

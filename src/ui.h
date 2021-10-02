@@ -22,6 +22,7 @@
 
 #define LABEL_PADDING_W 0
 #define LABEL_PADDING_H (BUTTON_PADDING_H)
+#define MINIMUM_FLEX_SIZE (100)
 
 #define ITEMBAR_H 30
 #define TOOLBAR_H 22
@@ -165,6 +166,7 @@ typedef struct t_qui_toolbar_item
 
 typedef struct t_qui_state
 {
+	bool is_dragging;
 	platform_window* window;
 	s32 scissor_index;
 	vec4 scissor_stack[100];
@@ -183,6 +185,7 @@ typedef struct t_qui_widget
 	u8 margin_y;
 	qui_widget_type type;
 	u8* data; // Widget specific data.
+	bool visible; // Currently only has effect on flex container.
 } qui_widget;
 
 qui_style active_ui_style;
@@ -198,6 +201,8 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 qui_widget* qui_create_dropdown(qui_widget* qui);
+qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border);
+qui_widget* qui_create_itembar(qui_widget* qui);
 
 void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);

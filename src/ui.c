@@ -3,6 +3,7 @@ void _qui_close_entire_toolbar_item(qui_widget* el);
 qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type);
 qui_widget* _qui_create_empty_widget(qui_widget* parent);
 vec4 get_vec4_within_current_vec4(vec4 current, vec4 area);
+bool _qui_mouse_interacts(qui_state* state, vec4 area);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -62,6 +63,10 @@ qui_widget* qui_setup()
 }
 
 //////// General qui functions
+bool _qui_mouse_interacts(qui_state* state, vec4 area) {
+	return !state->is_dragging && mouse_interacts(area.x, area.y, area.w, area.h);
+}
+
 qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
@@ -74,6 +79,7 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->y = 0;
 	wg->margin_x = 0;
 	wg->margin_y = 0;
+	wg->visible = true;
 	wg->parent = parent;
 	if (parent) array_push(&parent->children, (uint8_t*)&wg);
 	return wg;
@@ -88,6 +94,8 @@ vec4 get_vec4_within_current_vec4(vec4 current, vec4 area) {
 	s32 y = area.y > current.y ? area.y : current.y;
 	s32 w = (x + area.w) > (current.x + current.w) ? (current.x + current.w) : (x + area.w);
 	s32 h = (y + area.h) > (current.y + current.h) ? (current.y + current.h) : (y + area.h);
+	if (w < x) w = x;
+	if (h < y) h = y;
 	return (vec4){x,y,w-x,h-y};
 }
 
@@ -155,19 +163,19 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	}
 	state->scissor_index--;
 
-	if (el->type == WIDGET_BUTTON) _qui_update_button(el);
+	if (el->type == WIDGET_BUTTON) _qui_update_button(state, el);
 	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(el);
 	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(el);
 	if (el->type == WIDGET_LABEL) _qui_update_label(el);
-	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(el);
+	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(state, el);
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
-	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(el);
+	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(state, el);
 	if (el->type == WIDGET_FLEX_CONTAINER) _qui_update_flex_container(el);
 	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(el);
 }
