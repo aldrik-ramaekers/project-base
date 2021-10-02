@@ -59,14 +59,17 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 
 		if (border == BORDER_TOP) {
 			w->y += 1;
+			w->height -= 1;
+		}
+		if (border == BORDER_BOTTOM) {
+			w->height -= 1;
 		}
 
 		offsetx += w->width + w->margin_x*2;
 	}
-	data->size = el->width;
 	data->fixed_size = fixed_width + reserved_width;
-
 	if (el->width < fixed_width) el->width = fixed_width;
+	data->size = el->width;
 }
 
 
@@ -77,9 +80,13 @@ void _qui_render_horizontal_layout(qui_widget* el) {
 qui_widget* qui_create_horizontal_layout(qui_widget* qui)
 {
 	log_assert(qui, "Horizontal layout must have a parent widget");
-	log_assert(qui->type == WIDGET_FIXED_CONTAINER || qui->type == WIDGET_FLEX_CONTAINER || 
-		qui->type == WIDGET_SIZE_CONTAINER || qui->type == WIDGET_MAIN || qui->type == WIDGET_TABCONTROL, 
-		"Horizontal layout can only be added to container, main widget or tabcontrol");
+	log_assert(qui->type == WIDGET_FIXED_CONTAINER || 
+		qui->type == WIDGET_FLEX_CONTAINER || 
+		qui->type == WIDGET_SIZE_CONTAINER || 
+		qui->type == WIDGET_MAIN || 
+		qui->type == WIDGET_TABCONTROL ||
+		qui->type == WIDGET_SCROLL, 
+		"Horizontal layout can only be added to container, main widget, scroll or tabcontrol");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	layout_widget* data = mem_alloc(sizeof(layout_widget));
 	data->fixed_size = 0;

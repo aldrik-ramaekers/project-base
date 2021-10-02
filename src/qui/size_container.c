@@ -12,7 +12,7 @@ static void _qui_size_cotainer_set_bounds(qui_widget* el) {
 	}
 
 	data->max = size_left;
-	data->min = DRAG_BAR_SIZE;
+	data->min = DRAG_BAR_SIZE + MINIMUM_SIZE_CONTAINER_SIZE;
 }
 
 void _qui_update_size_container(qui_state* state, qui_widget* el) {

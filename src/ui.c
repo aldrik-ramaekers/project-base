@@ -19,6 +19,8 @@ void _qui_fill_parent(qui_widget* el);
 #include "qui/separator.c"
 #include "qui/dropdown.c"
 #include "qui/tabcontrol.c"
+#include "qui/scroll_bar.c"
+#include "qui/scroll_button.c"
 #include "qui/scroll.c"
 #include "qui/tabcontrol_panel.c"
 #include "qui/dropdown_option.c"
@@ -134,6 +136,9 @@ void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_render_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_render_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_render_tabcontrol_panel(el);
+	if (el->type == WIDGET_SCROLL) _qui_render_scroll(el);
+	if (el->type == WIDGET_SCROLL_BUTTON) _qui_render_scroll_button(el);
+	if (el->type == WIDGET_SCROLL_BAR) _qui_render_scroll_bar(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
@@ -182,6 +187,9 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
+	if (el->type == WIDGET_SCROLL) _qui_update_scroll(el);
+	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(el);
+	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);

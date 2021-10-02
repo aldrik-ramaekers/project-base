@@ -23,6 +23,7 @@
 #define LABEL_PADDING_W 0
 #define LABEL_PADDING_H (BUTTON_PADDING_H)
 #define MINIMUM_FLEX_SIZE (100)
+#define MINIMUM_SIZE_CONTAINER_SIZE (30)
 
 #define ITEMBAR_H 30
 #define TOOLBAR_H 22
@@ -69,6 +70,9 @@ typedef enum t_qui_widget_type
 	WIDGET_DROPDOWN_OPTION,
 	WIDGET_TABCONTROL,
 	WIDGET_TABCONTROL_PANEL,
+	WIDGET_SCROLL,
+	WIDGET_SCROLL_BUTTON,
+	WIDGET_SCROLL_BAR,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -87,6 +91,11 @@ typedef enum t_qui_border {
 } qui_border;
 
 typedef struct t_qui_widget qui_widget;
+
+typedef struct t_scroll_widget
+{
+	s32 content_size;
+} scroll_widget;
 
 typedef struct t_layout_widget
 {

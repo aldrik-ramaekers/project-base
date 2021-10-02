@@ -109,7 +109,19 @@ void create_ui() {
 				{
 					qui_widget* box_left_layout = qui_create_horizontal_layout(box_left);
 					{
-						qui_create_vertical_scroll(box_left_layout);
+						qui_widget* scroll = qui_create_vertical_scroll(box_left_layout);
+						{
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+							qui_create_button(scroll, "Button");
+						}
 					}
 				}
 
@@ -122,7 +134,7 @@ void create_ui() {
 
 void resize_ui(platform_window* window, u32 w, u32 h)
 {
-	qui_update(window, ui);
+	for (s32 i = 0; i < 10; i++) qui_update(window, ui);
 }
 
 int main(int argc, char **argv)
@@ -132,7 +144,8 @@ int main(int argc, char **argv)
 	create_ui();
     window = platform_open_window("Hello!",
                 700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui);
-
+	
+	//platform_toggle_vsync(window, false);
 
     while(platform_keep_running(window)) {
 		window->do_draw = true;
