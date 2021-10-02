@@ -92,10 +92,10 @@ typedef enum t_qui_border {
 
 typedef struct t_qui_widget qui_widget;
 
-typedef struct t_scroll_widget
+typedef struct t_qui_scroll_widget
 {
 	s32 content_size;
-} scroll_widget;
+} qui_scroll_widget;
 
 typedef struct t_layout_widget
 {
@@ -111,6 +111,12 @@ typedef enum t_qui_widget_state
 	HOVERED,
 	OPEN,
 } qui_widget_state;
+
+typedef struct t_qui_scroll_button_widget
+{
+	bool is_up;
+	qui_widget_state state;
+} qui_scroll_button_widget;
 
 typedef struct t_tabcontrol_panel 
 {

@@ -45,9 +45,9 @@ qui_widget* qui_create_vertical_scroll(qui_widget* qui)
 	((qui_fixed_container*)scroll_box->data)->border_size = 1;
 
 	qui_widget* scrollbar_layout = qui_create_vertical_layout(scroll_box);
-	_qui_create_scroll_button(scrollbar_layout);
+	_qui_create_scroll_button(scrollbar_layout, true);
 	qui_widget* bar_container = qui_create_flex_container(scrollbar_layout, 1);
-	_qui_create_scroll_button(scrollbar_layout);
+	_qui_create_scroll_button(scrollbar_layout, false);
 
 	_qui_create_scroll_bar(bar_container);
 	qui_widget* container_layout = qui_create_vertical_layout(container);

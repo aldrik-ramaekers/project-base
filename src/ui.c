@@ -188,7 +188,7 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
 	if (el->type == WIDGET_SCROLL) _qui_update_scroll(el);
-	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(el);
+	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
