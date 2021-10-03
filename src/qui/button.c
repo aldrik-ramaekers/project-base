@@ -120,8 +120,8 @@ qui_widget* qui_create_button_with_icon(qui_widget* qui, char* path)
 {
 	qui_widget* wg = qui_create_button(qui, 0);
 	((qui_button*)wg->data)->icon = assets_load_image_from_file(path);
-	wg->margin_x = 2;
-	wg->margin_y = 2;
+	wg->margin_x = INTERACTIVE_ICON_ELEMENT_MARGIN_S;
+	wg->margin_y = INTERACTIVE_ICON_ELEMENT_MARGIN_S;
 	return wg;
 }
 

@@ -38,7 +38,7 @@ void _qui_update_vertical_layout(qui_widget* el) {
 					w->height = 0;
 					continue;
 				}
-				w->height = (height_per_flex*data->flex) + rogue_pixels;
+				w->height = (height_per_flex*data->flex) + rogue_pixels - (w->margin_y*2);
 				rogue_pixels = 0;
 			}
 		}

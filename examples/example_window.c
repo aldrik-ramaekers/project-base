@@ -112,7 +112,43 @@ void create_ui() {
 						}
 					}
 
-					qui_create_tabcontrol_panel(tabcontrol, "Options");
+					qui_widget* tab_plans_panel = qui_create_tabcontrol_panel(tabcontrol, "Plans");
+					{
+						qui_widget* tab_layout = qui_create_vertical_layout(tab_plans_panel);
+						{
+							qui_widget* title_container = qui_create_fixed_container(tab_layout, 50);
+							{
+								qui_fixed_container_set_border(title_container, BORDER_BOTTOM, 1);
+								qui_widget* title_container_layout = qui_create_horizontal_layout(title_container);
+								{
+									qui_create_flex_container(title_container_layout, 1);
+									qui_create_label(title_container_layout, "Subscription plans");
+									qui_create_flex_container(title_container_layout, 1);
+								}
+							}
+							qui_widget* subscription_container = qui_create_flex_container(tab_layout, 1);
+							{
+								qui_widget* plan_list_layout = qui_create_horizontal_layout(subscription_container);
+								{
+									for (s32 i = 0; i < 3; i++)
+									{
+										qui_widget* plan_container = qui_create_flex_container(plan_list_layout, 1);
+										{
+											// Create margin element here so we dont have to set margins manually.
+											qui_flex_container_set_border(plan_container, BORDER_TOP|BORDER_RIGHT|BORDER_BOTTOM|BORDER_LEFT, 1);
+											plan_container->margin_x = 10;
+											plan_container->margin_y = 10;
+											qui_widget* plan_layout = qui_create_vertical_layout(plan_container);
+											{
+												qui_create_label(plan_layout, "Plan 1");
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
 					qui_create_tabcontrol_panel(tabcontrol, "Display");
 					qui_create_tabcontrol_panel(tabcontrol, "Appointments");
 				}

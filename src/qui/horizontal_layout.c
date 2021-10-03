@@ -43,7 +43,7 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 					w->width = 0;
 					continue;
 				}
-				w->width = (width_per_flex*data->flex) + rogue_pixels;
+				w->width = (width_per_flex*data->flex) + rogue_pixels - (w->margin_x*2);
 				rogue_pixels = 0;
 			}
 		}

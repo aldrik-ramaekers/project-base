@@ -17,8 +17,6 @@ static void _qui_size_cotainer_set_bounds(qui_widget* el) {
 
 void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 	_qui_size_cotainer_set_bounds(el);
-
-	qui_widget* layout = *(qui_widget**)array_at(&el->children, 0);
 	qui_size_container* data = (qui_size_container*)el->data;
 	
 	if (!is_left_down_peak()) {

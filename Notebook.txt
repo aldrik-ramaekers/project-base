@@ -1,2 +1,2 @@
-Thinks to test:
+Things to test:
 - Multi-line label in horizontal-layout
