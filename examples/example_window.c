@@ -80,17 +80,34 @@ void create_ui() {
 					{
 						qui_widget* tab_layout = qui_create_vertical_layout(tab_data_panel);
 						{							
-							qui_widget* scroll = qui_create_vertical_scroll(tab_layout);
+							qui_create_fixed_container(tab_layout, 5);
+							qui_widget* tab_itembar = qui_create_itembar(tab_layout);
 							{
-								qui_create_fixed_container(scroll, 5);
-								qui_widget* tab_itembar = qui_create_itembar(scroll);
+								qui_create_button(tab_itembar, "Refresh");
+								qui_create_itembar_separator(tab_itembar);
+								qui_create_button(tab_itembar, "Cancel");
+								qui_create_button(tab_itembar, "Save Changes");
+							}
+							qui_create_fixed_container(tab_layout, 5);
+							qui_widget* table = qui_create_table(tab_layout);
+							{
+								qui_widget* table_header = qui_create_table_row_header(table);
 								{
-									qui_create_button(tab_itembar, "Refresh");
-									qui_create_itembar_separator(tab_itembar);
-									qui_create_button(tab_itembar, "Cancel");
-									qui_create_button(tab_itembar, "Save Changes");
+									qui_create_table_row_entry(table_header, "Name");
+									qui_create_table_row_entry(table_header, "Age");
+									qui_create_table_row_entry(table_header, "Group");
+									qui_create_table_row_entry(table_header, "Result");
 								}
-								qui_create_fixed_container(scroll, 5);
+
+								for (s32 i = 0; i < 50; i++) {
+									qui_widget* row = qui_create_table_row(table);
+									{
+										qui_create_table_row_entry(row, "Entry 1");
+										qui_create_table_row_entry(row, "Entry 2 Long");
+										qui_create_table_row_entry(row, "Entry 3 Very long");
+										qui_create_table_row_entry(row, "Entry 4 Very Very Long");
+									}
+								}
 							}
 						}
 					}
@@ -134,7 +151,7 @@ void create_ui() {
 
 void resize_ui(platform_window* window, u32 w, u32 h)
 {
-	for (s32 i = 0; i < 10; i++) qui_update(window, ui);
+	//
 }
 
 int main(int argc, char **argv)

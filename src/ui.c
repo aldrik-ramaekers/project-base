@@ -22,6 +22,7 @@ void _qui_fill_parent(qui_widget* el);
 #include "qui/scroll_bar.c"
 #include "qui/scroll_button.c"
 #include "qui/scroll.c"
+#include "qui/table.c"
 #include "qui/tabcontrol_panel.c"
 #include "qui/dropdown_option.c"
 #include "qui/size_container.c"
@@ -76,7 +77,7 @@ void _qui_fill_parent(qui_widget* el) {
 }
 
 bool _qui_mouse_interacts(qui_state* state, vec4 area) {
-	return !state->is_dragging && mouse_interacts(area.x, area.y, area.w, area.h);
+	return !state->window->resizing && !state->is_dragging && mouse_interacts(area.x, area.y, area.w, area.h);
 }
 
 qui_widget* _qui_create_empty_widget(qui_widget* parent) {
@@ -257,6 +258,7 @@ void qui_update(platform_window* window, qui_widget* el) {
 
 	qui_state* state = (qui_state*)el->data;
 
+	state->window = window;
 	el->width = window->width;
 	el->height = window->height;
 

@@ -29,7 +29,7 @@ LRESULT PrepareSizeMove(HWND hwnd, WPARAM action, DWORD dwPos);
 void StopSizing(BOOL cancel);
 /* 	see LooplessSizeMove.h */
 LRESULT CALLBACK LSMProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOLEAN SizingCheck(const MSG *lpmsg);
+BOOLEAN SizingCheck(platform_window* window, const MSG *lpmsg);
 
 #define GetWindowLongAW(hwnd, lp)\
 (IsWindowUnicode(hwnd)) ? \
@@ -628,7 +628,7 @@ void SnapFinalize(SIZEMOVEDATA *sizemove)
     SnapCleanup(sizemove);
 }
 
-BOOLEAN SizingCheck(const MSG *lpmsg)
+BOOLEAN SizingCheck(platform_window* window, const MSG *lpmsg)
 {
     SIZEMOVEDATA *sizemove = LSMGet();
     POINT pt = lpmsg->pt;
@@ -654,6 +654,7 @@ BOOLEAN SizingCheck(const MSG *lpmsg)
         return 0;
     if(lpmsg->message == WM_NCLBUTTONUP || lpmsg->message == WM_LBUTTONUP)
     {
+		window->resizing = false;
         SnapFinalize(sizemove);
         ReleaseCapture();
         return 1;
@@ -824,6 +825,7 @@ BOOLEAN SizingCheck(const MSG *lpmsg)
         QueryPerformanceCounter(&pfDraw);
 #endif
         SendMessageAW(sizemove->hwnd, WM_SIZING, wpHit, (LPARAM)&sizemove->rcWin);
+		window->resizing = true;
         SetWindowPos(sizemove->hwnd, 0, sizemove->rcWin.left, sizemove->rcWin.top,
 					 RECTWIDTH(sizemove->rcWin), RECTHEIGHT(sizemove->rcWin), 0);
 		

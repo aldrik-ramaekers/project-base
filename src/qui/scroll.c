@@ -52,7 +52,7 @@ void _qui_render_scroll(qui_widget* el) {
 
 qui_widget* qui_create_vertical_scroll(qui_widget* qui)
 {
-	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Size container can only be added to vertical or horizontal layout");
+	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Scroll can only be added to vertical or horizontal layout");
 	qui_widget* wg = qui_create_flex_container(qui, 1);
 	qui_widget* scroll =  _qui_create_empty_widget(wg);
 	scroll->type = WIDGET_SCROLL;

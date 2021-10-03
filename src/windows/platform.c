@@ -9,7 +9,6 @@
 #include <locale.h>
 #include <wingdi.h>
 #include <shlobj.h>
-#include "../external/LooplessSizeMove.c"
 
 struct t_backbuffer
 {
@@ -36,6 +35,7 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	bool resizing;
 	void (*update_func)(platform_window*);
 	void (*resize_func)(platform_window*,u32,u32);
 	keyboard_input keyboard;
@@ -54,6 +54,9 @@ struct t_platform_window
 	cursor_type next_cursor_type;
 	bool vsync_enabled;
 };
+
+// This file uses the platform_window struct.
+#include "../external/LooplessSizeMove.c"
 
 extern BOOL GetPhysicallyInstalledSystemMemory(PULONGLONG TotalMemoryInKilobytes);
 
@@ -918,6 +921,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	window->icon_loaded = false;
 	window->title = name;
 	window->vsync_enabled = false;
+	window->resizing = false;
 
 	window->keyboard = keyboard_input_create();
 	window->mouse = mouse_input_create();
@@ -1148,7 +1152,7 @@ void _platform_handle_events_for_window(platform_window *window)
 	while(PeekMessageA(&message, window->window_handle, 0, 0, TRUE))
 	{
 		TranslateMessage(&message); 
-		SizingCheck(&message);
+		SizingCheck(current_window_to_handle, &message);
 		DispatchMessage(&message); 
 	}
 	

@@ -30,6 +30,8 @@
 #define SCROLL_SPEED_PX (15)
 #define SCROLLBAR_W (15)
 
+#define TABLE_ROW_H (25)
+
 typedef struct t_qui_style
 {
 	color widget_text;
@@ -174,6 +176,12 @@ typedef struct t_qui_button
 	bool is_toggle;
 	bool released;
 } qui_button;
+
+typedef struct t_qui_table_row
+{
+	array content;
+	bool is_header;
+} qui_table_row;
 
 typedef struct t_qui_toolbar_item 
 {
