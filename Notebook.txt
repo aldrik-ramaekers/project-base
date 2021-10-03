@@ -1,0 +1,2 @@
+Thinks to test:
+- Multi-line label in horizontal-layout

@@ -21,14 +21,14 @@
 #define TABCONTROL_BUTTON_PADDING_W 5
 
 #define LABEL_PADDING_W 0
-#define LABEL_PADDING_H (BUTTON_PADDING_H)
 #define MINIMUM_FLEX_SIZE (100)
 #define MINIMUM_SIZE_CONTAINER_SIZE (30)
 
 #define ITEMBAR_H 30
 #define TOOLBAR_H 22
 
-#define SCROLLBAR_W 15
+#define SCROLL_SPEED_PX (15)
+#define SCROLLBAR_W (15)
 
 typedef struct t_qui_style
 {
@@ -204,6 +204,7 @@ typedef struct t_qui_widget
 	qui_widget_type type;
 	u8* data; // Widget specific data.
 	bool visible; // Currently only has effect on flex container.
+	s16 scroll_y;
 } qui_widget;
 
 qui_style active_ui_style;

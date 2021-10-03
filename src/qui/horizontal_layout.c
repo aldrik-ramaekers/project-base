@@ -54,7 +54,7 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
 		w->x = el->x + offsetx + w->margin_x;
-		w->y = el->y + w->margin_y;
+		w->y = el->y + w->margin_y + w->scroll_y;
 		w->height = el->height - w->margin_y*2;
 
 		if (border == BORDER_TOP) {

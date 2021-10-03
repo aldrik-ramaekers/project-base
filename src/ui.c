@@ -69,10 +69,10 @@ qui_widget* qui_setup()
 
 //////// General qui functions
 void _qui_fill_parent(qui_widget* el) {
-	el->x = el->parent->x;
-	el->y = el->parent->y;
-	el->width = el->parent->width;
-	el->height = el->parent->height;
+	el->x = el->parent->x + el->margin_x;
+	el->y = el->parent->y + el->margin_y;
+	el->width = el->parent->width - el->margin_x*2;
+	el->height = el->parent->height - el->margin_y*2;
 }
 
 bool _qui_mouse_interacts(qui_state* state, vec4 area) {
@@ -89,6 +89,7 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->height = 0;
 	wg->x = 0;
 	wg->y = 0;
+	wg->scroll_y = 0;
 	wg->margin_x = 0;
 	wg->margin_y = 0;
 	wg->visible = true;
@@ -111,21 +112,48 @@ vec4 get_vec4_within_current_vec4(vec4 current, vec4 area) {
 	return (vec4){x,y,w-x,h-y};
 }
 
+void _qui_render_set_scissor(qui_state* state, qui_widget* el, bool is_special) {
+	s32 border_left = 0;
+	s32 border_top = 0;
+	s32 border_right = 0;
+	s32 border_bottom = 0;
+
+	// Make sure we dont render on top of parent's borders
+	qui_border b = BORDER_NONE;
+	s32 b_size = 0;
+	if (el->parent && el->parent->type == WIDGET_FLEX_CONTAINER) {
+		b = ((qui_flex_container*)el->parent->data)->border;
+		b_size = ((qui_flex_container*)el->parent->data)->border_size;
+	}
+
+	if (b & BORDER_LEFT) border_left += b_size;
+	if (b & BORDER_TOP) border_top += b_size;
+	if (b & BORDER_RIGHT) border_right += b_size;
+	if (b & BORDER_BOTTOM) border_bottom += b_size;
+
+	// Calculate scissor bounds within parent's scissor bounds
+	state->scissor_stack[state->scissor_index] = state->scissor_index == 0 ? 
+		(vec4){el->x, el->y, el->width, el->height} : 
+		get_vec4_within_current_vec4(state->scissor_stack[state->scissor_index-1],
+			(vec4){el->x + border_left, el->y + border_top,
+				 el->width - border_left - border_right, el->height - border_top - border_bottom});
+
+	// Set scissor
+	if (!is_special) {
+		renderer->render_set_scissor(state->window, 
+			state->scissor_stack[state->scissor_index].x,
+			state->scissor_stack[state->scissor_index].y,
+			state->scissor_stack[state->scissor_index].w,
+			state->scissor_stack[state->scissor_index].h);
+	}
+}
+
 void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != draw_special) return;
 
 	log_assert(state->scissor_index < 100, "Thats a very deep UI!");
-	state->scissor_stack[state->scissor_index] = state->scissor_index == 0 ? 
-		(vec4){el->x, el->y, el->width, el->height} : 
-		get_vec4_within_current_vec4(state->scissor_stack[state->scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
-
-	if (!is_special) {
-		renderer->render_set_scissor(state->window, state->scissor_stack[state->scissor_index].x, 
-			state->scissor_stack[state->scissor_index].y, 
-			state->scissor_stack[state->scissor_index].w, 
-			state->scissor_stack[state->scissor_index].h);
-	}
+	_qui_render_set_scissor(state, el, is_special);
 
 	if (el->type == WIDGET_BUTTON) _qui_render_button(el);
 	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
@@ -187,7 +215,7 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
-	if (el->type == WIDGET_SCROLL) _qui_update_scroll(el);
+	if (el->type == WIDGET_SCROLL) _qui_update_scroll(state, el);
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
 

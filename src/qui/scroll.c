@@ -1,5 +1,5 @@
 
-void _qui_update_scroll(qui_widget* el) {
+void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 	_qui_fill_parent(el);
 
 	qui_widget* layout = *(qui_widget**)array_at(&el->children, 0);
@@ -17,14 +17,34 @@ void _qui_update_scroll(qui_widget* el) {
 	float fill_percentage = container->height/(float)content_size;
 	s32 scrollbar_max_size = container->height-(SCROLLBAR_W*2);
 	s32 scrollbar_height = scrollbar_max_size*fill_percentage;
-	//printf("Scrollbar: %d, %.2f\n", scrollbar_height, fill_percentage);
 
 	scrollbar->height = scrollbar_height;
 	scrollbar->x = scrollbar->parent->x;
 	scrollbar->y = scrollbar->parent->y;
 
+	s32 scrollable_px = -(content_size - container->height);
+	s32 current_scroll = container->y - el->y;
+	float scroll_percentage = current_scroll/(float)(-scrollable_px);
+
+	s32 scrollable_px_for_scrollbar = (scrollbar_max_size - scrollbar->height);
+	s32 scrollbar_offsety = scrollable_px_for_scrollbar * scroll_percentage;
+	scrollbar->y -= scrollbar_offsety;
+
 	#define MIN_SCROLLBAR_HEIGHT (6)
 	if (scrollbar->height < MIN_SCROLLBAR_HEIGHT) scrollbar->height = MIN_SCROLLBAR_HEIGHT;
+
+	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
+	if (_qui_mouse_interacts(main_state, actual_area)) {
+		if (_global_mouse.scroll_state == SCROLL_UP) {
+			container->scroll_y += SCROLL_SPEED_PX;
+		}
+		if (_global_mouse.scroll_state == SCROLL_DOWN) {
+			container->scroll_y -= SCROLL_SPEED_PX;
+		}
+	}
+
+	if (container->scroll_y > 0) container->scroll_y = 0;
+	if (container->scroll_y < scrollable_px) container->scroll_y = scrollable_px;
 }
 
 void _qui_render_scroll(qui_widget* el) {

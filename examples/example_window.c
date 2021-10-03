@@ -79,17 +79,18 @@ void create_ui() {
 					qui_widget* tab_data_panel = qui_create_tabcontrol_panel(tabcontrol, "Data");
 					{
 						qui_widget* tab_layout = qui_create_vertical_layout(tab_data_panel);
-						{
-							qui_widget* tab_container = qui_create_flex_container(tab_layout, 1);
+						{							
+							qui_widget* scroll = qui_create_vertical_scroll(tab_layout);
 							{
-
-							}
-							qui_widget* tab_itembar = qui_create_itembar_with_border(tab_layout, BORDER_TOP);
-							{
-								qui_create_button(tab_itembar, "Refresh");
-								qui_create_itembar_separator(tab_itembar);
-								qui_create_button(tab_itembar, "Cancel");
-								qui_create_button(tab_itembar, "Save Changes");
+								qui_create_fixed_container(scroll, 5);
+								qui_widget* tab_itembar = qui_create_itembar(scroll);
+								{
+									qui_create_button(tab_itembar, "Refresh");
+									qui_create_itembar_separator(tab_itembar);
+									qui_create_button(tab_itembar, "Cancel");
+									qui_create_button(tab_itembar, "Save Changes");
+								}
+								qui_create_fixed_container(scroll, 5);
 							}
 						}
 					}
@@ -111,16 +112,15 @@ void create_ui() {
 					{
 						qui_widget* scroll = qui_create_vertical_scroll(box_left_layout);
 						{
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
-							qui_create_button(scroll, "Button");
+							qui_widget* tab_itembar = qui_create_itembar_with_border(scroll, BORDER_BOTTOM);
+							{
+								qui_create_button(tab_itembar, "Clear");
+							}
+							qui_create_label(scroll, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor");
+							qui_create_label(scroll, "Sed ut perspiciatis unde");
+							qui_create_label(scroll, "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis "
+								"praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint "
+								"occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.");
 						}
 					}
 				}

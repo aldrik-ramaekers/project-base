@@ -110,6 +110,9 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 		data->container->visible = true;
 	}
 
+	((qui_flex_container*)data->container->data)->border = BORDER_TOP|BORDER_LEFT|BORDER_RIGHT|BORDER_BOTTOM;
+	((qui_flex_container*)data->container->data)->border_size = 1;
+
 	wg->data = (u8*)data;
 	return data->container;
 }
