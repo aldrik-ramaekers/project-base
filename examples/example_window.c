@@ -198,7 +198,6 @@ int main(int argc, char **argv)
     window = platform_open_window("Hello!",
                 700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui);
 	
-	platform_toggle_vsync(window, true);
 
     while(platform_keep_running(window)) {
         platform_handle_events();

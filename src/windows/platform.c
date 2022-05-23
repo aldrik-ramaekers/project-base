@@ -796,7 +796,6 @@ void platform_setup_backbuffer(platform_window *window)
 			__load_fnc_wgl(wglGetExtensionsStringEXT);
 			__load_fnc_wgl(wglCreateContextAttribsARB);
 		}
-		platform_toggle_vsync(window, true);
 
 #if 1
 		// Multisampling madness

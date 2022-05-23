@@ -58,8 +58,6 @@ void assets_stop_if_done()
 		log_info(msg);
 		#endif
 		global_asset_collection.done_loading_assets = true;
-		array_destroy(&global_asset_collection.queue.queue);
-		// array_destroy(&global_asset_collection.post_process_queue);
 	}
 }
 

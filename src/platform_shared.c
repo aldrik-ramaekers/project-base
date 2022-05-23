@@ -305,10 +305,9 @@ void platform_handle_events()
 		_global_mouse = w->mouse;
 		_global_camera = w->camera;
 
-		w->do_draw = true;
 		_platform_handle_events_for_window(w);
 
-		if (w->do_draw) {
+		if (w->do_draw || redraw_all) {
 			platform_window_make_current(w);
 
 			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
@@ -345,9 +344,9 @@ void platform_handle_events()
 	{
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;
-		float diff_ms = diff / 1000000000.0f;
-		frame_delta = diff_ms;
-		u64 toSleepUS = ((1000/60.0f)-frame_delta)*1000;
-		//thread_sleep(toSleepUS);
+		float diff_us = diff / 1000.0f;
+		s64 toSleepUS = ((1000000/30.0f)-diff_us);
+		if (toSleepUS < 0) toSleepUS = 0;
+		thread_sleep(toSleepUS);
 	}
 }
