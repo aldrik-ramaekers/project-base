@@ -70,7 +70,6 @@ bool assets_do_post_process()
 	bool result = false;
 	
 	mutex_lock(&asset_mutex);
-
 	for (int i = 0; i < global_asset_collection.post_process_queue.length; i++)
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);

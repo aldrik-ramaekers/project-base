@@ -1,4 +1,3 @@
-
 void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 	_qui_fill_parent(el);
 
@@ -33,13 +32,33 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 	#define MIN_SCROLLBAR_HEIGHT (6)
 	if (scrollbar->height < MIN_SCROLLBAR_HEIGHT) scrollbar->height = MIN_SCROLLBAR_HEIGHT;
 
+	bool is_dragging = main_state->dragging_widget == el;
 	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
-	if (_qui_mouse_interacts(main_state, actual_area)) {
+
+	// If mouse is within renderable area (parent), handle scrolling by scroll and mouse.
+	if ((_qui_mouse_interacts_peak(main_state, actual_area) || is_dragging) && _qui_can_take_scroll(main_state, el)) {
+
 		if (_global_mouse.scroll_state == SCROLL_UP) {
 			container->scroll_y += SCROLL_SPEED_PX;
 		}
 		if (_global_mouse.scroll_state == SCROLL_DOWN) {
 			container->scroll_y -= SCROLL_SPEED_PX;
+		}
+
+		if ((_global_mouse.x < actual_area.x+actual_area.w && _global_mouse.x > actual_area.x+actual_area.w - SCROLLBAR_W) || is_dragging)
+		{
+			if (is_left_down()) {
+				main_state->dragging_widget = el;
+				int height_of_possible_mouse_drag = scrollbar_max_size - scrollbar_height;
+				int mouse_drag_start_y = scrollbar->parent->y;
+				float percentage = ((_global_mouse.y - mouse_drag_start_y) - scrollbar_height/2) / (float)height_of_possible_mouse_drag;
+				container->scroll_y = scrollable_px * percentage;
+				printf("test %d\n", container->scroll_y);
+
+			}
+			else {
+				main_state->dragging_widget = 0;
+			}
 		}
 	}
 
@@ -52,10 +71,28 @@ void _qui_render_scroll(qui_widget* el) {
 
 qui_widget* qui_create_vertical_scroll(qui_widget* qui)
 {
+	/*
+	- Flex
+		- Scroll
+			- Horizontal Layout
+				- Flex Container
+					- Vertical layout (where scrollable content lives)
+				- Scroll box
+					- Vertical Layout
+						- Button up
+						- Bar container
+							- Scroll bar
+						- Button down
+	*/
+
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Scroll can only be added to vertical or horizontal layout");
 	qui_widget* wg = qui_create_flex_container(qui, 1);
 	qui_widget* scroll =  _qui_create_empty_widget(wg);
 	scroll->type = WIDGET_SCROLL;
+
+	//qui_scroll_widget* data = mem_alloc(sizeof(qui_scroll_widget));
+	//scroll->data = (u8*)data;
+	
 	qui_widget* layout = qui_create_horizontal_layout(scroll);
 	
 	qui_widget* container = qui_create_flex_container(layout, 1);

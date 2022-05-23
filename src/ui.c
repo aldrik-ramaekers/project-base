@@ -4,7 +4,9 @@ qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type);
 qui_widget* _qui_create_empty_widget(qui_widget* parent);
 vec4 get_vec4_within_current_vec4(vec4 current, vec4 area);
 bool _qui_mouse_interacts(qui_state* state, vec4 area);
+bool _qui_mouse_interacts_peak(qui_state* state, vec4 area);
 void _qui_fill_parent(qui_widget* el);
+bool _qui_can_take_scroll(qui_state* state, qui_widget* el);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -61,6 +63,7 @@ qui_widget* qui_setup()
 	state->scissor_index = 0;
 	memset(state->scissor_stack, 0, sizeof(state->scissor_stack));
 	state->window = 0;
+	state->dragging_widget = 0;
 	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
 	wg->x = 0;
@@ -76,8 +79,17 @@ void _qui_fill_parent(qui_widget* el) {
 	el->height = el->parent->height - el->margin_y*2;
 }
 
+bool _qui_mouse_interacts_peak(qui_state* state, vec4 area) {
+	return !state->window->resizing && !state->dragging_widget && mouse_interacts_peak(area.x, area.y, area.w, area.h);
+}
+
 bool _qui_mouse_interacts(qui_state* state, vec4 area) {
-	return !state->window->resizing && !state->is_dragging && mouse_interacts(area.x, area.y, area.w, area.h);
+	return !state->window->resizing && !state->dragging_widget && mouse_interacts(area.x, area.y, area.w, area.h);
+}
+
+bool _qui_can_take_scroll(qui_state* state, qui_widget* el)
+{
+	return !(state->dragging_widget != 0 && state->dragging_widget != el);
 }
 
 qui_widget* _qui_create_empty_widget(qui_widget* parent) {
@@ -194,11 +206,16 @@ qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type) {
 void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	bool is_special = _qui_is_widget_popup_type(el);
 	if (is_special != update_special) return;
-
+	
 	log_assert(state->scissor_index < 100, "Thats a very deep UI!");
 	state->scissor_stack[state->scissor_index] = state->scissor_index == 0 ? 
 		(vec4){el->x, el->y, el->width, el->height} : 
 		get_vec4_within_current_vec4(state->scissor_stack[state->scissor_index-1], (vec4){el->x, el->y, el->width, el->height});
+
+	// Update elements that dont take input.... maybe rename functions to something like _qui_resize..
+	if (el->type == WIDGET_SCROLL) _qui_update_scroll(state, el);
+	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
+	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(el);
 
 	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
@@ -216,15 +233,12 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
 	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
-	if (el->type == WIDGET_SCROLL) _qui_update_scroll(state, el);
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
 
-	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
-	if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(state, el);
-	if (el->type == WIDGET_FLEX_CONTAINER) _qui_update_flex_container(el);
-	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(el);
+	//if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);
+	//if (el->type == WIDGET_FLEX_CONTAINER) _qui_update_flex_container(el);
 }
 
 void qui_render(platform_window* window, qui_widget* el) {
@@ -280,6 +294,7 @@ void qui_update(platform_window* window, qui_widget* el) {
 	// Update everything else.
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
+		//for (int x = 0; x < 5; x++)
 		_qui_update_widget(state, w, false);
 	}
 }

@@ -98,7 +98,7 @@ typedef struct t_qui_widget qui_widget;
 
 typedef struct t_qui_scroll_widget
 {
-	s32 content_size;
+	//s32 content_size;
 } qui_scroll_widget;
 
 typedef struct t_layout_widget
@@ -194,7 +194,7 @@ typedef struct t_qui_toolbar_item
 
 typedef struct t_qui_state
 {
-	bool is_dragging;
+	qui_widget* dragging_widget;
 	platform_window* window;
 	s32 scissor_index;
 	vec4 scissor_stack[100];

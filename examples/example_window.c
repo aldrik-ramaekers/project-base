@@ -198,10 +198,9 @@ int main(int argc, char **argv)
     window = platform_open_window("Hello!",
                 700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui);
 	
-	//platform_toggle_vsync(window, false);
+	platform_toggle_vsync(window, true);
 
     while(platform_keep_running(window)) {
-		window->do_draw = true;
         platform_handle_events();
     }
 

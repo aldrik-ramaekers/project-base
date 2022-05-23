@@ -1,4 +1,4 @@
-static void _qui_size_cotainer_set_bounds(qui_widget* el) {
+static void _qui_size_container_set_bounds(qui_widget* el) {
 	qui_size_container* data = (qui_size_container*)el->data;
 
 	layout_widget* layout = (layout_widget*)el->parent->data;
@@ -15,20 +15,25 @@ static void _qui_size_cotainer_set_bounds(qui_widget* el) {
 	data->min = DRAG_BAR_SIZE + MINIMUM_SIZE_CONTAINER_SIZE;
 }
 
+void _qui_resize_size_container(qui_state* main_state, qui_widget* el) {
+	
+}
+
 void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
-	_qui_size_cotainer_set_bounds(el);
+	_qui_size_container_set_bounds(el);
 	qui_size_container* data = (qui_size_container*)el->data;
 	
-	if (!is_left_down_peak()) {
+	bool is_dragging = main_state->dragging_widget == el;
+	if (!is_left_down_peak() && is_dragging) {
 		data->drag_start_size = -1;
 		data->mouse_drag_start_pos = -1;
-		main_state->is_dragging = false;
+		main_state->dragging_widget = 0;
 	}
 
 	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
-	if (_qui_mouse_interacts(main_state, actual_area)) {
+	if (_qui_mouse_interacts(main_state, actual_area) && _qui_can_take_scroll(main_state, el)) {
 		if (is_left_down()) {
-			main_state->is_dragging = true;
+			main_state->dragging_widget = el;
 			if (data->drag_start_size == -1) {
 				data->drag_start_size = el->height;
 				data->mouse_drag_start_pos = _global_mouse.y;

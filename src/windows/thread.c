@@ -14,7 +14,6 @@ thread thread_start(void *(*start_routine) (void *), void *arg)
 	result.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)start_routine, 
 								 arg, 0, NULL);
 	result.valid = true;
-	
 	return result;
 }
 
