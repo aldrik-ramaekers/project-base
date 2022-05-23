@@ -1082,7 +1082,6 @@ void _platform_handle_events_for_window(platform_window *window)
 	current_keyboard_to_handle = keyboard;
 	current_mouse_to_handle = mouse;
 	
-#ifndef MODE_TEST
 	mouse->left_state &= ~MOUSE_CLICK;
 	mouse->right_state &= ~MOUSE_CLICK;
 	mouse->left_state &= ~MOUSE_DOUBLE_CLICK;
@@ -1095,12 +1094,10 @@ void _platform_handle_events_for_window(platform_window *window)
 	mouse->move_y = 0;
 	mouse->scroll_state = 0;
 	keyboard->text_changed = false;
-#endif
 	
 	// mouse position (including outside of window)
 	current_window_to_handle->has_focus = GetFocus() == current_window_to_handle->window_handle;
 	
-#ifndef MODE_TEST
 	if (current_window_to_handle->has_focus || current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
 	{
 		if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0)
@@ -1119,6 +1116,7 @@ void _platform_handle_events_for_window(platform_window *window)
 			{
 				current_mouse_to_handle->left_state |= MOUSE_CLICK;
 				current_mouse_to_handle->last_state_released = false;
+				current_window_to_handle->do_draw = true;
 			}
 		}
 		
@@ -1129,23 +1127,12 @@ void _platform_handle_events_for_window(platform_window *window)
 		GetCursorPos(&p);
 		ScreenToClient(current_window_to_handle->window_handle, &p);
 		
+		if (mouse->y != p.y || mouse->x != p.x) current_window_to_handle->do_draw = true;
+
 		mouse->y = p.y;
 		mouse->x = p.x;
 		mouse->inside_of_window = (mouse->x >= 0 && mouse->y >= 0 && mouse->x < window->width && mouse->y < window->height);
-		
-#if 0
-		if (current_window_to_handle->flags & FLAGS_GLOBAL_MOUSE)
-			mouse->x = p.x - rec.left;
-		else
-			mouse->x = p.x - rec.left - GetSystemMetrics(SM_CYSIZEFRAME);
-		
-		if (current_window_to_handle->flags & FLAGS_BORDERLESS)
-			mouse->y = p.y - rec.top;
-		else
-			mouse->y = p.y - rec.top - GetSystemMetrics(SM_CYSIZE) - GetSystemMetrics(SM_CYFRAME);
-#endif
 	}
-#endif
 	
 	MSG message;
 	while(PeekMessageA(&message, window->window_handle, 0, 0, TRUE))
@@ -1172,7 +1159,8 @@ void platform_window_swap_buffers(platform_window *window)
 			case CURSOR_DEFAULT: cursor_shape = IDC_ARROW; break;
 			case CURSOR_POINTER: cursor_shape = IDC_HAND; break;
 			case CURSOR_LOADING: cursor_shape = IDC_APPSTARTING; break;
-			case CURSOR_DRAG: cursor_shape = IDC_SIZEWE; break;
+			case CURSOR_DRAG_HORIZONTAL: cursor_shape = IDC_SIZEWE; break;
+			case CURSOR_DRAG_VERTICAL: cursor_shape = IDC_SIZENS; break;
 			case CURSOR_TEXT: cursor_shape = IDC_IBEAM; break;
 		}
 		

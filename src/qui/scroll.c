@@ -48,13 +48,13 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 		if ((_global_mouse.x < actual_area.x+actual_area.w && _global_mouse.x > actual_area.x+actual_area.w - SCROLLBAR_W) || is_dragging)
 		{
 			if (is_left_down()) {
+				platform_set_cursor(main_state->window, CURSOR_DRAG_VERTICAL);
+
 				main_state->dragging_widget = el;
 				int height_of_possible_mouse_drag = scrollbar_max_size - scrollbar_height;
 				int mouse_drag_start_y = scrollbar->parent->y;
 				float percentage = ((_global_mouse.y - mouse_drag_start_y) - scrollbar_height/2) / (float)height_of_possible_mouse_drag;
 				container->scroll_y = scrollable_px * percentage;
-				printf("test %d\n", container->scroll_y);
-
 			}
 			else {
 				main_state->dragging_widget = 0;

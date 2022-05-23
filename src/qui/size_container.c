@@ -31,7 +31,10 @@ void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 	}
 
 	vec4 actual_area = main_state->scissor_stack[main_state->scissor_index];
-	if (_qui_mouse_interacts(main_state, actual_area) && _qui_can_take_scroll(main_state, el)) {
+	if (((_global_mouse.y > actual_area.y && _global_mouse.y < actual_area.y + DRAG_BAR_SIZE) || is_dragging) 
+		&& _qui_can_take_scroll(main_state, el)) {
+
+		platform_set_cursor(main_state->window, CURSOR_DRAG_VERTICAL);
 		if (is_left_down()) {
 			main_state->dragging_widget = el;
 			if (data->drag_start_size == -1) {
