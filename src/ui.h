@@ -155,6 +155,7 @@ typedef struct t_qui_flex_container
 	color color_background;
 	qui_border border;
 	u8 border_size;
+	s32 min_size_px;
 	u8 flex;
 } qui_flex_container;
 
@@ -228,6 +229,7 @@ qui_widget* qui_create_vertical_layout(qui_widget* qui); // Vertical layout alwa
 qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size); // When placed in vertical layout, size = height, else size = width
 qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
+qui_widget* qui_create_flex_container_s(qui_widget* qui, u8 flex, s32 min_size_px);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 qui_widget* qui_create_dropdown(qui_widget* qui);
 qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border);

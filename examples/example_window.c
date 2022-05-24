@@ -64,7 +64,7 @@ void create_ui() {
 			qui_create_button(itembar, "Run");
 		}
 
-		qui_widget* central_container = qui_create_flex_container(layout, 1);
+		qui_widget* central_container = qui_create_flex_container_s(layout, 1, 150);
 		{
 			qui_widget* horizontal_split = qui_create_horizontal_layout(central_container);
 			{

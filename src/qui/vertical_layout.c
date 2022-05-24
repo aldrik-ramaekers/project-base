@@ -19,7 +19,7 @@ void _qui_update_vertical_layout(qui_widget* el) {
 			qui_flex_container* data = (qui_flex_container*)w->data;
 			if (w->visible) {
 				flex_size += data->flex;
-				reserved_height += MINIMUM_FLEX_SIZE;
+				reserved_height += data->min_size_px;
 			}
 		}
 	}
