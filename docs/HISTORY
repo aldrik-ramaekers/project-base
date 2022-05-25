@@ -1,6 +1,9 @@
-2.0.0
-   - Switching between render methods is not handled by library and can be changed by settings the USE_GPU setting
-   - Window destroying is not handled by library
+2.1
+   - Added scrolling using mouse cursor
+
+2.0.0 [03-10-2021]
+   - Switching between render methods is now handled by library and can be changed by settings the USE_GPU setting
+   - Window destroying is now handled by library
    - Drawing loop is now handled by library
    - Fix issue with menu bar not rendering bottom border
    - Added error messages to all asserts

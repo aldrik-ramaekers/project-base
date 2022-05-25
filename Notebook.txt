@@ -1,2 +1,19 @@
-Things to test:
-- Multi-line label in horizontal-layout
+Features
+- Popup window (Yes/No/Cancel)
+- Line graph widget
+- Single-line textbox widget
+- Resizable width of table columns
+
+Issues
+- Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
+- Frame is not drawn at start of program
+
+Changes
+- Remove resize callback function
+- Store QUI pointer inside window struct
+- Call QUI update and render from within library. The update, resize and close callbacks are made
+	available for non-gui programs but will not be necessary for gui programs
+
+Cleanup
+- Delete im_ui
+- Delete notification system

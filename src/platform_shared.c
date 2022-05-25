@@ -305,13 +305,13 @@ void platform_handle_events()
 		_global_mouse = w->mouse;
 		_global_camera = w->camera;
 
+		platform_window_make_current(w); // This should be called whether we are drawing or not.
 		_platform_handle_events_for_window(w);
 
 		if (w->do_draw || redraw_all) {
-			platform_window_make_current(w);
 
 			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
-			
+
 			platform_set_cursor(w, CURSOR_DEFAULT);
 			renderer->render_clear(w, rgb(255,255,255));
 			_camera_apply_transformations(w, &_global_camera);
@@ -328,7 +328,7 @@ void platform_handle_events()
 				update_delta = diff_ms;
 			}
 
-			if (current_render_driver() == DRIVER_GL) IMP_glFinish();
+			//if (current_render_driver() == DRIVER_GL) IMP_glFinish();
 		    platform_window_swap_buffers(w);
         }
 
@@ -337,6 +337,7 @@ void platform_handle_events()
 		w->camera = _global_camera;
 
 		if (!w->is_open) {
+			if (w->close_func) w->close_func(w);
 			platform_destroy_window(w);
 		}
 	}

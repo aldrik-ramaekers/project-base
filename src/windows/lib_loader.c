@@ -75,11 +75,14 @@ __def_proc( bool, SetPixelFormat, (HDC hdc,int format,CONST PIXELFORMATDESCRIPTO
 __def_proc( int, StretchDIBits, (HDC ,int ,int ,int ,int ,int ,int ,int ,int ,CONST VOID *,CONST BITMAPINFO *,UINT ,DWORD ))
 __def_proc( bool, SwapBuffers, (HDC))
 
+__def_proc(bool, PlaySoundA, (LPCSTR, HMODULE, DWORD))
+
 void _lib_loader_init()
 {
     HMODULE libOpengl32 = 0;
     HMODULE libComdlg32 = 0;
     HMODULE libGdi32 = 0;
+	HMODULE libWinmm = 0;
 
     __load_lib_or_exit(libOpengl32, "opengl32");
     __load_fnc_or_exit(wglCreateContext, libOpengl32);
@@ -142,4 +145,7 @@ void _lib_loader_init()
     __load_fnc_or_exit(StretchDIBits, libGdi32);
     __load_fnc_or_exit(SwapBuffers, libGdi32);
 	__load_fnc_or_exit(GetDeviceCaps, libGdi32);
+
+	__load_lib_or_exit(libWinmm, "Winmm");
+	__load_fnc_or_exit(PlaySoundA, libWinmm);
 }

@@ -1,6 +1,6 @@
 /* 
 *  BSD 2-Clause “Simplified” License
-*  Copyright (c) 2019, Aldrik Ramaekers, aldrik.ramaekers@protonmail.com
+*  Copyright (c) 2022, Aldrik Ramaekers, aldrik.ramaekers@protonmail.com
 *  All rights reserved.
 */
 

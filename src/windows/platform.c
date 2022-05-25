@@ -35,9 +35,11 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	bool enabled;
 	bool resizing;
 	void (*update_func)(platform_window*);
 	void (*resize_func)(platform_window*,u32,u32);
+	void (*close_func)(platform_window*);
 	keyboard_input keyboard;
 	mouse_input mouse;
 	camera camera;
@@ -429,7 +431,32 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 	}
 	else if (message == WM_SETFOCUS)
 	{
-		current_window_to_handle->has_focus = true;
+		if (!current_window_to_handle->enabled) {
+			current_window_to_handle->has_focus = false;
+
+			if (window_registry.length) 
+			{
+				platform_window* w = *(platform_window**)array_at(&window_registry, window_registry.length-1);
+				SetFocus(w->window_handle);
+
+				FLASHWINFO info;
+				info.cbSize = sizeof(FLASHWINFO);
+				info.hwnd = w->window_handle;
+				info.dwFlags = FLASHW_CAPTION;
+				info.uCount = 3;
+				info.dwTimeout = 0;
+				FlashWindowEx(&info);
+			}
+			else
+			{
+				log_assert(0, "The only window that is open is disabled.");
+			}
+			
+			IMP_PlaySoundA((LPCSTR)SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID|SND_ASYNC);
+		}
+		else {
+			current_window_to_handle->has_focus = true;
+		}
 	}
 	else if (message == WM_KEYDOWN)
 	{
@@ -778,15 +805,6 @@ void platform_setup_backbuffer(platform_window *window)
 
 		window->gl_context = IMP_wglCreateContext(window->hdc);
 		
-		if (share_list == 0)
-		{
-			share_list = window->gl_context;
-		}
-		else
-		{
-			IMP_wglShareLists(share_list, window->gl_context);
-		}
-		
 		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 
 		// Load wgl specific extensions after gl context has been created.
@@ -842,6 +860,16 @@ void platform_setup_backbuffer(platform_window *window)
 			IMP_wglMakeCurrent(window->hdc, window->gl_context);
 		}
 #endif
+
+		if (share_list == 0)
+		{
+			share_list = window->gl_context;
+		}
+		else
+		{
+			IMP_wglShareLists(share_list, window->gl_context);
+		}
+		
 	}
 	else
 	{
@@ -884,7 +912,8 @@ void platform_setup_renderer()
 }
 
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, 
-	void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32, u32))
+	void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32, u32), 
+	void (*close_func)(platform_window* window), platform_window* parent)
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) height = min_h;
@@ -902,8 +931,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	platform_window* window = mem_alloc(sizeof(platform_window));
 	if (!window) return window;
 	window->has_focus = true;
+	window->enabled = true;
 	window->update_func = update_func;
 	window->resize_func = resize_func;
+	window->close_func = close_func;
 	window->window_handle = 0;
 	window->hdc = 0;
 	window->width = width;
@@ -944,8 +975,6 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 		
 	if (min_w != max_w && min_h != max_h)
 		style |= WS_SIZEBOX;
-	else
-		style |= WS_THICKFRAME;
 		
 	if (flags & FLAGS_BORDERLESS)
 	{
@@ -959,6 +988,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	{
 		ex_style |= WS_EX_TOOLWINDOW;
 	}
+	if (flags & FLAGS_POPUP)
+	{
+		ex_style |= WS_EX_TOPMOST;
+	}
 	
 	window->style = style;
 	window->ex_style = ex_style;
@@ -970,7 +1003,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 											CW_USEDEFAULT,
 											width,
 											height,
-											0,
+											parent ? parent->window_handle : 0,
 											0,
 											instance,
 											0);
