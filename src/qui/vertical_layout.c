@@ -54,7 +54,10 @@ void _qui_update_vertical_layout(qui_widget* el) {
 		offsety += w->height + w->margin_y*2;
 	}
 	data->fixed_size = fixed_height + reserved_height;
-	if (el->height < fixed_height) el->height = fixed_height;
+
+	el->height = el->parent->height;
+	//if (el->height < fixed_height) el->height = fixed_height;
+	
 	data->size = el->height;
 }
 
@@ -72,7 +75,7 @@ qui_widget* qui_create_vertical_layout(qui_widget* qui)
 		qui->type == WIDGET_MAIN || 
 		qui->type == WIDGET_TABCONTROL ||
 		qui->type == WIDGET_SCROLL, 
-		"Horizontal layout can only be added to container, main widget, scroll or tabcontrol");
+		"Vertical layout can only be added to container, main widget, scroll or tabcontrol");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_VERTICAL_LAYOUT;
 	layout_widget* data = mem_alloc(sizeof(layout_widget));

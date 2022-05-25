@@ -68,7 +68,10 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 		offsetx += w->width + w->margin_x*2;
 	}
 	data->fixed_size = fixed_width + reserved_width;
-	if (el->width < fixed_width) el->width = fixed_width;
+
+	el->width = el->parent->width;
+	//if (el->width < fixed_width) el->width = fixed_width;
+
 	data->size = el->width;
 }
 

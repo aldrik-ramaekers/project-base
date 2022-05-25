@@ -198,7 +198,7 @@ int main(int argc, char **argv)
     window = platform_open_window("Hello!",
                 700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui, 0);
 
-	popup_window_show("Booba", "test123", 0);
+	popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);
 	
 
     while(platform_keep_running(window)) {

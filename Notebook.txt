@@ -3,6 +3,7 @@ Features
 - Line graph widget
 - Single-line textbox widget
 - Resizable width of table columns
+- Label overflow behavour (currently always loops)
 
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
