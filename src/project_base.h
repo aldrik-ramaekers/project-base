@@ -17,20 +17,6 @@
 //			- @Unused: Unused function that should be removed.
 //			- @Speed: Slow code that should be rewritten eventually.
 
-//	:/Title	TODO's
-//	:/Text	Project-base
-//			- return error when asset file is not found
-//			- append .config/ before config on linux
-//			- make sure a valid render config is found on linux
-//			- remove all unused functions @Unused
-//			- prefix private functions with _ like platform_destroy_shared
-//			- make custom popup windows so we can get rid of zenity and windows deps
-//			- get rid of external header files and copy constants to lib_loader, also get rid of IMP_ prefix
-//			- try crashing the lib and make asserts for the crashes
-//			- rename localization_set_locale to localization_localization_set_locale()
-//			- settings writes null = null to file??
-//			- get rid of text-search code in platform.h
-
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 

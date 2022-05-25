@@ -69,8 +69,9 @@ void _qui_update_horizontal_layout(qui_widget* el) {
 	}
 	data->fixed_size = fixed_width + reserved_width;
 
-	el->width = el->parent->width;
-	//if (el->width < fixed_width) el->width = fixed_width;
+	//el->width = el->parent->width;
+	if (el->width < fixed_width) el->width = fixed_width;
+	if (el->width > el->parent->width) el->width = el->parent->width;
 
 	data->size = el->width;
 }

@@ -1,5 +1,7 @@
 2.1
+   - Initial QUI release
    - Added scrolling using mouse cursor
+   - Reduce hardware usage
 
 2.0.0 [03-10-2021]
    - Switching between render methods is now handled by library and can be changed by settings the USE_GPU setting

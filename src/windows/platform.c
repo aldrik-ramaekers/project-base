@@ -35,6 +35,7 @@ struct t_platform_window
 	s32 max_height;
 	
 	// shared window properties
+	qui_widget* ui;
 	bool enabled;
 	bool resizing;
 	void (*update_func)(platform_window*);
@@ -912,8 +913,10 @@ void platform_setup_renderer()
 }
 
 platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, 
-	void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32, u32), 
-	void (*close_func)(platform_window* window), platform_window* parent)
+	void (*update_func)(platform_window* window), 
+	void (*resize_func)(platform_window* window, u32, u32), 
+	void (*close_func)(platform_window* window), platform_window* parent,
+	qui_widget* gui)
 {
 	if (width < min_w) width = min_w;
 	if (height < min_h) height = min_h;
@@ -926,11 +929,11 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(max_h >= 0, "Maximum height should be greater or equal to 0, where 0 means no limit");
 	log_assert(min_w > 0, "Minimum width should be greater than 0");
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
-	log_assert(update_func, "Update function cannot be 0");
 
 	platform_window* window = mem_alloc(sizeof(platform_window));
 	if (!window) return window;
 	window->has_focus = true;
+	window->ui = gui;
 	window->enabled = true;
 	window->update_func = update_func;
 	window->resize_func = resize_func;

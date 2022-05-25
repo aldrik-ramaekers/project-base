@@ -766,7 +766,6 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	log_assert(max_h >= 0, "Maximum height should be greater or equal to 0, where 0 means no limit");
 	log_assert(min_w > 0, "Minimum width should be greater than 0");
 	log_assert(min_h > 0, "Minimum height should be greater than 0");
-	log_assert(update_func, "Update function cannot be 0");
 
 	bool has_max_size = max_w || max_h;
 	

@@ -1,15 +1,6 @@
 
-qui_widget* popup_ui;
-
-void popup_window_update(platform_window* window)
-{
-	qui_update(window, popup_ui);
-	qui_render(window, popup_ui);
-}
-
-
-void popup_window_create_ui(popup_window_option options, popup_window_type type) {
-	popup_ui = qui_setup();
+qui_widget* popup_window_create_ui(popup_window_option options, popup_window_type type) {
+	qui_widget* popup_ui = qui_setup();
 
 	qui_widget* layout = qui_create_vertical_layout(popup_ui);
 	{
@@ -27,6 +18,7 @@ void popup_window_create_ui(popup_window_option options, popup_window_type type)
 				}
 
 				qui_create_label(text_layout, "Test label Test label Test label Test label Test label Test label Test label Test label Test label ");
+				qui_create_label(text_layout, "Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop ");
 			}
 		}
 		qui_widget* bottom_container = qui_create_fixed_container(layout, ITEMBAR_H);
@@ -38,6 +30,8 @@ void popup_window_create_ui(popup_window_option options, popup_window_type type)
 			}		
 		}
 	}
+
+	return popup_ui;
 }
 
 void popup_window_close(platform_window* window)
@@ -64,8 +58,6 @@ void popup_window_show(char* title, char* text, popup_window_option options, pop
 		parent = w;
 	}
 
-	popup_window_create_ui(options, type);
-
-	platform_open_window_ex(title,
-                350, 200, 350, 200, 350, 200, FLAGS_POPUP, popup_window_update, 0, popup_window_close, parent);
+	platform_open_window_ex(title, 400, 200, 400, 200, 400, 200, FLAGS_POPUP, 
+		0, 0, popup_window_close, parent, popup_window_create_ui(options, type));
 }

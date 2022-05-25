@@ -2,17 +2,8 @@
 
 #define CONFIG_DIRECTORY "example_program_2"
 
-platform_window *window;
-qui_widget* ui;
-
-void update_render_ui2(platform_window* window)
-{
-	qui_update(window, ui);
-	qui_render(window, ui);
-}
-
-void create_ui() {
-	ui = qui_setup();
+qui_widget* create_ui() {
+	qui_widget* ui = qui_setup();
 
 	qui_widget* layout = qui_create_vertical_layout(ui);
 	{
@@ -183,23 +174,17 @@ void create_ui() {
 			}
 		}
 	}
-}
 
-void resize_ui(platform_window* window, u32 w, u32 h)
-{
-	//
+	return ui;
 }
 
 int main(int argc, char **argv)
 {    
     platform_init(argc, argv, CONFIG_DIRECTORY);
 
-	create_ui();
-    window = platform_open_window("Hello!",
-                700, 700, 1200, 900, 500, 500, update_render_ui2, resize_ui, 0);
+    platform_window *window = platform_open_window_gui("Hello!", 700, 700, 1200, 900, 500, 500, create_ui());
 
 	popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);
-	
 
     while(platform_keep_running(window)) {
         platform_handle_events();

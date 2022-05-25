@@ -4,6 +4,17 @@
 *  All rights reserved.
 */
 
+/*
+
+The idea behind this gui library is as following:
+- Widgets can only be placed within Horizontal and Vertical layout widgets.
+- Positioning of widgets is handled by their parent layout widget.
+- Layout widgets can only be added to Flex and Fixed containers.
+- Flex and Fixed containers can only be added to layout widgets.
+- The topmost widget is a fixed widget
+
+*/
+
 #ifndef INCLUDE_UI
 #define INCLUDE_UI
 

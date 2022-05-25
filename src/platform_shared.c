@@ -317,7 +317,14 @@ void platform_handle_events()
 			_camera_apply_transformations(w, &_global_camera);
 			renderer->render_reset_scissor();
 
-            w->update_func(w);
+			if (w->ui)
+			{
+				qui_update(w, w->ui);
+				qui_render(w, w->ui);
+			}
+
+            if (w->update_func) w->update_func(w);	
+
 			if (i == 0) update_render_notifications();
 
 			// Update delta.
@@ -328,7 +335,6 @@ void platform_handle_events()
 				update_delta = diff_ms;
 			}
 
-			//if (current_render_driver() == DRIVER_GL) IMP_glFinish();
 		    platform_window_swap_buffers(w);
         }
 

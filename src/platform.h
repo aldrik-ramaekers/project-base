@@ -160,11 +160,20 @@ keyboard_input _global_keyboard;
 mouse_input _global_mouse = {-1};
 camera _global_camera;
 
-#define platform_open_window(name, width, height, max_w, max_h, min_w, min_h, update_func, resize_func, close_func) platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, update_func, resize_func, close_func, 0)
+#define platform_open_window_gui(name, width, height, max_w, max_h, min_w, min_h, gui) \
+	platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, 0, 0, 0, 0, gui)
 
+#define platform_open_window(name, width, height, max_w, max_h, min_w, min_h, update_func, resize_func, close_func) \
+	platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, update_func, resize_func, close_func, 0, 0)
+
+typedef struct t_qui_widget qui_widget;
 platform_window* 	platform_open_window_ex(char *name, u16 width, u16 height, u16 max_w, u16 max_h, u16 min_w, u16 min_h, s32 flags, 
-											void (*update_func)(platform_window* window), void (*resize_func)(platform_window* window, u32 change_x,u32 change_y), 
-											void (*close_func)(platform_window* window), platform_window* parent);
+											void (*update_func)(platform_window* window), 
+											void (*resize_func)(platform_window* window, u32 change_x,u32 change_y), 
+											void (*close_func)(platform_window* window), 
+											platform_window* parent,
+											qui_widget* gui);
+
 file_content 		platform_read_file_content(char *path, const char *mode);
 
 bool 	platform_window_is_valid(platform_window *window);

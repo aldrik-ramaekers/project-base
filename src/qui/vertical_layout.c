@@ -55,8 +55,9 @@ void _qui_update_vertical_layout(qui_widget* el) {
 	}
 	data->fixed_size = fixed_height + reserved_height;
 
-	el->height = el->parent->height;
-	//if (el->height < fixed_height) el->height = fixed_height;
+	//el->height = el->parent->height;
+	if (el->height < fixed_height) el->height = fixed_height;
+	if (el->height > el->parent->height) el->height = el->parent->height;
 	
 	data->size = el->height;
 }

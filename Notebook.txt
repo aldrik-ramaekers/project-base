@@ -4,10 +4,12 @@ Features
 - Single-line textbox widget
 - Resizable width of table columns
 - Label overflow behavour (currently always loops)
+- Custom title bar color
 
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
 - Frame is not drawn at start of program
+- Table is behind scroll bar
 
 Changes
 - Remove resize callback function
