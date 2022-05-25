@@ -2,7 +2,7 @@ qui_widget* qui_create_table_row_entry(qui_widget* qui, char* text) {
 	qui_widget* wg = qui_create_flex_container(qui, 1);
 	qui_flex_container_set_border(wg, BORDER_LEFT, 1);
 	qui_widget* layout = qui_create_horizontal_layout(wg);
-	qui_widget* label = qui_create_label(layout, text);
+	qui_widget* label = qui_create_label(layout, text, false);
 	label->margin_x = 5;
 	return label;
 }

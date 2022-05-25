@@ -13,9 +13,7 @@ Issues
 
 Changes
 - Remove resize callback function
-- Store QUI pointer inside window struct
-- Call QUI update and render from within library. The update, resize and close callbacks are made
-	available for non-gui programs but will not be necessary for gui programs
+- Change letter wrap to word wrap
 
 Cleanup
 - Delete im_ui

@@ -11,7 +11,8 @@ The idea behind this gui library is as following:
 - Positioning of widgets is handled by their parent layout widget.
 - Layout widgets can only be added to Flex and Fixed containers.
 - Flex and Fixed containers can only be added to layout widgets.
-- The topmost widget is a fixed widget
+- The topmost widget is a fixed widget.
+- Flex and Fixed containers can only have 1 child.
 
 */
 
@@ -173,6 +174,8 @@ typedef struct t_qui_flex_container
 typedef struct t_qui_label
 {
 	char* text;
+	bool allow_wrap;
+	bool is_horizontal;
 } qui_label;
 
 typedef struct t_qui_dropdown
@@ -245,6 +248,7 @@ qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 qui_widget* qui_create_dropdown(qui_widget* qui);
 qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border);
 qui_widget* qui_create_itembar(qui_widget* qui);
+qui_widget* qui_create_label(qui_widget* qui, char* text, bool allow_wrap);
 
 void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);

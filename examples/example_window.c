@@ -45,7 +45,7 @@ qui_widget* create_ui() {
 
 			qui_create_itembar_separator(itembar);
 
-			qui_create_label(itembar, "Time display:");
+			qui_create_label(itembar, "Time display:", false);
 			qui_widget* time_dropdown = qui_create_dropdown(itembar);
 			{
 				qui_create_dropdown_option(time_dropdown, "Milliseconds");
@@ -113,7 +113,7 @@ qui_widget* create_ui() {
 								qui_widget* title_container_layout = qui_create_horizontal_layout(title_container);
 								{
 									qui_create_flex_container(title_container_layout, 1);
-									qui_create_label(title_container_layout, "Subscription plans");
+									qui_create_label(title_container_layout, "Subscription plans", false);
 									qui_create_flex_container(title_container_layout, 1);
 								}
 							}
@@ -131,7 +131,7 @@ qui_widget* create_ui() {
 											plan_container->margin_y = 10;
 											qui_widget* plan_layout = qui_create_vertical_layout(plan_container);
 											{
-												qui_create_label(plan_layout, "Plan 1");
+												qui_create_label(plan_layout, "Plan 1", false);
 											}
 										}
 									}
@@ -160,11 +160,11 @@ qui_widget* create_ui() {
 							{
 								qui_create_button(tab_itembar, "Clear");
 							}
-							qui_create_label(scroll, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor");
-							qui_create_label(scroll, "Sed ut perspiciatis unde");
+							qui_create_label(scroll, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor", true);
+							qui_create_label(scroll, "Sed ut perspiciatis unde", true);
 							qui_create_label(scroll, "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis "
 								"praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint "
-								"occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.");
+								"occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.", true);
 						}
 					}
 				}

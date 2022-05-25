@@ -17,8 +17,9 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 					(void)image_container;
 				}
 
-				qui_create_label(text_layout, "Test label Test label Test label Test label Test label Test label Test label Test label Test label ");
-				qui_create_label(text_layout, "Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop Poop ");
+				qui_create_label(text_layout, "Test label Test label Test label Test label Test label Test label Test label", true);
+				qui_create_fixed_container(text_layout, 10);
+				qui_create_label(text_layout, "Poop Fortnite Poop Fortnite Poop Fortnite Poop Fortnite Poop Fortnite ", true);
 			}
 		}
 		qui_widget* bottom_container = qui_create_fixed_container(layout, ITEMBAR_H);
