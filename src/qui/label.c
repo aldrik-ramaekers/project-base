@@ -26,7 +26,7 @@ void _qui_render_label(qui_widget* el) {
 
 	if (data->text) {
 		char* text = data->text;
-		s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
+		//s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
 
 		if (!data->allow_wrap) {
 			renderer->render_text(global_ui_context.font_small, 

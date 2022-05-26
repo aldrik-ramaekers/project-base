@@ -1,5 +1,5 @@
 
-qui_widget* popup_window_create_ui(popup_window_option options, popup_window_type type) {
+qui_widget* popup_window_create_ui(popup_window_option options, popup_window_type type, char* text) {
 	qui_widget* popup_ui = qui_setup();
 
 	qui_widget* layout = qui_create_vertical_layout(popup_ui);
@@ -17,9 +17,8 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 					(void)image_container;
 				}
 
-				qui_create_label(text_layout, "Test label Test label Test label Test label Test label Test label Test label", true);
+				qui_create_label(text_layout, text, true);
 				qui_create_fixed_container(text_layout, 10);
-				qui_create_label(text_layout, "Poop Fortnite Poop Fortnite Poop Fortnite Poop Fortnite Poop Fortnite ", true);
 			}
 		}
 		qui_widget* bottom_container = qui_create_fixed_container(layout, ITEMBAR_H);
@@ -60,5 +59,5 @@ void popup_window_show(char* title, char* text, popup_window_option options, pop
 	}
 
 	platform_open_window_ex(title, 400, 200, 400, 200, 400, 200, FLAGS_POPUP, 
-		0, 0, popup_window_close, parent, popup_window_create_ui(options, type));
+		0, 0, popup_window_close, parent, popup_window_create_ui(options, type, text));
 }

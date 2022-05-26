@@ -319,6 +319,16 @@ void platform_handle_events()
 
 			if (w->ui)
 			{
+				// Fix issue with text alignment on startup after assets are done loading.
+				if (redraw_all)
+				{		
+					for (int i = 0; i < 2; i++)
+					{
+						qui_update(w, w->ui);
+						qui_render(w, w->ui);
+					}				
+				}
+
 				qui_update(w, w->ui);
 				qui_render(w, w->ui);
 			}
