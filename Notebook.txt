@@ -9,7 +9,6 @@ Features
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
 - Table is behind scroll bar
-- Popup window has minimize button
 
 Changes
 - Change letter wrap to word wrap

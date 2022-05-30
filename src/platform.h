@@ -150,6 +150,7 @@ typedef enum t_window_flags
 	FLAGS_HIDDEN = 8,
 	FLAGS_NO_TASKBAR = 16,
 	FLAGS_POPUP = 32,
+	FLAGS_MINIMIZE = 64
 } window_flags;
 // NOT IMPLEMENTED ON LINUX: USE FLAGS_NONE
 
@@ -161,7 +162,7 @@ mouse_input _global_mouse = {-1};
 camera _global_camera;
 
 #define platform_open_window_gui(name, width, height, max_w, max_h, min_w, min_h, gui) \
-	platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, 0, 0, 0, 0, gui)
+	platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, FLAGS_MINIMIZE, 0, 0, 0, 0, gui)
 
 #define platform_open_window(name, width, height, max_w, max_h, min_w, min_h, update_func, resize_func, close_func) \
 	platform_open_window_ex(name,width,height,max_w,max_h,min_w,min_h, 0, update_func, resize_func, close_func, 0, 0)

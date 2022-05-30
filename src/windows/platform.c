@@ -973,7 +973,7 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	ATOM success = RegisterClass(&window->window_class);
 	if (!success) return 0;
 
-	int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
+	int style = WS_SYSMENU|WS_CAPTION;
 	int ex_style = 0;
 		
 	if (min_w != max_w && min_h != max_h)
@@ -982,6 +982,10 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	if (flags & FLAGS_BORDERLESS)
 	{
 		style = WS_VISIBLE|WS_POPUP;
+	}
+	if (flags & FLAGS_MINIMIZE)
+	{
+		style |= WS_MINIMIZEBOX;
 	}
 	if (flags & FLAGS_TOPMOST)
 	{
