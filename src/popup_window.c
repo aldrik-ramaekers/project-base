@@ -6,16 +6,25 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 	{
 		qui_widget* top_container = qui_create_flex_container(layout, 1);
 		{
-			top_container->margin_x = 10;
-			top_container->margin_y = 10;
+			top_container->margin_x = 20;
+			top_container->margin_y = 20;
 
 			qui_widget* text_layout = qui_create_horizontal_layout(top_container);
 			{
 				qui_widget* image_container = qui_create_fixed_container(text_layout, 50);
 				{
-					// Add image here
-					(void)image_container;
+					image* img_to_use = 0;
+					switch(type)
+					{
+						case POPUP_TYPE_DEFAULT: break;
+						case POPUP_TYPE_INFO: img_to_use = assets_load_bitmap(info_bmp, info_bmp+info_bmp_len); break;
+						case POPUP_TYPE_WARNING: img_to_use = assets_load_bitmap(close_bmp, close_bmp+close_bmp_len); break;
+					}
+
+					if (img_to_use) qui_create_image_panel(image_container, img_to_use);
 				}
+
+				qui_create_fixed_container(text_layout, 20); // Extra spacing
 
 				qui_create_label(text_layout, text, true);
 				qui_create_fixed_container(text_layout, 10);
@@ -29,6 +38,8 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 				if (options & POPUP_BTN_CANCEL) qui_create_button(button_layout, "Cancel");
 			}		
 		}
+
+		qui_create_fixed_container(layout, 5); // Extra bottom spacing
 	}
 
 	return popup_ui;

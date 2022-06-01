@@ -29,6 +29,7 @@ bool _qui_can_take_scroll(qui_state* state, qui_widget* el);
 #include "qui/dropdown_option.c"
 #include "qui/size_container.c"
 #include "qui/flex_container.c"
+#include "qui/image_panel.c"
 
 //////// General setup
 qui_widget* qui_setup()
@@ -180,6 +181,7 @@ void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_SCROLL) _qui_render_scroll(el);
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_render_scroll_button(el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_render_scroll_bar(el);
+	if (el->type == WIDGET_IMAGE_PANEL) _qui_render_image_panel(el);
 
 	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
 	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
@@ -235,6 +237,7 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
+	if (el->type == WIDGET_IMAGE_PANEL) _qui_update_image_panel(el);
 
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(state, el);
 	//if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);

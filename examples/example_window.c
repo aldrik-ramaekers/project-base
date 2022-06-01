@@ -184,7 +184,9 @@ int main(int argc, char **argv)
 
     platform_window *window = platform_open_window_gui("Hello!", 700, 700, 1200, 900, 500, 500, create_ui());
 
-	popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);
+	popup_window_show("Test Popup Message", "You are a stinky poopy.", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_INFO);
+	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);
+	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_DEFAULT);
 
     while(platform_keep_running(window)) {
         platform_handle_events();

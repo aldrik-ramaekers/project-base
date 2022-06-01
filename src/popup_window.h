@@ -13,6 +13,7 @@ typedef enum t_popup_window_option {
 } popup_window_option;
 
 typedef enum t_popup_window_type {
+	POPUP_TYPE_DEFAULT,
 	POPUP_TYPE_INFO,
 	POPUP_TYPE_WARNING,
 } popup_window_type;

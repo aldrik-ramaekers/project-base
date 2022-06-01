@@ -8,6 +8,8 @@
 #define INCLUDE_ASSETS
 
 #include "resources/mono.h"
+#include "resources/info_png.h"
+#include "resources/close_png.h"
 
 //	:/Title	Assets
 //	:/Text	The asset system is responsible for loading images, fonts and sound

@@ -89,6 +89,7 @@ typedef enum t_qui_widget_type
 	WIDGET_SCROLL,
 	WIDGET_SCROLL_BUTTON,
 	WIDGET_SCROLL_BAR,
+	WIDGET_IMAGE_PANEL,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -133,6 +134,11 @@ typedef struct t_qui_scroll_button_widget
 	bool is_up;
 	qui_widget_state state;
 } qui_scroll_button_widget;
+
+typedef struct t_qui_image_panel
+{
+	image* image;
+} qui_image_panel;
 
 typedef struct t_tabcontrol_panel 
 {

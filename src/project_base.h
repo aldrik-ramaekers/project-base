@@ -79,7 +79,6 @@
 #define false 0
 
 #include "logging.h"
-#include "resources.h"
 #include "thread.h"
 #include "array.h"
 #include "memory.h"

@@ -12,6 +12,7 @@ Issues
 
 Changes
 - Change letter wrap to word wrap
+- Verify that flex and fixed containers only have 1 widget
 
 Cleanup
 - Delete im_ui
