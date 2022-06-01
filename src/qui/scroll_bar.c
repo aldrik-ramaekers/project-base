@@ -1,5 +1,6 @@
 
 void _qui_update_scroll_bar(qui_widget* el) {
+	el->x = el->parent->x;
 }
 
 void _qui_render_scroll_bar(qui_widget* el) {

@@ -28,7 +28,7 @@ LRESULT PrepareSizeMove(HWND hwnd, WPARAM action, DWORD dwPos);
 */
 void StopSizing(BOOL cancel);
 /* 	see LooplessSizeMove.h */
-LRESULT CALLBACK LSMProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK LSMProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, platform_window* current_window_to_handle);
 BOOLEAN SizingCheck(platform_window* window, const MSG *lpmsg);
 
 #define GetWindowLongAW(hwnd, lp)\
@@ -308,13 +308,14 @@ LRESULT PrepareSizeMove(HWND hwnd, WPARAM action, DWORD dwPos)
     return 0;
 }
 
-LRESULT CALLBACK LSMProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK LSMProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, platform_window* current_window_to_handle)
 {
     LSMTlsCheck();
+
     switch(msg)
     {
         case WM_NCLBUTTONDOWN:
-        {
+        {		
             switch(wParam)
             {
                 case HTLEFT:
