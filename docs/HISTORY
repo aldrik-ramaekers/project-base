@@ -1,4 +1,5 @@
-2.1
+2.1.0
+   - Swap bitmaps on load
    - Initial QUI release
    - Added scrolling using mouse cursor
    - Reduce hardware usage
