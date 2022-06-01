@@ -22,6 +22,7 @@ bool _qui_dropdown_option_is_visible(qui_widget* el) {
 }
 
 void _qui_update_dropdown_option(qui_widget* el) {
+	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 	el->width = el->parent->width;
 
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
@@ -90,7 +91,6 @@ qui_widget* qui_create_dropdown_option(qui_widget* qui, char* text)
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN_OPTION;
 	wg->width = 0;
-	wg->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 
 	qui_widget* master_widget = _qui_find_parent_of_type(wg, WIDGET_MAIN);
 	if (master_widget) array_push(&master_widget->special_children, (uint8_t*)&wg);
