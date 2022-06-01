@@ -34,6 +34,10 @@ void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	else {
 		if (data->state == HOVERED) data->state = IDLE;
 	}
+
+	#define TABCONTROL_BUTTON_SELECTED_OFFSETY (3)
+	el->y += TABCONTROL_BUTTON_SELECTED_OFFSETY;
+	if (data->state == OPEN) el->y -= TABCONTROL_BUTTON_SELECTED_OFFSETY;
 }
 
 void _qui_render_tabcontrol_panel(qui_widget* el) {
@@ -94,7 +98,7 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 
 	qui_widget* layout = *(qui_widget**)array_at(&qui->children, 0);
 	qui_widget* button_bar = *(qui_widget**)array_at(&layout->children, 1);
-	//button_bar = *(qui_widget**)array_at(&button_bar->children, 0);
+	button_bar = *(qui_widget**)array_at(&button_bar->children, 0);
 
 	qui_widget* container = *(qui_widget**)array_at(&layout->children, 2);
 	qui_widget* container_layout = *(qui_widget**)array_at(&container->children, 0);

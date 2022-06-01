@@ -1,10 +1,10 @@
 Features
-- Popup window (Yes/No/Cancel)
 - Line graph widget
 - Single-line textbox widget
 - Resizable width of table columns
 - Custom title bar color
 - Align multi-line label centered when vertically aligned
+- How much work to make program DPI aware?
 
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
@@ -12,7 +12,7 @@ Issues
 
 Changes
 - Change letter wrap to word wrap
-- Verify that flex and fixed containers only have 1 widget
+- Add extra buttons to popup window (Yes/No/Accept/Save/Delete)
 
 Cleanup
 - Delete im_ui
