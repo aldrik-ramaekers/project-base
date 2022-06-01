@@ -95,6 +95,12 @@ typedef enum t_file_open_error
 	FILE_ERROR_TOO_BIG = 11,
 } file_open_error;
 
+typedef enum t_application_theme
+{
+	APPLICATION_THEME_LIGHT,
+	APPLICATION_THEME_DARK,
+} application_theme;
+
 typedef struct t_open_dialog_args
 {
 	char *buffer;
@@ -226,6 +232,7 @@ s32 	platform_filter_matches(array *filters, char *string, char **matched_filter
 bool 	platform_delete_file(char *path);
 s32		platform_get_titlebar_height();
 void 	platform_toggle_fullscreen(platform_window* window, bool fullscreen);
+application_theme platform_get_application_theme();
 
 //	:/Info	Check if the window is still open. Should be used in the main loop.
 //	:/Ret	true when open, false when closed.

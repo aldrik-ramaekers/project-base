@@ -5,14 +5,18 @@ Features
 - Custom title bar color
 - Align multi-line label centered when vertically aligned
 - How much work to make program DPI aware?
+- Make program dark-mode aware (https://docs.microsoft.com/en-us/answers/questions/715081/how-to-detect-windows-dark-mode.html) (https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regnotifychangekeyvalue)
 
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
 - Table is behind scroll bar
+- Can we get rid of the double redraw? maybe try to update after every single asset is done loading
+- Multiple dropdown items can be hovered at once
 
 Changes
 - Change letter wrap to word wrap
 - Add extra buttons to popup window (Yes/No/Accept/Save/Delete)
+- Seperate im_ui from gui
 
 Cleanup
 - Delete im_ui

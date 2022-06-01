@@ -1702,6 +1702,24 @@ s32 platform_get_cpu_count()
 	return info.dwNumberOfProcessors;
 }
 
+application_theme platform_get_application_theme()
+{
+	HKEY value;
+	REGSAM access = KEY_QUERY_VALUE;
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, access, &value) == ERROR_SUCCESS)
+	{
+		DWORD is_light_mode = 0;
+		s32 buffer_size = 4;
+		RegQueryValueExA(value, "AppsUseLightTheme", NULL, NULL, (LPBYTE)&is_light_mode, (LPDWORD)&buffer_size);
+		RegCloseKey(value);
+
+		if (is_light_mode == 0) return APPLICATION_THEME_DARK;
+		if (is_light_mode == 1) return APPLICATION_THEME_LIGHT;
+	}
+
+	return APPLICATION_THEME_LIGHT;
+}
+
 #if 0
 bool platform_send_http_request(char *url, char *params, char *response_buffer)
 {
