@@ -28,6 +28,19 @@ void _qui_render_tabcontrol(qui_widget* el) {
 
 qui_widget* qui_create_tabcontrol(qui_widget* qui)
 {
+	/*
+
+	- Flex
+		- Tabcontrol (return value)
+			- Vertical layout
+				- Padding
+				- Fixed container (buttons)
+					- Horizontal Layout
+				- Flex container (content)
+					- Horizontal layout
+
+	*/
+
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Tabcontrol can only be added to vertical or horizontal layout");
 	qui_widget* wg = qui_create_flex_container(qui, 1);
 	qui_widget* wg2 = _qui_create_empty_widget(wg);
@@ -37,10 +50,11 @@ qui_widget* qui_create_tabcontrol(qui_widget* qui)
 
 	qui_widget* layout = qui_create_vertical_layout(wg2);
 	qui_create_fixed_container(layout, 5); // Extra padding top.
-	qui_create_fixed_container(layout, 30); // Container for the buttons.
+	qui_widget* button_container = qui_create_fixed_container(layout, 30); // Container for the buttons.
+	//qui_create_horizontal_layout(button_container);
 	//((qui_fixed_container*)button_row->data)->border = BORDER_BOTTOM;
 
 	qui_widget* container = qui_create_flex_container(layout, 1); // Flex container for tab content.
-	qui_create_horizontal_layout(container); // Vertical layout containing all tabs. (added in tabcontrol_panel.c)
+	qui_create_horizontal_layout(container); // Horizontal layout containing all tabs. (added in tabcontrol_panel.c)
 	return wg2;
 }

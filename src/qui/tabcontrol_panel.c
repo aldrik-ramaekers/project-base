@@ -94,6 +94,8 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 
 	qui_widget* layout = *(qui_widget**)array_at(&qui->children, 0);
 	qui_widget* button_bar = *(qui_widget**)array_at(&layout->children, 1);
+	//button_bar = *(qui_widget**)array_at(&button_bar->children, 0);
+
 	qui_widget* container = *(qui_widget**)array_at(&layout->children, 2);
 	qui_widget* container_layout = *(qui_widget**)array_at(&container->children, 0);
 	qui_widget* wg = _qui_create_empty_widget(button_bar);

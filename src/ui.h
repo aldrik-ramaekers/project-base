@@ -9,10 +9,10 @@
 The idea behind this gui library is as following:
 - Widgets can only be placed within Horizontal and Vertical layout widgets.
 - Positioning of widgets is handled by their parent layout widget.
-- Layout widgets can only be added to Flex and Fixed containers.
+- Layout widgets can only be added to Flexm Fixed and Size containers.
 - Flex and Fixed containers can only be added to layout widgets.
 - The topmost widget is a fixed widget.
-- Flex and Fixed containers can only have 1 child.
+- Flex, Fixed and Size containers can only have 1 child.
 
 */
 

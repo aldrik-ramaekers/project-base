@@ -108,7 +108,13 @@ qui_widget* _qui_create_empty_widget(qui_widget* parent) {
 	wg->margin_y = 0;
 	wg->visible = true;
 	wg->parent = parent;
-	if (parent) array_push(&parent->children, (uint8_t*)&wg);
+	if (parent) {
+
+		//if (parent->type == WIDGET_FIXED_CONTAINER || parent->type == WIDGET_SIZE_CONTAINER || parent->type == WIDGET_FLEX_CONTAINER) {
+			//log_assert(parent->children.length == 0, "Fixed, Size and Flex containers can only contain 1 child");
+		//}
+		array_push(&parent->children, (uint8_t*)&wg);
+	}
 	return wg;
 }
 

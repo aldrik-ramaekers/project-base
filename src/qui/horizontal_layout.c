@@ -86,6 +86,8 @@ qui_widget* qui_create_horizontal_layout(qui_widget* qui)
 	log_assert(qui->type == WIDGET_FIXED_CONTAINER || 
 		qui->type == WIDGET_FLEX_CONTAINER || 
 		qui->type == WIDGET_SIZE_CONTAINER || 
+
+		// Internal exceptions
 		qui->type == WIDGET_MAIN || 
 		qui->type == WIDGET_TABCONTROL ||
 		qui->type == WIDGET_SCROLL, 
