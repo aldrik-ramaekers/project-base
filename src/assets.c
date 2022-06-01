@@ -304,7 +304,7 @@ image* assets_find_image_ref(u8 *start_addr, s32 hash)
 	{
 		image *img_at = array_at(&global_asset_collection.images, i);
 		
-		if ((start_addr == img_at->start_addr || hash == img_at->path_hash) && img_at->references > 0)
+		if ((start_addr == img_at->start_addr || (hash == img_at->path_hash && hash != UNDEFINED_PATH_HASH)) && img_at->references > 0)
 		{
 			img_at->references++;
 			return img_at;
@@ -334,7 +334,7 @@ static font* find_font_ref(u8 *start_addr, s32 hash, s16 size)
 	{
 		font *font_at = array_at(&global_asset_collection.fonts, i);
 		
-		if ((start_addr == font_at->start_addr || hash == font_at->path_hash) && font_at->size == size && font_at->references > 0)
+		if ((start_addr == font_at->start_addr || (hash == font_at->path_hash && hash != UNDEFINED_PATH_HASH)) && font_at->size == size && font_at->references > 0)
 		{
 			font_at->references++;
 			return font_at;

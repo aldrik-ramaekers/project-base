@@ -14,6 +14,9 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 				qui_widget* image_container = qui_create_fixed_container(text_layout, 50);
 				{
 					image* img_to_use = 0;
+
+					printf("%p %p\n", assets_load_bitmap(info_bmp, info_bmp+info_bmp_len), assets_load_bitmap(close_bmp, close_bmp+close_bmp_len));
+
 					switch(type)
 					{
 						case POPUP_TYPE_DEFAULT: break;
