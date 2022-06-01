@@ -1,4 +1,6 @@
 void _qui_update_button(qui_state* main_state, qui_widget* el) {
+	el->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
+
 	qui_button* data = ((qui_button*)el->data);
 	if (el->parent->type == WIDGET_HORIZONTAL_LAYOUT) {
 		if (data->text) {

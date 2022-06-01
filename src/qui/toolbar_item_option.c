@@ -31,6 +31,8 @@ bool _qui_toolbar_item_option_is_visible(qui_widget* el) {
 }
 
 void _qui_update_toolbar_item_option(qui_widget* el) {
+	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
+
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
 	if (!_qui_toolbar_item_option_is_visible(el)) {
 		*state = IDLE;
