@@ -5,7 +5,6 @@ Features
 - Custom title bar color
 - Align multi-line label centered when vertically aligned
 - How much work to make program DPI aware?
-- Make program dark-mode aware (https://docs.microsoft.com/en-us/answers/questions/715081/how-to-detect-windows-dark-mode.html) (https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regnotifychangekeyvalue)
 
 Issues
 - Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
@@ -13,6 +12,7 @@ Issues
 - Can we get rid of the double redraw? maybe try to update after every single asset is done loading
 - Multiple dropdown items can be hovered at once
 - Button should resize if it is too big for parent fixed container
+- Redraw window when theme changes
 
 Changes
 - Change letter wrap to word wrap
