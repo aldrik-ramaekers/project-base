@@ -35,12 +35,13 @@ qui_widget* popup_window_create_ui(popup_window_option options, popup_window_typ
 		{
 			qui_widget* button_layout = qui_create_horizontal_layout(bottom_container);
 			{
+				qui_create_fixed_container(button_layout, 10);
 				if (options & POPUP_BTN_OK) qui_create_button(button_layout, "Accept");
 				if (options & POPUP_BTN_CANCEL) qui_create_button(button_layout, "Cancel");
 			}		
 		}
 
-		qui_create_fixed_container(layout, 5); // Extra bottom spacing
+		qui_create_fixed_container(layout, 10); // Extra bottom spacing
 	}
 
 	return popup_ui;
