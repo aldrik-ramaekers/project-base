@@ -4,7 +4,9 @@ void _qui_update_flex_container(qui_widget* el) {
 
 void _qui_render_flex_container(qui_widget* el) {
 	qui_flex_container* data = (qui_flex_container*)el->data;
-	renderer->render_rectangle(el->x, el->y, el->width, el->height, data->color_background);
+	if (data->color_background) {
+		renderer->render_rectangle(el->x, el->y, el->width, el->height, *data->color_background);
+	}
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
@@ -19,7 +21,7 @@ qui_widget* qui_create_flex_container_s(qui_widget* qui, u8 flex, s32 min_size_p
 	data->border_size = 1;
 	data->min_size_px = min_size_px;
 	data->border = BORDER_NONE;
-	data->color_background = rgba(0,0,0,0);
+	data->color_background = 0;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_FLEX_CONTAINER;
 	return wg;
@@ -36,7 +38,7 @@ qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex)
 	data->border_size = 1;
 	data->min_size_px = MINIMUM_FLEX_SIZE;
 	data->border = BORDER_NONE;
-	data->color_background = rgba(0,0,0,0);
+	data->color_background = 0;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_FLEX_CONTAINER;
 	return wg;

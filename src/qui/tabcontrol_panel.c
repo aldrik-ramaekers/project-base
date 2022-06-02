@@ -59,7 +59,6 @@ void _qui_render_tabcontrol_panel(qui_widget* el) {
 		background = active_ui_style.widget_background_interactive_highlighted;
 
 	}
-	((qui_flex_container*)data->container->data)->color_background = active_ui_style.widget_panel_background;
 
 	#define EXTRA_HEIGHT_FOR_INTENTIONAL_OVERFLOW (10)
 	el->height += EXTRA_HEIGHT_FOR_INTENTIONAL_OVERFLOW;
@@ -116,6 +115,7 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 		data->container->visible = true;
 	}
 
+	((qui_flex_container*)data->container->data)->color_background = &active_ui_style.widget_panel_background;
 	((qui_flex_container*)data->container->data)->border = BORDER_TOP|BORDER_LEFT|BORDER_RIGHT|BORDER_BOTTOM;
 	((qui_flex_container*)data->container->data)->border_size = 1;
 

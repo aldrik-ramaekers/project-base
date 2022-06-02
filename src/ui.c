@@ -88,16 +88,29 @@ void _qui_set_lightmode()
 	active_ui_style.widget_interactive_image_tint = rgb(0,0,0);
 }
 
+void* _ui_thread_poll_platform_theme(void* args)
+{
+	while (1)
+	{
+		application_theme theme = platform_get_application_theme();
+
+		//theme = APPLICATION_THEME_DARK;
+		switch(theme)
+		{
+			case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;
+			case APPLICATION_THEME_DARK: _qui_set_darkmode(); break;
+		}
+
+		thread_sleep(1000000); // 1 sec
+	}
+
+	return 0;
+}
+
 qui_widget* qui_setup()
 {
-	application_theme theme = platform_get_application_theme();
-
-	//theme = APPLICATION_THEME_DARK;
-	switch(theme)
-	{
-		case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;
-		case APPLICATION_THEME_DARK: _qui_set_darkmode(); break;
-	}
+	thread theme_thread = thread_start(_ui_thread_poll_platform_theme, 0);
+	thread_detach(&theme_thread);
 
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));

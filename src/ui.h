@@ -62,10 +62,6 @@ typedef struct t_qui_style
 	color widget_background_interactive_hovered;
 	color widget_background_interactive_selected_option;
 
-	//color tabcontrol_background_idle;
-	//color tabcontrol_background_hovered;
-	//color tabcontrol_background_active;
-
 	color widget_border_outter_static;
 	color widget_border_outter_idle;
 	color widget_border_outter_highlighted;
@@ -155,7 +151,7 @@ typedef struct t_tabcontrol_panel
 
 typedef struct t_qui_size_container
 {
-	color color_background;
+	color* color_background;
 	enum {
 		DIRECTION_TOP,
 	} direction;
@@ -169,14 +165,14 @@ typedef struct t_qui_size_container
 
 typedef struct t_qui_fixed_container 
 {
-	color color_background;
+	color* color_background;
 	qui_border border;
 	u8 border_size;
 } qui_fixed_container;
 
 typedef struct t_qui_flex_container
 {
-	color color_background;
+	color* color_background;
 	qui_border border;
 	u8 border_size;
 	s32 min_size_px;

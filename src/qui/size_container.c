@@ -22,6 +22,11 @@ void _qui_resize_size_container(qui_state* main_state, qui_widget* el) {
 void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 	_qui_size_container_set_bounds(el);
 	qui_size_container* data = (qui_size_container*)el->data;
+
+	// Set color of dragbar. This is in here instead of dragbar.c because dragbar is not a seperate entity type.
+	qui_widget* child1 =*(qui_widget**)array_at(&el->children, 0);
+	qui_widget* dragbar = *(qui_widget**)array_at(&child1->children, 0);
+	((qui_fixed_container*)dragbar->data)->color_background = &active_ui_style.widget_resize_bar_background;
 	
 	bool is_dragging = main_state->dragging_widget == el;
 	if (!is_left_down_peak() && is_dragging) {
@@ -54,7 +59,9 @@ void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 
 void _qui_render_size_container(qui_widget* el) {
 	qui_size_container* data = (qui_size_container*)el->parent->parent->data;
-	renderer->render_rectangle(el->x, el->y, el->width, el->height, data->color_background);
+	if (data->color_background) {
+		renderer->render_rectangle(el->x, el->y, el->width, el->height, *data->color_background);
+	}
 	_qui_render_container_borders(el, data->border, data->border_size);
 }
 
@@ -68,7 +75,7 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size)
 	data->max = 9999;
 	data->min = 0;
 	data->mouse_drag_start_pos = -1;
-	data->color_background = rgba(255,0,0,0);
+	data->color_background = 0;
 	data->border = BORDER_NONE;
 	data->border_size = 0;
 	data->drag_start_size = -1;
