@@ -98,7 +98,7 @@ qui_widget* qui_create_vertical_scroll(qui_widget* qui)
 	qui_widget* container = qui_create_flex_container(layout, 1);
 	qui_widget* scroll_box = qui_create_fixed_container(layout, SCROLLBAR_W);
 	((qui_fixed_container*)scroll_box->data)->color_background = active_ui_style.scroll_background;
-	((qui_fixed_container*)scroll_box->data)->border = BORDER_LEFT;
+	((qui_fixed_container*)scroll_box->data)->border = BORDER_LEFT|BORDER_RIGHT;
 	((qui_fixed_container*)scroll_box->data)->border_size = 1;
 
 	qui_widget* scrollbar_layout = qui_create_vertical_layout(scroll_box);

@@ -103,7 +103,7 @@ void _qui_render_button(qui_widget* el) {
 	else if (data->icon) {
 		#define IMAGE_PAD 5
 		s32 icon_s = el->width - (IMAGE_PAD*2);
-		renderer->render_image(((qui_button*)el->data)->icon, el->x + IMAGE_PAD, el->y + IMAGE_PAD, icon_s, icon_s);
+		renderer->render_image_tint(((qui_button*)el->data)->icon, el->x + IMAGE_PAD, el->y + IMAGE_PAD, icon_s, icon_s, active_ui_style.widget_interactive_image_tint);
 	}
 }
 

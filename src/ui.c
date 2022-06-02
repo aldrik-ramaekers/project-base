@@ -56,37 +56,43 @@ void _qui_set_darkmode()
 
 	active_ui_style.widget_resize_bar_background = active_ui_style.widget_background_static;
 	active_ui_style.widget_panel_background = rgb(35, 35, 35);
+
+	active_ui_style.widget_interactive_image_tint = rgb(255,255,255);
 }
 
 void _qui_set_lightmode()
 {
 	active_ui_style.widget_text = rgb(0, 0, 0);
-	active_ui_style.clear_color = rgb(255, 255, 255);
-	active_ui_style.collapse_color = rgb(173, 194, 216);
-	active_ui_style.scroll_background = rgb(200,200,200);
+	active_ui_style.clear_color = rgb(240, 240, 240);
+	active_ui_style.collapse_color = rgb(255,255,255);
+	active_ui_style.scroll_background = rgb(240, 240, 240);
 
-	active_ui_style.widget_background_static = rgb(245,245,245);
-	active_ui_style.widget_background_interactive_idle = rgb(235,235,235);
-	active_ui_style.widget_background_interactive_highlighted = rgb(240, 230, 220);
-	active_ui_style.widget_background_interactive_hovered = rgb(225,225,225);
-	active_ui_style.widget_background_interactive_selected_option = rgb(230, 150, 100);
+	active_ui_style.widget_background_static = rgb(255,255,255);
+	active_ui_style.widget_background_interactive_idle = rgb(215,215,215);
+	active_ui_style.widget_background_interactive_highlighted = rgb(133, 226, 255);
+	active_ui_style.widget_background_interactive_hovered = rgb(209, 244, 255);
+	active_ui_style.widget_background_interactive_selected_option = rgb(209, 244, 255);
 
-	active_ui_style.widget_border_inner_idle = rgb(180,180,180);
-	active_ui_style.widget_border_inner_highlighted = rgb(170,165,155);
-	active_ui_style.widget_border_inner_hovered = rgb(160,160,160);
+	active_ui_style.widget_border_inner_idle = rgb(240,240,240);
+	active_ui_style.widget_border_inner_highlighted = rgb(133, 226, 255);
+	active_ui_style.widget_border_inner_hovered = rgb(209, 244, 255);
 
-	active_ui_style.widget_border_outter_static = rgb(220,220,220);
-	active_ui_style.widget_border_outter_idle = rgb(215, 215, 215);
-	active_ui_style.widget_border_outter_highlighted = rgb(170, 80, 20);
-	active_ui_style.widget_border_outter_hovered = rgb(205, 205, 205);
+	active_ui_style.widget_border_outter_static = rgb(160, 160, 160);
+	active_ui_style.widget_border_outter_idle = rgb(163, 163, 163);
+	active_ui_style.widget_border_outter_highlighted = rgb(111, 199, 227);
+	active_ui_style.widget_border_outter_hovered = rgb(111, 199, 227);
 
 	active_ui_style.widget_resize_bar_background = active_ui_style.widget_background_static;
 	active_ui_style.widget_panel_background = rgb(255,255,255);
+
+	active_ui_style.widget_interactive_image_tint = rgb(0,0,0);
 }
 
 qui_widget* qui_setup()
 {
 	application_theme theme = platform_get_application_theme();
+
+	//theme = APPLICATION_THEME_DARK;
 	switch(theme)
 	{
 		case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;

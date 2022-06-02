@@ -70,7 +70,7 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size)
 	data->mouse_drag_start_pos = -1;
 	data->color_background = rgba(0,0,0,0);
 	data->border = BORDER_NONE;
-	data->border_size = 0;
+	data->border_size = 1;
 	data->drag_start_size = -1;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_SIZE_CONTAINER;

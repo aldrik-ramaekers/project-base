@@ -106,7 +106,7 @@ void _qui_render_toolbar_item_option(qui_widget* el) {
 	if (data->icon) {
 		const s32 ICON_PAD = 4;
 		s32 icon_s = el->height - (ICON_PAD*2);
-		renderer->render_image(data->icon, el->x + (TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT/2) - (icon_s/2), el->y + ICON_PAD, icon_s, icon_s);
+		renderer->render_image_tint(data->icon, el->x + (TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT/2) - (icon_s/2), el->y + ICON_PAD, icon_s, icon_s, active_ui_style.widget_interactive_image_tint);
 	}
 
 	// Draw collapse arrow.

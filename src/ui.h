@@ -70,6 +70,8 @@ typedef struct t_qui_style
 	color widget_border_inner_idle;
 	color widget_border_inner_highlighted;
 	color widget_border_inner_hovered;
+
+	color widget_interactive_image_tint;
 } qui_style;
 
 typedef enum t_qui_widget_type 
