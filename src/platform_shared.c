@@ -241,7 +241,9 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 		thread_detach(&asset_queue_worker_thread);
 	}
 
+
 	// Load builtin assets
+	assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
 	assets_load_bitmap(close_bmp, close_bmp+close_bmp_len);
 	assets_load_bitmap(info_bmp, info_bmp+info_bmp_len);
 	

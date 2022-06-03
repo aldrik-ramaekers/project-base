@@ -121,7 +121,7 @@ void* _ui_thread_poll_platform_theme(void* args)
 	qui_state* state = args;
 	while (1)
 	{
-		if (state->respect_platform_theme) {
+		if (state->respect_platform_theme && state->window) {
 			application_theme theme = platform_get_application_theme();
 
 			if (theme != state->theme)
