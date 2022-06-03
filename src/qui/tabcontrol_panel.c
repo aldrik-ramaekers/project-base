@@ -26,6 +26,7 @@ void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	if (_qui_mouse_interacts(main_state, actual_area)) {
 		if (data->state == IDLE) data->state = HOVERED;
 		if (is_left_clicked()) {
+			main_state->window->do_draw = true;
 			data->state = OPEN;
 			data->container->visible = true;
 			_qui_tabcontrol_panel_close_siblings(el);

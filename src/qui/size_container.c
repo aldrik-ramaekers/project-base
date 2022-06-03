@@ -41,6 +41,8 @@ void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 
 		platform_set_cursor(main_state->window, CURSOR_DRAG_VERTICAL);
 		if (is_left_down()) {
+			main_state->window->do_draw = true;
+			
 			main_state->dragging_widget = el;
 			if (data->drag_start_size == -1) {
 				data->drag_start_size = el->height;

@@ -7,9 +7,7 @@ Features
 - How much work to make program DPI aware?
 
 Issues
-- Frame is not redrawn after scrolling using scroll wheel (frame is always 1 tick behind)
 - Table is behind scroll bar
-- Can we get rid of the double redraw? maybe try to update after every single asset is done loading
 - Multiple dropdown items can be hovered at once
 - Button should resize if it is too big for parent fixed container
 - Redraw window when theme changes

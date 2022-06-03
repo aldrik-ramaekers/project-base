@@ -17,17 +17,7 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 	s32 scrollbar_max_size = container->height-(SCROLLBAR_W*2);
 	s32 scrollbar_height = scrollbar_max_size*fill_percentage;
 
-	scrollbar->height = scrollbar_height;
-	scrollbar->x = scrollbar->parent->x;
-	scrollbar->y = scrollbar->parent->y;
-
 	s32 scrollable_px = -(content_size - container->height);
-	s32 current_scroll = container->y - el->y;
-	float scroll_percentage = current_scroll/(float)(-scrollable_px);
-
-	s32 scrollable_px_for_scrollbar = (scrollbar_max_size - scrollbar->height);
-	s32 scrollbar_offsety = scrollable_px_for_scrollbar * scroll_percentage;
-	scrollbar->y -= scrollbar_offsety;
 
 	#define MIN_SCROLLBAR_HEIGHT (6)
 	if (scrollbar->height < MIN_SCROLLBAR_HEIGHT) scrollbar->height = MIN_SCROLLBAR_HEIGHT;
@@ -51,6 +41,7 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 		{
 			if (is_left_down()) {
 				platform_set_cursor(main_state->window, CURSOR_DRAG_VERTICAL);
+				main_state->window->do_draw = true;
 
 				main_state->dragging_widget = el;
 				int height_of_possible_mouse_drag = scrollbar_max_size - scrollbar_height;
@@ -64,6 +55,21 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 		}
 	}
 
+	// Set scrollbar position.
+	{
+		s32 current_scroll = container->y - el->y;
+		float scroll_percentage = current_scroll/(float)(-scrollable_px);
+
+		scrollbar->height = scrollbar_height;
+		scrollbar->x = scrollbar->parent->x;
+		scrollbar->y = scrollbar->parent->y;
+
+		s32 scrollable_px_for_scrollbar = (scrollbar_max_size - scrollbar->height);
+		s32 scrollbar_offsety = scrollable_px_for_scrollbar * scroll_percentage;
+		scrollbar->y -= scrollbar_offsety;
+	}
+
+	// Keep scroll within bounds.
 	if (container->scroll_y > 0) container->scroll_y = 0;
 	if (container->scroll_y < scrollable_px) container->scroll_y = scrollable_px;
 }

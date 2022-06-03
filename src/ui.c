@@ -69,7 +69,7 @@ void _qui_set_lightmode()
 
 	active_ui_style.widget_background_static = rgb(255,255,255);
 	active_ui_style.widget_background_interactive_idle = rgb(215,215,215);
-	active_ui_style.widget_background_interactive_highlighted = rgb(166, 228, 247);
+	active_ui_style.widget_background_interactive_highlighted = rgb(197, 239, 252);
 	active_ui_style.widget_background_interactive_hovered = rgb(209, 244, 255);
 	active_ui_style.widget_background_interactive_selected_option = rgb(209, 244, 255);
 
