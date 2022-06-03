@@ -112,6 +112,8 @@ void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platfo
 		_qui_apply_theme(theme);
 		state->theme = theme;
 	}
+
+	state->window->do_draw = true;
 }
 
 void* _ui_thread_poll_platform_theme(void* args)
@@ -121,8 +123,13 @@ void* _ui_thread_poll_platform_theme(void* args)
 	{
 		if (state->respect_platform_theme) {
 			application_theme theme = platform_get_application_theme();
-			_qui_apply_theme(theme);
-			state->theme = theme;
+
+			if (theme != state->theme)
+			{
+				_qui_apply_theme(theme);
+				state->theme = theme;
+				state->window->do_draw = true;
+			}
 		}
 
 		thread_sleep(1000000); // 1 sec

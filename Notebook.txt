@@ -10,7 +10,6 @@ Issues
 - Table is behind scroll bar
 - Multiple dropdown items can be hovered at once
 - Button should resize if it is too big for parent fixed container
-- Redraw window when theme changes
 
 Changes
 - Change letter wrap to word wrap
