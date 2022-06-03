@@ -88,13 +88,14 @@ void _qui_set_lightmode()
 	active_ui_style.widget_interactive_image_tint = rgb(0,0,0);
 }
 
-void _qui_apply_theme(application_theme theme)
+void _qui_apply_theme(qui_state* state, application_theme theme)
 {
 	switch(theme)
 	{
 		case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;
 		case APPLICATION_THEME_DARK: _qui_set_darkmode(); break;
 	}
+	state->theme = theme;
 }
 
 void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platform_theme)
@@ -103,14 +104,12 @@ void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platfo
 	state->respect_platform_theme = respect_platform_theme;
 	if (!respect_platform_theme)
 	{
-		state->theme = theme;
-		_qui_apply_theme(theme);
+		_qui_apply_theme(state, theme);
 	}
 	else
 	{
 		application_theme theme = platform_get_application_theme();
-		_qui_apply_theme(theme);
-		state->theme = theme;
+		_qui_apply_theme(state, theme);	
 	}
 
 	state->window->do_draw = true;
@@ -126,8 +125,7 @@ void* _ui_thread_poll_platform_theme(void* args)
 
 			if (theme != state->theme)
 			{
-				_qui_apply_theme(theme);
-				state->theme = theme;
+				_qui_apply_theme(state, theme);
 				state->window->do_draw = true;
 			}
 		}
@@ -149,6 +147,7 @@ qui_widget* qui_setup()
 	state->window = 0;
 	state->dragging_widget = 0;
 	state->respect_platform_theme = true;
+	state->theme = -1;
 	state->font_default = assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
 
 	wg->data = (u8*)state;
@@ -156,6 +155,11 @@ qui_widget* qui_setup()
 	wg->x = 0;
 	wg->y = 0;
 
+	// Set default theme to system theme.
+	application_theme theme = platform_get_application_theme();
+	_qui_apply_theme(state, theme);
+	
+	// Start thread that checks for theme change on system.
 	thread theme_thread = thread_start(_ui_thread_poll_platform_theme, (void*)state);
 	thread_detach(&theme_thread);
 
