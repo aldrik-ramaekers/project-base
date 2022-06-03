@@ -3,12 +3,17 @@ void _qui_dropdown_set_selected_child(qui_widget* el) {
 	if (dropdown) {
 		qui_dropdown* data = (qui_dropdown*)dropdown->data;
 		data->selected_child = el;
+
+		if (data->change_callback)
+		{
+			qui_button* button_data = (qui_button*)el->data;
+			qui_widget* topmost_parent = _qui_find_parent_of_type(el, WIDGET_MAIN);
+			data->change_callback(topmost_parent, button_data->text);
+		}
 	}
 	else {
 		log_assert(0, "Dropdown option is not inside a dropdown");
 	}
-
-	// TODO: throw event here.
 }
 
 void _qui_update_dropdown(qui_state* main_state, qui_widget* el) {
@@ -99,7 +104,7 @@ void _qui_render_dropdown(qui_widget* el) {
 		triangle_s, triangle_s, active_ui_style.collapse_color, TRIANGLE_DOWN);
 }
 
-qui_widget* qui_create_dropdown(qui_widget* qui)
+qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_widget* qui, char* text))
 {
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Dropdown can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
@@ -107,6 +112,7 @@ qui_widget* qui_create_dropdown(qui_widget* qui)
 	data->selected_child = 0;
 	data->released = false;
 	data->state = IDLE;
+	data->change_callback = change_callback;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN;
 	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);

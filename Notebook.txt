@@ -16,6 +16,7 @@ Changes
 - Change letter wrap to word wrap
 - Add extra buttons to popup window (Yes/No/Accept/Save/Delete)
 - Seperate im_ui from gui
+- Move active_ui_style into qui_state
 
 Cleanup
 - Delete im_ui

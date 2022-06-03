@@ -190,6 +190,7 @@ typedef struct t_qui_dropdown
 {
 	qui_widget_state state;
 	bool released;
+	void (*change_callback)(qui_widget* qui, char* text);
 	qui_widget* selected_child;
 } qui_dropdown;
 
@@ -220,6 +221,8 @@ typedef struct t_qui_state
 	qui_widget* dragging_widget;
 	platform_window* window;
 	s32 scissor_index;
+	bool respect_platform_theme;
+	application_theme theme;
 	vec4 scissor_stack[100];
 } qui_state;
 
@@ -253,7 +256,7 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size);
 qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex);
 qui_widget* qui_create_flex_container_s(qui_widget* qui, u8 flex, s32 min_size_px);
 qui_widget* qui_create_horizontal_layout(qui_widget* qui);
-qui_widget* qui_create_dropdown(qui_widget* qui);
+qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_widget* qui, char* text));
 qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border);
 qui_widget* qui_create_itembar(qui_widget* qui);
 qui_widget* qui_create_label(qui_widget* qui, char* text, bool allow_wrap);
@@ -262,6 +265,7 @@ void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);
 void qui_flex_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 void qui_fixed_container_set_border(qui_widget* el, qui_border border, u8 border_size);
 
+void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platform_theme);
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);
 

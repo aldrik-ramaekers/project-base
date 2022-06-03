@@ -2,6 +2,25 @@
 
 #define CONFIG_DIRECTORY "example_program_2"
 
+void theme_dropdown_change_callback(qui_widget* qui, char* text)
+{
+	if (strcmp(text, "Copy Platform Theme") == 0)
+	{
+		qui_set_theme(qui, 0, true);
+		printf("Respecting platform theme\n");
+	}
+	if (strcmp(text, "Dark Theme") == 0)
+	{
+		qui_set_theme(qui, APPLICATION_THEME_DARK, false);
+		printf("Dark mode\n");
+	}
+	if (strcmp(text, "Light Theme") == 0)
+	{
+		qui_set_theme(qui, APPLICATION_THEME_LIGHT, false);
+		printf("Light mode\n");
+	}
+}
+
 qui_widget* create_ui() {
 	qui_widget* ui = qui_setup();
 
@@ -46,10 +65,11 @@ qui_widget* create_ui() {
 			qui_create_itembar_separator(itembar);
 
 			qui_create_label(itembar, "Time display:", false);
-			qui_widget* time_dropdown = qui_create_dropdown(itembar);
+			qui_widget* time_dropdown = qui_create_dropdown(itembar, theme_dropdown_change_callback);
 			{
-				qui_create_dropdown_option(time_dropdown, "Milliseconds");
-				qui_create_dropdown_option(time_dropdown, "Seconds");
+				qui_create_dropdown_option(time_dropdown, "Copy Platform Theme");
+				qui_create_dropdown_option(time_dropdown, "Dark Theme");
+				qui_create_dropdown_option(time_dropdown, "Light Theme");
 			}
 
 			qui_create_button(itembar, "Run");
@@ -184,7 +204,7 @@ int main(int argc, char **argv)
 
     platform_window *window = platform_open_window_gui("Hello!", 700, 700, 1200, 900, 500, 500, create_ui());
 
-	popup_window_show("Test Popup Message", "You are a stinky poopy.", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_INFO);
+	//popup_window_show("Test Popup Message", "You are a stinky poopy.", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_INFO);
 	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);
 	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_DEFAULT);
 

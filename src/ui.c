@@ -88,17 +88,41 @@ void _qui_set_lightmode()
 	active_ui_style.widget_interactive_image_tint = rgb(0,0,0);
 }
 
-void* _ui_thread_poll_platform_theme(void* args)
+void _qui_apply_theme(application_theme theme)
 {
-	while (1)
+	switch(theme)
+	{
+		case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;
+		case APPLICATION_THEME_DARK: _qui_set_darkmode(); break;
+	}
+}
+
+void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platform_theme)
+{
+	qui_state* state = (qui_state*)qui->data;
+	state->respect_platform_theme = respect_platform_theme;
+	if (!respect_platform_theme)
+	{
+		state->theme = theme;
+		_qui_apply_theme(theme);
+	}
+	else
 	{
 		application_theme theme = platform_get_application_theme();
+		_qui_apply_theme(theme);
+		state->theme = theme;
+	}
+}
 
-		//theme = APPLICATION_THEME_DARK;
-		switch(theme)
-		{
-			case APPLICATION_THEME_LIGHT: _qui_set_lightmode(); break;
-			case APPLICATION_THEME_DARK: _qui_set_darkmode(); break;
+void* _ui_thread_poll_platform_theme(void* args)
+{
+	qui_state* state = args;
+	while (1)
+	{
+		if (state->respect_platform_theme) {
+			application_theme theme = platform_get_application_theme();
+			_qui_apply_theme(theme);
+			state->theme = theme;
 		}
 
 		thread_sleep(1000000); // 1 sec
@@ -109,9 +133,6 @@ void* _ui_thread_poll_platform_theme(void* args)
 
 qui_widget* qui_setup()
 {
-	thread theme_thread = thread_start(_ui_thread_poll_platform_theme, 0);
-	thread_detach(&theme_thread);
-
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
 	wg->special_children = array_create(sizeof(qui_widget*));
@@ -120,10 +141,15 @@ qui_widget* qui_setup()
 	memset(state->scissor_stack, 0, sizeof(state->scissor_stack));
 	state->window = 0;
 	state->dragging_widget = 0;
+	state->respect_platform_theme = true;
 	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
 	wg->x = 0;
 	wg->y = 0;
+
+	thread theme_thread = thread_start(_ui_thread_poll_platform_theme, (void*)state);
+	thread_detach(&theme_thread);
+
 	return wg;
 }
 
