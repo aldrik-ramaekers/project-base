@@ -341,8 +341,6 @@ void platform_handle_events()
 
             if (w->update_func) w->update_func(w);	
 
-			if (i == 0) update_render_notifications();
-
 			// Update delta.
 			{
 				u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
