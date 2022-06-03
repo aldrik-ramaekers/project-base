@@ -51,7 +51,7 @@ void _qui_update_button(qui_state* main_state, qui_widget* el) {
 }
 
 
-void _qui_render_button(qui_widget* el) {
+void _qui_render_button(qui_state* main_state, qui_widget* el) {
 	qui_button* data = ((qui_button*)el->data);
 	int state = data->state;
 	color outter = active_ui_style.widget_border_outter_idle;

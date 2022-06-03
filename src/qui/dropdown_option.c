@@ -21,7 +21,7 @@ bool _qui_dropdown_option_is_visible(qui_widget* el) {
 	return ((qui_dropdown*)(el->parent->data))->state == OPEN;
 }
 
-void _qui_update_dropdown_option(qui_widget* el) {
+void _qui_update_dropdown_option(qui_state* main_state, qui_widget* el) {
 	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 	el->width = el->parent->width;
 
@@ -43,7 +43,7 @@ void _qui_update_dropdown_option(qui_widget* el) {
 	}
 }
 
-void _qui_render_dropdown_option(qui_widget* el) {
+void _qui_render_dropdown_option(qui_state* main_state, qui_widget* el) {
 	if (!_qui_dropdown_option_is_visible(el)) {
 		return;
 	}

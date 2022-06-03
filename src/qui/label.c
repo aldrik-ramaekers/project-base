@@ -1,5 +1,5 @@
 
-void _qui_update_label(qui_widget* el) {
+void _qui_update_label(qui_state* main_state, qui_widget* el) {
 	qui_label* data = ((qui_label*)el->data);
 	s32 tw = renderer->calculate_text_width(global_ui_context.font_small, 
 			(data->text)) + (LABEL_PADDING_W*2);
@@ -21,7 +21,7 @@ void _qui_update_label(qui_widget* el) {
 }
 
 
-void _qui_render_label(qui_widget* el) {
+void _qui_render_label(qui_state* main_state, qui_widget* el) {
 	qui_label* data = ((qui_label*)el->data);
 
 	if (data->text) {

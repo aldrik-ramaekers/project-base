@@ -30,7 +30,7 @@ bool _qui_toolbar_item_option_is_visible(qui_widget* el) {
 	return false;
 }
 
-void _qui_update_toolbar_item_option(qui_widget* el) {
+void _qui_update_toolbar_item_option(qui_state* main_state, qui_widget* el) {
 	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
@@ -66,7 +66,7 @@ void _qui_update_toolbar_item_option(qui_widget* el) {
 }
 
 
-void _qui_render_toolbar_item_option(qui_widget* el) {
+void _qui_render_toolbar_item_option(qui_state* main_state, qui_widget* el) {
 	if (!_qui_toolbar_item_option_is_visible(el)) {
 		return;
 	}

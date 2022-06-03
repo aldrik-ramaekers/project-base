@@ -1,9 +1,9 @@
 
-void _qui_update_scroll_bar(qui_widget* el) {
+void _qui_update_scroll_bar(qui_state* main_state, qui_widget* el) {
 	el->x = el->parent->x;
 }
 
-void _qui_render_scroll_bar(qui_widget* el) {
+void _qui_render_scroll_bar(qui_state* main_state, qui_widget* el) {
 	color outter = active_ui_style.widget_border_outter_idle;
 	color inner = active_ui_style.widget_border_inner_idle;
 	color background = active_ui_style.widget_background_interactive_idle;

@@ -255,25 +255,25 @@ void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	log_assert(state->scissor_index < 100, "Thats a very deep UI!");
 	_qui_render_set_scissor(state, el, is_special);
 
-	if (el->type == WIDGET_BUTTON) _qui_render_button(el);
-	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(el);
-	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_render_toolbar_item(el);
-	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_render_toolbar_item_option(el);
-	if (el->type == WIDGET_LABEL) _qui_render_label(el);
-	if (el->type == WIDGET_DROPDOWN) _qui_render_dropdown(el);
-	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_render_dropdown_option(el);
-	if (el->type == WIDGET_TABCONTROL) _qui_render_tabcontrol(el);
-	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_render_tabcontrol_panel(el);
-	if (el->type == WIDGET_SCROLL) _qui_render_scroll(el);
-	if (el->type == WIDGET_SCROLL_BUTTON) _qui_render_scroll_button(el);
-	if (el->type == WIDGET_SCROLL_BAR) _qui_render_scroll_bar(el);
-	if (el->type == WIDGET_IMAGE_PANEL) _qui_render_image_panel(el);
+	if (el->type == WIDGET_BUTTON) _qui_render_button(state, el);
+	if (el->type == WIDGET_TOOLBAR) _qui_render_toolbar(state, el);
+	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_render_toolbar_item(state, el);
+	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_render_toolbar_item_option(state, el);
+	if (el->type == WIDGET_LABEL) _qui_render_label(state, el);
+	if (el->type == WIDGET_DROPDOWN) _qui_render_dropdown(state, el);
+	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_render_dropdown_option(state, el);
+	if (el->type == WIDGET_TABCONTROL) _qui_render_tabcontrol(state, el);
+	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_render_tabcontrol_panel(state, el);
+	if (el->type == WIDGET_SCROLL) _qui_render_scroll(state, el);
+	if (el->type == WIDGET_SCROLL_BUTTON) _qui_render_scroll_button(state, el);
+	if (el->type == WIDGET_SCROLL_BAR) _qui_render_scroll_bar(state, el);
+	if (el->type == WIDGET_IMAGE_PANEL) _qui_render_image_panel(state, el);
 
-	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(el);
-	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(el);
-	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(el);
-	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(el);
-	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(el);
+	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_render_vertical_layout(state, el);
+	if (el->type == WIDGET_FIXED_CONTAINER) _qui_render_fixed_container(state, el);
+	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(state, el);
+	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(state, el);
+	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(state, el);
 	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
@@ -302,8 +302,8 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 
 	// Update elements that dont take input.... maybe rename functions to something like _qui_resize..
 	if (el->type == WIDGET_SCROLL) _qui_update_scroll(state, el);
-	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(el);
-	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(el);
+	if (el->type == WIDGET_VERTICAL_LAYOUT/* || el->type == WIDGET_MAIN*/) _qui_update_vertical_layout(state, el);
+	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_update_horizontal_layout(state, el);
 
 	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
@@ -313,17 +313,17 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	state->scissor_index--;
 
 	if (el->type == WIDGET_BUTTON) _qui_update_button(state, el);
-	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(el);
-	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(el);
-	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(el);
-	if (el->type == WIDGET_LABEL) _qui_update_label(el);
+	if (el->type == WIDGET_TOOLBAR) _qui_update_toolbar(state, el);
+	if (el->type == WIDGET_TOOLBAR_ITEM) _qui_update_toolbar_item(state, el);
+	if (el->type == WIDGET_TOOLBAR_ITEM_OPTION) _qui_update_toolbar_item_option(state, el);
+	if (el->type == WIDGET_LABEL) _qui_update_label(state, el);
 	if (el->type == WIDGET_DROPDOWN) _qui_update_dropdown(state, el);
-	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(el);
-	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(el);
+	if (el->type == WIDGET_DROPDOWN_OPTION) _qui_update_dropdown_option(state, el);
+	if (el->type == WIDGET_TABCONTROL) _qui_update_tabcontrol(state, el);
 	if (el->type == WIDGET_TABCONTROL_PANEL) _qui_update_tabcontrol_panel(state, el);
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
-	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(el);
-	if (el->type == WIDGET_IMAGE_PANEL) _qui_update_image_panel(el);
+	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(state, el);
+	if (el->type == WIDGET_IMAGE_PANEL) _qui_update_image_panel(state, el);
 
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(state, el);
 	//if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);

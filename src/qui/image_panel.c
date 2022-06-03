@@ -1,5 +1,5 @@
 
-void _qui_update_image_panel(qui_widget* el) {
+void _qui_update_image_panel(qui_state* main_state, qui_widget* el) {
 	qui_image_panel* data = (qui_image_panel*)el->data;
 
 	el->x = el->parent->x;
@@ -20,7 +20,7 @@ void _qui_update_image_panel(qui_widget* el) {
 	}
 }
 
-void _qui_render_image_panel(qui_widget* el) {
+void _qui_render_image_panel(qui_state* main_state, qui_widget* el) {
 	qui_image_panel* data = (qui_image_panel*)el->data;
 	renderer->render_image(data->image, el->x, el->y, el->width, el->height);
 }

@@ -11,7 +11,7 @@ static void _qui_update_tabcontrol_buttons(qui_widget* el) {
 	}
 }
 
-void _qui_update_tabcontrol(qui_widget* el) {
+void _qui_update_tabcontrol(qui_state* main_state, qui_widget* el) {
 	log_assert(el->parent, "Tabcontrol does not have a parent");
 	log_assert(el->parent->type == WIDGET_FLEX_CONTAINER, "Tabcontrol parent must be a flex container");
 
@@ -19,7 +19,7 @@ void _qui_update_tabcontrol(qui_widget* el) {
 	_qui_update_tabcontrol_buttons(el);
 }
 
-void _qui_render_tabcontrol(qui_widget* el) {
+void _qui_render_tabcontrol(qui_state* main_state, qui_widget* el) {
 }
 
 qui_widget* qui_create_tabcontrol(qui_widget* qui)

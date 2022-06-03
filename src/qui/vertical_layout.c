@@ -1,4 +1,4 @@
-void _qui_update_vertical_layout(qui_widget* el) {
+void _qui_update_vertical_layout(qui_state* main_state, qui_widget* el) {
 	if (el->parent) {
 		_qui_fill_parent(el);
 	}
@@ -62,7 +62,7 @@ void _qui_update_vertical_layout(qui_widget* el) {
 }
 
 
-void _qui_render_vertical_layout(qui_widget* el) {
+void _qui_render_vertical_layout(qui_state* main_state, qui_widget* el) {
 	//renderer->render_rectangle(el->x, el->y, el->width, el->height, rgb(255,0,0));
 }
 

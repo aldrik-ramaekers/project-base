@@ -54,7 +54,7 @@ void _qui_render_dropdown_options_bounds(qui_widget* el) {
 	renderer->render_rectangle_outline(first_option->x-1, first_option->y-1, el->width+2, total_height_of_options+2, 1, active_ui_style.widget_border_outter_static);
 }
 
-void _qui_render_dropdown(qui_widget* el) {
+void _qui_render_dropdown(qui_state* main_state, qui_widget* el) {
 	qui_dropdown* data = ((qui_dropdown*)el->data);
 	int state = data->state;
 	color outter = active_ui_style.widget_border_outter_idle;

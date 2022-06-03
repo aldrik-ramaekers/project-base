@@ -1,4 +1,4 @@
-void _qui_update_fixed_container(qui_widget* el) {
+void _qui_update_fixed_container(qui_state* state, qui_widget* el) {
 }
 
 void _qui_render_container_borders(qui_widget* el, qui_border border, u8 border_size) {
@@ -17,7 +17,7 @@ void _qui_render_container_borders(qui_widget* el, qui_border border, u8 border_
 	}
 }
 
-void _qui_render_fixed_container(qui_widget* el) {
+void _qui_render_fixed_container(qui_state* main_state, qui_widget* el) {
 	qui_fixed_container* data = (qui_fixed_container*)el->data;
 	if (data->color_background) {
 		renderer->render_rectangle(el->x, el->y, el->width, el->height, *data->color_background);

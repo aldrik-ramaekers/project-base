@@ -1,5 +1,5 @@
-void _qui_render_flex_container(qui_widget* el);
-void _qui_update_flex_container(qui_widget* el);
+void _qui_render_flex_container(qui_state* main_state, qui_widget* el);
+void _qui_update_flex_container(qui_state* main_state, qui_widget* el);
 
 static bool _qui_tabcontrol_panel_close_siblings(qui_widget* el) {
 	qui_widget* button_bar = el->parent;
@@ -41,7 +41,7 @@ void _qui_update_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	if (data->state == OPEN) el->y -= TABCONTROL_BUTTON_SELECTED_OFFSETY;
 }
 
-void _qui_render_tabcontrol_panel(qui_widget* el) {
+void _qui_render_tabcontrol_panel(qui_state* main_state, qui_widget* el) {
 	tabcontrol_panel* data = (tabcontrol_panel*)el->data;
 	qui_widget_state state = data->state;
 

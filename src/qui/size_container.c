@@ -59,7 +59,7 @@ void _qui_update_size_container(qui_state* main_state, qui_widget* el) {
 	if (el->height > data->max) el->height = data->max;
 }
 
-void _qui_render_size_container(qui_widget* el) {
+void _qui_render_size_container(qui_state* main_state, qui_widget* el) {
 	qui_size_container* data = (qui_size_container*)el->data;
 	if (data->color_background) {
 		renderer->render_rectangle(el->x, el->y, el->width, el->height, *data->color_background);

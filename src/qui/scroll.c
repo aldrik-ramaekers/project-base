@@ -74,7 +74,7 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 	if (container->scroll_y < scrollable_px) container->scroll_y = scrollable_px;
 }
 
-void _qui_render_scroll(qui_widget* el) {
+void _qui_render_scroll(qui_state* main_state, qui_widget* el) {
 }
 
 qui_widget* qui_create_vertical_scroll(qui_widget* qui)

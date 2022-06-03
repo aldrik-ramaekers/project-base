@@ -7,7 +7,7 @@ void _qui_close_entire_toolbar_item(qui_widget* el) {
 	}
 }
 
-void _qui_update_toolbar_item(qui_widget* el) {
+void _qui_update_toolbar_item(qui_state* main_state, qui_widget* el) {
 	el->width = renderer->calculate_text_width(global_ui_context.font_small, 
 		((qui_toolbar_item*)el->data)->text) + (TOOLBAR_ITEM_PADDING_W*2);
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
@@ -42,7 +42,7 @@ void _qui_render_toolbar_item_options_bounds(qui_widget* el) {
 	renderer->render_rectangle_outline(first_option->x-1, first_option->y-1, TOOLBAR_ITEM_OPTION_W+2, total_height_of_options+2, 1, active_ui_style.widget_border_outter_static);
 }
 
-void _qui_render_toolbar_item(qui_widget* el) {
+void _qui_render_toolbar_item(qui_state* main_state, qui_widget* el) {
 	char* text = ((qui_toolbar_item*)el->data)->text;
 	int state = ((qui_toolbar_item*)el->data)->state;
 	s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
