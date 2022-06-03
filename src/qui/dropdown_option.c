@@ -22,7 +22,7 @@ bool _qui_dropdown_option_is_visible(qui_widget* el) {
 }
 
 void _qui_update_dropdown_option(qui_state* main_state, qui_widget* el) {
-	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
+	el->height = main_state->font_default->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 	el->width = el->parent->width;
 
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
@@ -70,8 +70,8 @@ void _qui_render_dropdown_option(qui_state* main_state, qui_widget* el) {
 	
 	// Draw text.
 	const s32 DROPDOWN_OPTION_TEXT_OFFSET = 10;
-	renderer->render_text(global_ui_context.font_small, 
-		el->x + DROPDOWN_OPTION_TEXT_OFFSET, el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), text, active_ui_style.widget_text);
+	renderer->render_text(main_state->font_default, 
+		el->x + DROPDOWN_OPTION_TEXT_OFFSET, el->y+(el->height/2)-(main_state->font_default->px_h/2), text, active_ui_style.widget_text);
 
 	// It makes more sense that this is done on dropdown.c but then it wont be at the same z-index as a dropdown option.
 	_qui_render_dropdown_options_bounds(el->parent);

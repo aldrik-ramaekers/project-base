@@ -142,6 +142,8 @@ qui_widget* qui_setup()
 	state->window = 0;
 	state->dragging_widget = 0;
 	state->respect_platform_theme = true;
+	state->font_default = assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
+
 	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
 	wg->x = 0;

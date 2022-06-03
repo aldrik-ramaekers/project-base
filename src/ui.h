@@ -224,6 +224,7 @@ typedef struct t_qui_state
 	bool respect_platform_theme;
 	application_theme theme;
 	vec4 scissor_stack[100];
+	font* font_default;
 } qui_state;
 
 typedef struct t_qui_widget 

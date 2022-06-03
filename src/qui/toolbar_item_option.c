@@ -31,7 +31,7 @@ bool _qui_toolbar_item_option_is_visible(qui_widget* el) {
 }
 
 void _qui_update_toolbar_item_option(qui_state* main_state, qui_widget* el) {
-	el->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
+	el->height = main_state->font_default->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 
 	qui_widget_state *state = &(((qui_toolbar_item*)el->data)->state);
 	if (!_qui_toolbar_item_option_is_visible(el)) {
@@ -97,9 +97,9 @@ void _qui_render_toolbar_item_option(qui_state* main_state, qui_widget* el) {
 	s32 text_width_available = (el->width - TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT - TOOLBAR_ITEM_OPTION_TEXT_PAD_RIGHT);
 
 	// Draw text.
-	renderer->render_text_ellipsed(global_ui_context.font_small, 
+	renderer->render_text_ellipsed(main_state->font_default, 
 		el->x+TOOLBAR_ITEM_OPTION_TEXT_PAD_LEFT,
-		el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), 
+		el->y+(el->height/2)-(main_state->font_default->px_h/2), 
 		text_width_available, text, active_ui_style.widget_text);
 
 	// Draw icon.
@@ -138,7 +138,6 @@ qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text)
 	wg->data = (u8*)data;
 	wg->type = WIDGET_TOOLBAR_ITEM_OPTION;
 	wg->width = TOOLBAR_ITEM_OPTION_W;
-	wg->height = global_ui_context.font_small->px_h + (TOOLBAR_ITEM_PADDING_OPTION_H*2);
 
 	if (qui->type == WIDGET_TOOLBAR_ITEM) {
 		qui_widget* master_widget = _qui_find_parent_of_type(wg, WIDGET_MAIN);

@@ -257,8 +257,10 @@ static s32 gl_render_text_with_selection(font *font, s32 x, s32 y, char *text, c
     }
 
     IMP_glDisable(GL_TEXTURE_2D);
-
-    gl_render_rectangle(selection_start_x, y - 3, selection_end_x - selection_start_x, TEXTBOX_HEIGHT - 10, rgba(66, 134, 244, 120));
+	// TODO: give selection height as parameter
+	(void)selection_start_x;
+	(void)selection_end_x;
+    //gl_render_rectangle(selection_start_x, y - 3, selection_end_x - selection_start_x, TEXTBOX_HEIGHT - 10, rgba(66, 134, 244, 120));
 
     return x_ - x;
 }
@@ -320,7 +322,9 @@ static s32 gl_render_text_with_cursor(font *font, s32 x, s32 y, char *text, colo
 
     IMP_glDisable(GL_TEXTURE_2D);
 
-    gl_render_rectangle(cursor_x, y - 3, 2, TEXTBOX_HEIGHT - 10, global_ui_context.style.textbox_foreground);
+	// TODO: give cursor color as parameter
+	(void)cursor_x;
+    //gl_render_rectangle(cursor_x, y - 3, 2, TEXTBOX_HEIGHT - 10, global_ui_context.style.textbox_foreground);
 
     return x_ - x;
 }

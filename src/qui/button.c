@@ -1,10 +1,10 @@
 void _qui_update_button(qui_state* main_state, qui_widget* el) {
-	el->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
+	el->height = main_state->font_default->px_h + (BUTTON_PADDING_H*2);
 
 	qui_button* data = ((qui_button*)el->data);
 	if (el->parent->type == WIDGET_HORIZONTAL_LAYOUT) {
 		if (data->text) {
-			el->width = renderer->calculate_text_width(global_ui_context.font_small, 
+			el->width = renderer->calculate_text_width(main_state->font_default, 
 				(data->text)) + (BUTTON_PADDING_W*2);
 		}
 		else {
@@ -94,10 +94,10 @@ void _qui_render_button(qui_state* main_state, qui_widget* el) {
 
 	if (data->text) {
 		char* text = ((qui_button*)el->data)->text;
-		s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
-		renderer->render_text(global_ui_context.font_small, 
+		s32 tw = renderer->calculate_text_width(main_state->font_default, text);
+		renderer->render_text( main_state->font_default, 
 			el->x+(el->width/2)-(tw/2),
-			el->y+(el->height/2)-(global_ui_context.font_small->px_h/2), 
+			el->y+(el->height/2)-(main_state->font_default->px_h/2), 
 			text, active_ui_style.widget_text);
 	}
 	else if (data->icon) {
@@ -138,7 +138,6 @@ qui_widget* qui_create_button(qui_widget* qui, char* text)
 	data->state = IDLE;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_BUTTON;
-	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

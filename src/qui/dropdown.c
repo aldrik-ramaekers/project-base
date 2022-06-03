@@ -39,7 +39,7 @@ void _qui_update_dropdown(qui_state* main_state, qui_widget* el) {
 		w->y = el->y + offsety;
 		offsety += w->height;
 
-		s32 tw = renderer->calculate_text_width(global_ui_context.font_small, data->text);
+		s32 tw = renderer->calculate_text_width(main_state->font_default, data->text);
 		s32 totalw = tw + (BUTTON_PADDING_W*2);
 		if (totalw > el->width) el->width = totalw;
 	}
@@ -89,17 +89,17 @@ void _qui_render_dropdown(qui_state* main_state, qui_widget* el) {
 		el->height,
 		background, 5.0f, 2);
 
-	s32 offset_y = (el->height/2)-(global_ui_context.font_small->px_h/2);
+	s32 offset_y = (el->height/2)-(main_state->font_default->px_h/2);
 
 	if (data->selected_child) {
 		char* text = ((qui_button*)(data->selected_child->data))->text;
-		renderer->render_text(global_ui_context.font_small, 
+		renderer->render_text(main_state->font_default, 
 			el->x+offset_y,
 			el->y+offset_y, 
 			text, active_ui_style.widget_text);
 	}
 
-	s32 triangle_s = global_ui_context.font_small->px_h;
+	s32 triangle_s = main_state->font_default->px_h;
 	renderer->render_triangle(el->x + el->width - triangle_s - offset_y, el->y + offset_y, 
 		triangle_s, triangle_s, active_ui_style.collapse_color, TRIANGLE_DOWN);
 }
@@ -115,7 +115,7 @@ qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_wid
 	data->change_callback = change_callback;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN;
-	wg->height = global_ui_context.font_small->px_h + (BUTTON_PADDING_H*2);
+	wg->height = (BUTTON_PADDING_H*2);
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

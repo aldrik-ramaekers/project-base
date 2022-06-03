@@ -1,7 +1,7 @@
 
 void _qui_update_label(qui_state* main_state, qui_widget* el) {
 	qui_label* data = ((qui_label*)el->data);
-	s32 tw = renderer->calculate_text_width(global_ui_context.font_small, 
+	s32 tw = renderer->calculate_text_width(main_state->font_default, 
 			(data->text)) + (LABEL_PADDING_W*2);
 	
 	if (!data->allow_wrap)
@@ -26,18 +26,16 @@ void _qui_render_label(qui_state* main_state, qui_widget* el) {
 
 	if (data->text) {
 		char* text = data->text;
-		//s32 tw = renderer->calculate_text_width(global_ui_context.font_small, text);
-
 		if (!data->allow_wrap) {
-			renderer->render_text(global_ui_context.font_small, 
+			renderer->render_text(main_state->font_default, 
 				el->x,
-				el->y + (el->height/2)-(global_ui_context.font_small->px_h/2), // Label is single line so center it on y-axis.
+				el->y + (el->height/2)-(main_state->font_default->px_h/2), // Label is single line so center it on y-axis.
 				text, 
 				active_ui_style.widget_text);
 		}
 		else {
 			// TODO: we should really have a function to calculate the height of cutoff text before rendering it..
-			el->height = renderer->render_text_cutoff(global_ui_context.font_small, 
+			el->height = renderer->render_text_cutoff(main_state->font_default, 
 				el->x,
 				el->y,
 				text, 
@@ -65,7 +63,7 @@ qui_widget* qui_create_label(qui_widget* qui, char* text, bool allow_wrap)
 	data->is_horizontal = og->type == WIDGET_HORIZONTAL_LAYOUT;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_LABEL;
-	wg->height = global_ui_context.font_small->px_h;
+	wg->height = 0;
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

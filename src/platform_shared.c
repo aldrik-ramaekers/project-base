@@ -207,7 +207,6 @@ void _platform_destroy_shared()
 {
 	_settings_destroy();
 	localization_destroy();
-	ui_destroy();
 	assets_destroy();
 }
 
@@ -245,7 +244,6 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 	// Load builtin assets
 	assets_load_bitmap(close_bmp, close_bmp+close_bmp_len);
 	assets_load_bitmap(info_bmp, info_bmp+info_bmp_len);
-	ui_init(assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16));
 	
 	localization_init();
 
