@@ -313,7 +313,8 @@ void platform_handle_events()
 		_platform_handle_events_for_window(w);
 
 		if (w->do_draw || redraw_all) {
-
+			w->do_draw = false;
+			
 			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
 
 			platform_set_cursor(w, CURSOR_DEFAULT);

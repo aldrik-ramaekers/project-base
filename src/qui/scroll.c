@@ -40,9 +40,11 @@ void _qui_update_scroll(qui_state* main_state, qui_widget* el) {
 
 		if (_global_mouse.scroll_state == SCROLL_UP) {
 			container->scroll_y += SCROLL_SPEED_PX;
+			main_state->window->do_draw = true;
 		}
 		if (_global_mouse.scroll_state == SCROLL_DOWN) {
 			container->scroll_y -= SCROLL_SPEED_PX;
+			main_state->window->do_draw = true;
 		}
 
 		if ((_global_mouse.x < actual_area.x+actual_area.w && _global_mouse.x > actual_area.x+actual_area.w - SCROLLBAR_W) || is_dragging)

@@ -1188,8 +1188,6 @@ void _platform_handle_events_for_window(platform_window *window)
 
 void platform_window_swap_buffers(platform_window *window)
 {
-	window->do_draw = false;
-
 	// set cursor if changed
 	if (window->curr_cursor_type != window->next_cursor_type)
 	{
