@@ -31,14 +31,15 @@ void _qui_update_dropdown_option(qui_state* main_state, qui_widget* el) {
 		return;
 	}
 
-	if (mouse_interacts(el->x, el->y, el->width, el->height)) {
+	if (mouse_interacts(el->x, el->y, el->width, el->height-1)) {
 		if (*state == IDLE) *state = HOVERED;
 		if (is_left_clicked()) {
 			_qui_dropdown_set_selected_child(el);
 			_qui_close_dropdown(el);
 		}
 	}
-	else if (_qui_is_dropdown_option_sibling_hovered(el) ) {
+	else
+	{
 		*state = IDLE;
 	}
 }
