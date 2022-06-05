@@ -142,9 +142,9 @@ static render_target _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
     if (end_y > current_scissor.y + current_scissor.h)
         end_y = current_scissor.y + current_scissor.h;
 
-    if (end_x > drawing_window->backbuffer.width)
+    if (end_x >= drawing_window->backbuffer.width)
         end_x = drawing_window->backbuffer.width;
-    if (end_y > drawing_window->backbuffer.height)
+    if (end_y >= drawing_window->backbuffer.height)
         end_y = drawing_window->backbuffer.height;
 
     return (render_target){start_x, start_y, end_x, end_y, offset_x, offset_y};
@@ -760,16 +760,75 @@ static s32 cpu_render_text_rd(font *font, s32 x, s32 y, char *text, color tint, 
 	return 0;
 }
 
+static bool isInside(float circle_x, float circle_y,
+                   float rad, int x, int y)
+{
+    // Compare radius of circle with distance
+    // of its center from given point
+    if ((x - circle_x) * (x - circle_x) +
+        (y - circle_y) * (y - circle_y) <= rad * rad)
+        return true;
+    else
+        return false;
+}
+
 static void cpu_render_rounded_rect(float x, float y, float width, float height, color tint, float radius, int innerPad)
 {
+	width -= innerPad;
+	height -= innerPad;
 	render_target rec = _get_actual_rect(x, y, width, height);
 
-    for (s32 y = rec.y + innerPad; y < rec.h - innerPad; y++)
+	radius = 2;
+	float R = radius;
+	s32 dx = 0;
+	s32 dy = 0;
+
+    for (s32 y = rec.y + innerPad; y < rec.h; y++)
     {
-        for (s32 x = rec.x + innerPad; x < rec.w - innerPad; x++)
+        for (s32 x = rec.x + innerPad; x < rec.w; x++)
         {
-            _set_pixel(x, y, tint);
+			s32 total_w = width - (innerPad);
+			s32 total_h = height - (innerPad);
+
+			if (dx > radius-1 && dx < total_w - radius)
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			else if (dy > radius && dy < total_h - radius)
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			// Top left circle
+			else if (isInside(radius-1, radius, radius, dx, dy))
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			// Bottom left circle
+			else if (isInside(radius-1, total_h - radius - 1, radius, dx, dy))
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			// Top right circle
+			else if (isInside(total_w - radius - 1, radius, radius, dx, dy))
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			// Bottom right circle
+			else if (isInside(total_w - radius - 1, total_h - radius - 1, radius, dx, dy))
+			{
+				_set_pixel(x, y, tint);
+			}
+
+			dx++;
         }
+		dx = 0;
+
+		dy++;
     }
 }
 

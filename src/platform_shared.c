@@ -250,7 +250,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 	localization_init();
 
 	_settings_init(config_path);
-	set_render_driver(DRIVER_CPU); // Default to GL, settings_get_number_or_default("USE_GPU", 1); 
+	set_render_driver(DRIVER_CPU); // Default to CPU
 }
 
 u64 __last_stamp = 0;
@@ -291,7 +291,7 @@ void platform_handle_events()
 	__last_stamp = platform_get_time(TIME_FULL, TIME_NS);
 
 	bool _use_gpu = settings_get_number_or_default("USE_GPU", 0);
-
+	
 	// USE_GPU setting changed..
 	if (current_render_driver() != (_use_gpu ? DRIVER_GL : DRIVER_CPU)) {
 		_switch_render_method(_use_gpu);

@@ -816,7 +816,7 @@ void platform_setup_backbuffer(platform_window *window)
 			__load_fnc_wgl(wglCreateContextAttribsARB);
 		}
 
-#if 1
+#if 0
 		// Multisampling madness
 		int format = _platform_init_multisample_format(window->window_handle);
 		if (format) {
@@ -858,9 +858,9 @@ void platform_setup_backbuffer(platform_window *window)
 				log_info("wglCreateContextAttribsARB() failed.");
 				return;
 			}
-			IMP_wglMakeCurrent(window->hdc, window->gl_context);
 		}
 #endif
+		IMP_wglMakeCurrent(window->hdc, window->gl_context);
 
 		if (share_list == 0)
 		{

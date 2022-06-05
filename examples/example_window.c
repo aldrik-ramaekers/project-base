@@ -2,22 +2,36 @@
 
 #define CONFIG_DIRECTORY "example_program_2"
 
+void renderer_dropdown_change_callback(qui_widget* qui, char* text)
+{
+	if (strcmp(text, "CPU") == 0)
+	{
+		settings_set_number("USE_GPU", 0);
+		printf("Renderer: CPU\n");
+	}
+	if (strcmp(text, "OpenGL") == 0)
+	{
+		settings_set_number("USE_GPU", 1);
+		printf("Renderer: OpenGL\n");
+	}
+}
+
 void theme_dropdown_change_callback(qui_widget* qui, char* text)
 {
 	if (strcmp(text, "Copy Platform Theme") == 0)
 	{
 		qui_set_theme(qui, 0, true);
-		printf("Respecting platform theme\n");
+		printf("Theme: Respecting platform theme\n");
 	}
 	if (strcmp(text, "Dark Theme") == 0)
 	{
 		qui_set_theme(qui, APPLICATION_THEME_DARK, false);
-		printf("Dark mode\n");
+		printf("Theme: Dark mode\n");
 	}
 	if (strcmp(text, "Light Theme") == 0)
 	{
 		qui_set_theme(qui, APPLICATION_THEME_LIGHT, false);
-		printf("Light mode\n");
+		printf("Theme: Light mode\n");
 	}
 }
 
@@ -64,12 +78,19 @@ qui_widget* create_ui() {
 
 			qui_create_itembar_separator(itembar);
 
-			qui_create_label(itembar, "Time display:", false);
-			qui_widget* time_dropdown = qui_create_dropdown(itembar, theme_dropdown_change_callback);
+			qui_create_label(itembar, "Theme:", false);
+			qui_widget* theme_dropdown = qui_create_dropdown(itembar, theme_dropdown_change_callback);
 			{
-				qui_create_dropdown_option(time_dropdown, "Copy Platform Theme");
-				qui_create_dropdown_option(time_dropdown, "Dark Theme");
-				qui_create_dropdown_option(time_dropdown, "Light Theme");
+				qui_create_dropdown_option(theme_dropdown, "Copy Platform Theme");
+				qui_create_dropdown_option(theme_dropdown, "Dark Theme");
+				qui_create_dropdown_option(theme_dropdown, "Light Theme");
+			}
+
+			qui_create_label(itembar, "Renderer:", false);
+			qui_widget* renderer_dropdown = qui_create_dropdown(itembar, renderer_dropdown_change_callback);
+			{
+				qui_create_dropdown_option(renderer_dropdown, "CPU");
+				qui_create_dropdown_option(renderer_dropdown, "OpenGL");
 			}
 
 			qui_create_button(itembar, "Run");
