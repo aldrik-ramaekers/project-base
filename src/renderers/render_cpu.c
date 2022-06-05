@@ -143,9 +143,9 @@ static render_target _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
         end_y = current_scissor.y + current_scissor.h;
 
     if (end_x >= drawing_window->backbuffer.width)
-        end_x = drawing_window->backbuffer.width;
+        end_x = drawing_window->backbuffer.width-1;
     if (end_y >= drawing_window->backbuffer.height)
-        end_y = drawing_window->backbuffer.height;
+        end_y = drawing_window->backbuffer.height-1;
 
     return (render_target){start_x, start_y, end_x, end_y, offset_x, offset_y};
 }
@@ -492,6 +492,14 @@ static s32 cpu_render_text_cutoff(font *font, s32 x, s32 y, char *text, color ti
         s32 y__ = y_ + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
 
+		if (x_to_render+g.advance > x + cutoff_width)
+        {
+            x_ = x;
+            y_ += font->size;
+			y__ = y_ + font->px_h + g.yoff;
+            x_to_render = x_;
+        }
+
         render_target rec = _get_actual_rect(x_to_render, y__, g.width, g.height);
 
         for (s32 y = rec.y; y < rec.h; y++)
@@ -778,7 +786,7 @@ static void cpu_render_rounded_rect(float x, float y, float width, float height,
 	height -= innerPad;
 	render_target rec = _get_actual_rect(x, y, width, height);
 
-	radius = 2;
+	radius = (s32)(radius / 2); // Radius on GL calculation does not match up with radius on CPU calculation :)
 	float R = radius;
 	s32 dx = 0;
 	s32 dy = 0;

@@ -32,22 +32,22 @@ void _qui_render_scroll_button(qui_state* main_state, qui_widget* el) {
 		background = active_ui_style.widget_background_interactive_highlighted;
 	}
 
-	renderer->render_rounded_rectangle(el->x,
+	renderer->render_rectangle(el->x,
 		el->y,el->width, 
 		el->height, 
-		outter, 2.0f, 0);
+		outter);
 
-	renderer->render_rounded_rectangle(el->x,
-		el->y,
-		el->width, 
-		el->height,
-		inner, 2.0f, 1);
+	renderer->render_rectangle(el->x+1,
+		el->y+1,
+		el->width-2, 
+		el->height-2,
+		inner);
 
-	renderer->render_rounded_rectangle(el->x,
-		el->y,
-		el->width, 
-		el->height,
-		background, 2.0f, 2);
+	renderer->render_rectangle(el->x+2,
+		el->y+2,
+		el->width-4, 
+		el->height-4,
+		background);
 
 	s32 triangle_size = el->width/2;
 	renderer->render_triangle(

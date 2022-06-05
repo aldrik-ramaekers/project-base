@@ -21,22 +21,22 @@ void _qui_render_scroll_bar(qui_state* main_state, qui_widget* el) {
 	}
 #endif
 
-	renderer->render_rounded_rectangle(el->x,
+	renderer->render_rectangle(el->x,
 		el->y,el->width, 
 		el->height, 
-		outter, 2.0f, 0);
+		outter);
 
-	renderer->render_rounded_rectangle(el->x,
-		el->y,
-		el->width, 
-		el->height,
-		inner, 2.0f, 1);
+	renderer->render_rectangle(el->x+1,
+		el->y+1,
+		el->width-2, 
+		el->height-2,
+		inner);
 
-	renderer->render_rounded_rectangle(el->x,
-		el->y,
-		el->width, 
-		el->height,
-		background, 2.0f, 2);
+	renderer->render_rectangle(el->x+2,
+		el->y+2,
+		el->width-4, 
+		el->height-4,
+		background);
 }
 
 void _qui_create_scroll_bar(qui_widget* qui) {
