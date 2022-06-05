@@ -177,13 +177,13 @@ bool assets_queue_worker_load_bitmap(image *image)
 	image->height = info->height;
 	image->channels = info->bits/8;
 
-	void* new_buffer = mem_alloc(image->width*image->height*image->channels);
+	char* new_buffer = (char*)mem_alloc(image->width*image->height*image->channels);
 	s32 bytes_per_row = image->width*image->channels;
 
 	for (s32 i = 0; i < image->height; i++)
 	{
-		uint8_t* row_to_write = new_buffer + (bytes_per_row * (image->height - 1 - i));
-		uint8_t* row_to_read = image->data + (bytes_per_row * (i));
+		u8* row_to_write = new_buffer + (bytes_per_row * (image->height - 1 - i));
+		u8* row_to_read = image->data + (bytes_per_row * (i));
 
 		memcpy(row_to_write, row_to_read, bytes_per_row);
 	}

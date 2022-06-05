@@ -114,6 +114,7 @@ typedef struct t_qui_widget qui_widget;
 typedef struct t_qui_scroll_widget
 {
 	//s32 content_size;
+	void* temp;
 } qui_scroll_widget;
 
 typedef struct t_layout_widget

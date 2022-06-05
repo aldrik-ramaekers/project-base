@@ -7,11 +7,11 @@ qui_widget* qui_create_table_row_entry(qui_widget* qui, char* text) {
 	return label;
 }
 
-color table_row_color = rgba(0,0,0,100);
+//color table_row_color = rgba(0,0,0,100); // TODO move this to style struct
 qui_widget* qui_create_table_row_header(qui_widget* qui) {
 	qui_widget* wg = qui_create_fixed_container(qui, TABLE_ROW_H);
 	qui_fixed_container_set_border(wg, BORDER_BOTTOM, 1);
-	((qui_fixed_container*)wg->data)->color_background = &table_row_color;
+	((qui_fixed_container*)wg->data)->color_background = 0;//&table_row_color;
 	qui_widget* layout = qui_create_horizontal_layout(wg);
 	return layout;
 }

@@ -9,8 +9,8 @@ REM C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\
 DEL /S /Q build >nul
 mkdir build >nul 2>nul
 
-mkdir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\projectbase\" >nul 2>nul
-robocopy "src" "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\projectbase" /E
+mkdir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\projectbase\" >nul 2>nul
+robocopy "src" "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\projectbase" /E
 
 robocopy "examples\data" "build\data" /E
 

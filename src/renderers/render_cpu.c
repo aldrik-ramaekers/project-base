@@ -9,6 +9,33 @@ static vec4 current_scissor;
 
 static platform_window *drawing_window = 0;
 
+static void _copy_image_pixel_with_tint(s32 x, s32 y, image *image, render_target rec, color tint)
+{
+    s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
+    u8 *buffer_entry = drawing_window->backbuffer.buffer + offset;
+
+    if (buffer_entry[4] > cpu_render_depth)
+        return;
+    buffer_entry[4] = cpu_render_depth;
+
+    s32 _x = x - rec.x + rec.offset_x;
+    s32 _y = y - rec.y + rec.offset_y;
+    s32 image_offset = (_y * (image->width) * 4) + _x * 4;
+    u8 *color = image->data + image_offset;
+
+    float32 alpha = color[3] / 255.0f;
+    float32 oneminusalpha = 1 - alpha;
+
+    u8 b = ((tint.b * alpha) + (oneminusalpha * buffer_entry[0]));
+    u8 g = ((tint.g * alpha) + (oneminusalpha * buffer_entry[1]));
+    u8 r = ((tint.r * alpha) + (oneminusalpha * buffer_entry[2]));
+    u8 a = color[3];
+
+    s32 c = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+
+    memcpy(buffer_entry, &c, 4);
+}
+
 static void _copy_image_pixel(s32 x, s32 y, image *image, render_target rec)
 {
     s32 offset = (y * (drawing_window->backbuffer.width) * 5) + x * 5;
@@ -148,7 +175,7 @@ static void cpu_render_clear(platform_window *window, color tint)
 
     cpu_render_depth = 1;
 
-    u8 pixel[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0x00};
+    u8 pixel[5] = {tint.r,tint.g,tint.b, 0xFF, 0x00};
     s32 pixel_count = window->backbuffer.width * window->backbuffer.height;
     for (s32 i = 0; i < pixel_count; i++)
         memcpy(window->backbuffer.buffer + (i * 5), pixel, 5);
@@ -193,7 +220,15 @@ static void cpu_render_image_tint(image *image, s32 x, s32 y, s32 width, s32 hei
 
     if (image->loaded)
     {
-        log_assert(0, "render_image_tint not implemented for on cpu");
+        render_target rec = _get_actual_rect(x, y, image->width, image->height);
+
+        for (s32 y = rec.y; y < rec.h; y++)
+        {
+            for (s32 x = rec.x; x < rec.w; x++)
+            {
+				_copy_image_pixel_with_tint(x, y, image, rec, tint);
+            }
+        }
     }
 }
 
@@ -719,6 +754,25 @@ static vec4 cpu_render_get_scissor(platform_window *window)
     return current_scissor;
 }
 
+static s32 cpu_render_text_rd(font *font, s32 x, s32 y, char *text, color tint, u16 target_h)
+{
+	// TODO
+	return 0;
+}
+
+static void cpu_render_rounded_rect(float x, float y, float width, float height, color tint, float radius, int innerPad)
+{
+	render_target rec = _get_actual_rect(x, y, width, height);
+
+    for (s32 y = rec.y + innerPad; y < rec.h - innerPad; y++)
+    {
+        for (s32 x = rec.x + innerPad; x < rec.w - innerPad; x++)
+        {
+            _set_pixel(x, y, tint);
+        }
+    }
+}
+
 //
 // Arc drawing
 //
@@ -760,6 +814,6 @@ render_driver render_cpu_driver =
 	cpu_render_reset_rotation,
 	cpu_render_arc,
 
-	0,
-	0,
+	cpu_render_text_rd,
+	cpu_render_rounded_rect,
 };
