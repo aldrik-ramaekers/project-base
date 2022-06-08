@@ -7,6 +7,7 @@ bool _qui_mouse_interacts(qui_state* state, vec4 area);
 bool _qui_mouse_interacts_peak(qui_state* state, vec4 area);
 void _qui_fill_parent(qui_widget* el);
 bool _qui_can_take_scroll(qui_state* state, qui_widget* el);
+u8* _qui_allocate(qui_widget* wg, u32 size);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -136,16 +137,36 @@ void* _ui_thread_poll_platform_theme(void* args)
 	return 0;
 }
 
+u8* _qui_allocate(qui_widget* wg, u32 size)
+{
+	qui_widget* main_wg = (qui_widget*)_qui_find_parent_of_type(wg, WIDGET_MAIN);
+	log_assert(main_wg, "Widget is not within a QUI ui");
+
+	qui_state* main_state = (qui_state*)main_wg->data;
+
+	log_assert(main_state->memory_cursor + size <= main_state->memory_buffer_size, "QUI memory allocator is full");
+
+	u8* result = main_state->memory_buffer + main_state->memory_cursor;
+	main_state->memory_cursor += size;
+	return result;
+}
+
 qui_widget* qui_setup()
 {
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
 	wg->special_children = array_create(sizeof(qui_widget*));
+
 	qui_state* state = mem_alloc(sizeof(qui_state));
 	state->scissor_index = 0;
 	memset(state->scissor_stack, 0, sizeof(state->scissor_stack));
 	state->window = 0;
 	state->dragging_widget = 0;
+
+	state->memory_buffer = mem_alloc(5000000); // 5MB
+	state->memory_buffer_size = 5000000;
+	state->memory_cursor = 0;
+
 	state->respect_platform_theme = true;
 	state->theme = -1;
 	state->font_default = assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
@@ -188,7 +209,7 @@ bool _qui_can_take_scroll(qui_state* state, qui_widget* el)
 }
 
 qui_widget* _qui_create_empty_widget(qui_widget* parent) {
-	qui_widget* wg = mem_alloc(sizeof(qui_widget));
+	qui_widget* wg = (qui_widget*)_qui_allocate(parent, sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
 	wg->special_children = array_create(sizeof(qui_widget*));
 	wg->data = 0;
@@ -296,7 +317,7 @@ void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 }
 
 qui_widget* _qui_find_parent_of_type(qui_widget* widget, qui_widget_type type) {
-	qui_widget* parent = widget->parent;
+	qui_widget* parent = widget;
 	while (parent) {
 		if (parent->type == type) return parent;
 		parent = parent->parent;

@@ -32,7 +32,7 @@ qui_widget* qui_create_fixed_container(qui_widget* qui, u16 size)
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_FIXED_CONTAINER;
 
-	qui_fixed_container* data = mem_alloc(sizeof(qui_fixed_container));
+	qui_fixed_container* data = (qui_fixed_container*)_qui_allocate(qui, sizeof(qui_fixed_container));
 	data->border = BORDER_NONE;
 	data->border_size = 1;
 	data->color_background = 0;

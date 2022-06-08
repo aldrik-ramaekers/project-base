@@ -80,7 +80,7 @@ qui_widget* qui_create_vertical_layout(qui_widget* qui)
 		"Vertical layout can only be added to container, main widget, scroll or tabcontrol");
 	qui_widget* wg = _qui_create_empty_widget(qui);
 	wg->type = WIDGET_VERTICAL_LAYOUT;
-	layout_widget* data = mem_alloc(sizeof(layout_widget));
+	layout_widget* data = (layout_widget*)_qui_allocate(qui, sizeof(layout_widget));
 	data->fixed_size = 0;
 	data->size_left_for_flex = 0;
 	wg->data = (u8*)data;

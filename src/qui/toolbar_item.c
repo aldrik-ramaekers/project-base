@@ -69,10 +69,10 @@ void _qui_render_toolbar_item(qui_state* main_state, qui_widget* el) {
 	//if (state == OPEN) _qui_render_toolbar_item_options_bounds(el);
 }
 
-qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text)
+qui_widget* qui_create_toolbar_item(qui_widget* qui, char* text)
 {
-	qui_widget* wg = _qui_create_empty_widget(toolbar);
-	qui_toolbar_item* data = mem_alloc(sizeof(qui_toolbar_item));
+	qui_widget* wg = _qui_create_empty_widget(qui);
+	qui_toolbar_item* data = (qui_toolbar_item*)_qui_allocate(qui, sizeof(qui_toolbar_item));
 	data->text = text;
 	data->state = IDLE;
 	data->icon = 0;

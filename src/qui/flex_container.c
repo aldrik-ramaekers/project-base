@@ -16,7 +16,7 @@ qui_widget* qui_create_flex_container_s(qui_widget* qui, u8 flex, s32 min_size_p
 		log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Flex container can only be added to vertical or horizontal layout");
 	}
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_flex_container* data = mem_alloc(sizeof(qui_flex_container));
+	qui_flex_container* data = (qui_flex_container*)_qui_allocate(qui, sizeof(qui_flex_container));
 	data->flex = flex;
 	data->border_size = 1;
 	data->min_size_px = min_size_px;
@@ -33,7 +33,7 @@ qui_widget* qui_create_flex_container(qui_widget* qui, u8 flex)
 		log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Flex container can only be added to vertical or horizontal layout");
 	}
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_flex_container* data = mem_alloc(sizeof(qui_flex_container));
+	qui_flex_container* data = (qui_flex_container*)_qui_allocate(qui, sizeof(qui_flex_container));
 	data->flex = flex;
 	data->border_size = 1;
 	data->min_size_px = MINIMUM_FLEX_SIZE;

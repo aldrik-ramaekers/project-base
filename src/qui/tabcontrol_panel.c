@@ -105,7 +105,7 @@ qui_widget* qui_create_tabcontrol_panel(qui_widget* qui, char* title)
 	qui_widget* wg = _qui_create_empty_widget(button_bar);
 	wg->type = WIDGET_TABCONTROL_PANEL;
 
-	tabcontrol_panel* data = (tabcontrol_panel*)mem_alloc(sizeof(tabcontrol_panel));
+	tabcontrol_panel* data = (tabcontrol_panel*)_qui_allocate(qui, sizeof(tabcontrol_panel));
 	data->container = qui_create_flex_container(container_layout, 1);
 	data->container->visible = false;
 	data->state = IDLE;

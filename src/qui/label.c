@@ -57,7 +57,7 @@ qui_widget* qui_create_label(qui_widget* qui, char* text, bool allow_wrap)
 	}
 
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_label* data = mem_alloc(sizeof(qui_label));
+	qui_label* data = (qui_label*)_qui_allocate(qui, sizeof(qui_label));
 	data->text = text;
 	data->allow_wrap = allow_wrap;
 	data->is_horizontal = og->type == WIDGET_HORIZONTAL_LAYOUT;

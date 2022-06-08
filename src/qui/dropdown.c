@@ -108,7 +108,7 @@ qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_wid
 {
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Dropdown can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_dropdown* data = mem_alloc(sizeof(qui_dropdown));
+	qui_dropdown* data = (qui_dropdown*)_qui_allocate(qui, sizeof(qui_dropdown));
 	data->selected_child = 0;
 	data->released = false;
 	data->state = IDLE;

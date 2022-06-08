@@ -93,7 +93,7 @@ qui_widget* qui_create_horizontal_layout(qui_widget* qui)
 		qui->type == WIDGET_SCROLL, 
 		"Horizontal layout can only be added to container, main widget, scroll or tabcontrol");
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	layout_widget* data = mem_alloc(sizeof(layout_widget));
+	layout_widget* data = (layout_widget*)_qui_allocate(qui, sizeof(layout_widget));
 	data->fixed_size = 0;
 	data->size_left_for_flex = 0;
 	wg->data = (u8*)data;

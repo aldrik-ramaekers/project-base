@@ -33,7 +33,7 @@ qui_widget* qui_create_image_panel(qui_widget* qui, image* img) {
 	el->width = 0;
 	el->height = 0;
 
-	qui_image_panel* data = mem_alloc(sizeof(qui_image_panel));
+	qui_image_panel* data = (qui_image_panel*)_qui_allocate(qui, sizeof(qui_image_panel));
 	data->image = img;
 	el->data = (u8*)data;
 

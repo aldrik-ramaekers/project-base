@@ -130,7 +130,7 @@ qui_widget* qui_create_button(qui_widget* qui, char* text)
 {
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Button can only be added to vertical or horizontal layout");
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_button* data = mem_alloc(sizeof(qui_button));
+	qui_button* data = (qui_button*)_qui_allocate(qui, sizeof(qui_button));
 	data->text = text;
 	data->icon = 0;
 	data->is_toggle = false;

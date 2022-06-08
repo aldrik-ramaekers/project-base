@@ -83,7 +83,7 @@ qui_widget* qui_create_dropdown_option(qui_widget* qui, char* text)
 	log_assert(qui->type == WIDGET_DROPDOWN, "Dropdown option option can only be added to dropdown");
 
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_button* data = mem_alloc(sizeof(qui_button));
+	qui_button* data = (qui_button*)_qui_allocate(qui, sizeof(qui_button));
 	data->text = text;
 	data->state = IDLE;
 	data->icon = 0;

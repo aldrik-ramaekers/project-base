@@ -72,7 +72,7 @@ qui_widget* qui_create_size_container(qui_widget* qui, u8 dir, u16 start_size)
 	log_assert(qui->type == WIDGET_VERTICAL_LAYOUT || qui->type == WIDGET_HORIZONTAL_LAYOUT, "Size container can only be added to vertical or horizontal layout");
 	log_assert(dir == DIRECTION_TOP, "Only TOP direction is supported");
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_size_container* data = mem_alloc(sizeof(qui_size_container));
+	qui_size_container* data = (qui_size_container*)_qui_allocate(qui, sizeof(qui_size_container));
 	data->direction = dir;
 	data->max = 9999;
 	data->min = 0;

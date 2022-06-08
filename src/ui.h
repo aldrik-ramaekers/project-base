@@ -226,6 +226,10 @@ typedef struct t_qui_state
 	application_theme theme;
 	vec4 scissor_stack[100];
 	font* font_default;
+
+	u8* memory_buffer;
+	u32 memory_cursor;
+	u32 memory_buffer_size;
 } qui_state;
 
 typedef struct t_qui_widget 

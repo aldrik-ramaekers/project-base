@@ -62,7 +62,7 @@ void _qui_create_scroll_button(qui_widget* qui, bool is_up) {
 	el->type = WIDGET_SCROLL_BUTTON;
 	el->width = SCROLLBAR_W;
 	el->height = SCROLLBAR_W;
-	qui_scroll_button_widget* data = mem_alloc(sizeof(qui_scroll_button_widget));
+	qui_scroll_button_widget* data = (qui_scroll_button_widget*)_qui_allocate(qui, sizeof(qui_scroll_button_widget));
 	data->is_up = is_up;
 	data->state = IDLE;
 	el->data = (u8*)data;

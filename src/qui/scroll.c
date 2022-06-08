@@ -98,7 +98,7 @@ qui_widget* qui_create_vertical_scroll(qui_widget* qui)
 	qui_widget* scroll =  _qui_create_empty_widget(wg);
 	scroll->type = WIDGET_SCROLL;
 
-	//qui_scroll_widget* data = mem_alloc(sizeof(qui_scroll_widget));
+	//qui_scroll_widget* data = (qui_scroll_widget*)_qui_allocate(qui, sizeof(qui_scroll_widget));
 	//scroll->data = (u8*)data;
 	
 	qui_widget* layout = qui_create_horizontal_layout(scroll);

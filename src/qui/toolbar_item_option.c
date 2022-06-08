@@ -131,7 +131,7 @@ qui_widget* qui_create_toolbar_item_option(qui_widget* qui, char* text)
 			   qui->type == WIDGET_TOOLBAR_ITEM_OPTION, "Toolbar item option can only be added to toolbar item or toolbar item option");
 
 	qui_widget* wg = _qui_create_empty_widget(qui);
-	qui_toolbar_item* data = mem_alloc(sizeof(qui_toolbar_item));
+	qui_toolbar_item* data = (qui_toolbar_item*)_qui_allocate(qui, sizeof(qui_toolbar_item));
 	data->text = text;
 	data->state = IDLE;
 	data->icon = 0;
