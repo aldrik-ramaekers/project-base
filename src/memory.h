@@ -22,7 +22,11 @@ typedef struct t_mem_entry
 array _mem_registry = {0,0,0,0,0};
 mutex _mem_mut;
 
+#ifdef __GNUC__
 void* _registered_alloc(u64 size)
+#else
+__declspec(allocator) void* _registered_alloc(u64 size)
+#endif
 {
 	if (_mem_registry.data == 0) {
 		_mem_mut = mutex_create();

@@ -787,7 +787,6 @@ static void cpu_render_rounded_rect(float x, float y, float width, float height,
 	render_target rec = _get_actual_rect(x, y, width, height);
 
 	radius = (s32)(radius / 2); // Radius on GL calculation does not match up with radius on CPU calculation :)
-	float R = radius;
 	s32 dx = 0;
 	s32 dy = 0;
 

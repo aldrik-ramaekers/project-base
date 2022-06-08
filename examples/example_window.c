@@ -236,5 +236,7 @@ int main(int argc, char **argv)
     settings_write_to_file();
     platform_destroy();
 
+	memory_print_leaks();
+
     return 0;
 }

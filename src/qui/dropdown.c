@@ -115,7 +115,7 @@ qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_wid
 	data->change_callback = change_callback;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_DROPDOWN;
-	wg->height = (BUTTON_PADDING_H*2);
+	//wg->height = (BUTTON_PADDING_H*2);
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

@@ -1,5 +1,4 @@
 void _qui_update_button(qui_state* main_state, qui_widget* el) {
-	el->height = main_state->font_default->px_h + (BUTTON_PADDING_H*2);
 
 	qui_button* data = ((qui_button*)el->data);
 	if (el->parent->type == WIDGET_HORIZONTAL_LAYOUT) {
@@ -138,6 +137,7 @@ qui_widget* qui_create_button(qui_widget* qui, char* text)
 	data->state = IDLE;
 	wg->data = (u8*)data;
 	wg->type = WIDGET_BUTTON;
+	//wg->height = (BUTTON_PADDING_H*2);
 	wg->margin_x = INTERACTIVE_ELEMENT_MARGIN_W;
 	wg->margin_y = INTERACTIVE_ELEMENT_MARGIN_H;
 	return wg;

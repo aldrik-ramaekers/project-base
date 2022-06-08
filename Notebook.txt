@@ -9,7 +9,6 @@ Features
 
 Issues
 - Table is behind scroll bar
-- Button should resize if it is too big for parent fixed container
 - Dropdown should have a default value
 - Move table color to theme struct
 - Program crashes without DEBUG flag

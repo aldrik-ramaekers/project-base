@@ -177,7 +177,7 @@ bool assets_queue_worker_load_bitmap(image *image)
 	image->height = info->height;
 	image->channels = info->bits/8;
 
-	char* new_buffer = (char*)mem_alloc(image->width*image->height*image->channels);
+	u8* new_buffer = (u8*)mem_alloc(image->width*image->height*image->channels);
 	s32 bytes_per_row = image->width*image->channels;
 
 	for (s32 i = 0; i < image->height; i++)
@@ -582,6 +582,10 @@ void assets_destroy_bitmap(image *image_to_destroy)
 			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
 		}
+		else if (current_render_driver() == DRIVER_CPU)
+		{
+			mem_free(image_to_destroy->data);
+		}
 		
 		image_to_destroy->references = 0;
 	}
@@ -595,16 +599,17 @@ void assets_destroy_font(font *font_to_destroy)
 {
 	if (font_to_destroy->references == 1)
 	{
-		if (current_render_driver() == DRIVER_GL)
+		for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 		{
-			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
+			glyph g = font_to_destroy->glyphs[i];
+			mem_free(g.bitmap);
+			if (current_render_driver() == DRIVER_GL)
 			{
-				glyph g = font_to_destroy->glyphs[i];
 				IMP_glBindTexture(GL_TEXTURE_2D, 0);
 				IMP_glDeleteTextures(1, &g.textureID);
 			}
 		}
-		
+			
 		font_to_destroy->references = 0;
 	}
 	else
@@ -617,10 +622,14 @@ void assets_destroy_image(image *image_to_destroy)
 {
 	if (image_to_destroy->references == 1)
 	{
-		if (current_render_driver() == DRIVER_CPU)
+		if (current_render_driver() == DRIVER_GL)
 		{
 			IMP_glBindTexture(GL_TEXTURE_2D, 0);
 			IMP_glDeleteTextures(1, &image_to_destroy->textureID);
+		}
+		else if (current_render_driver() == DRIVER_CPU)
+		{
+			mem_free(image_to_destroy->data);
 		}
 		
 		image_to_destroy->references = 0;
