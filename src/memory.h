@@ -1,8 +1,8 @@
-/* 
-*  BSD 2-Clause “Simplified” License
-*  Copyright (c) 2019, Aldrik Ramaekers, aldrik.ramaekers@protonmail.com
-*  All rights reserved.
-*/
+/*
+ *  BSD 2-Clause “Simplified” License
+ *  Copyright (c) 2019, Aldrik Ramaekers, aldrik.ramaekers@protonmail.com
+ *  All rights reserved.
+ */
 
 #ifndef INCLUDE_MEMORY
 #define INCLUDE_MEMORY
@@ -11,24 +11,27 @@
 #define mem_alloc(size) malloc(size);
 #define mem_free(p) free(p)
 #define mem_realloc(p, size) realloc(p, size)
-#define memory_print_leaks() {}
+#define memory_print_leaks() \
+	{                        \
+	}
 #else
 #include <stdio.h>
 typedef struct t_mem_entry
 {
-	void* ptr;
+	void *ptr;
 	u64 len;
 } mem_entry;
-array _mem_registry = {0,0,0,0,0};
+array _mem_registry = {0, 0, 0, 0, 0};
 mutex _mem_mut;
 
 #ifdef __GNUC__
-void* _registered_alloc(u64 size)
+void *_registered_alloc(u64 size)
 #else
-__declspec(allocator) void* _registered_alloc(u64 size)
+__declspec(allocator) void *_registered_alloc(u64 size)
 #endif
 {
-	if (_mem_registry.data == 0) {
+	if (_mem_registry.data == 0)
+	{
 		_mem_mut = mutex_create();
 		array new_array;
 		new_array.length = 0;
@@ -38,26 +41,27 @@ __declspec(allocator) void* _registered_alloc(u64 size)
 		new_array.reserve_jump = 1;
 		new_array.mutex = mutex_create_recursive();
 
-		_mem_registry = new_array; 
+		_mem_registry = new_array;
 		array_reserve(&_mem_registry, 1000);
 	}
 	mutex_lock(&_mem_mut);
-	void* addr = malloc(size);
+	void *addr = malloc(size);
 	mem_entry new_entry;
 	new_entry.ptr = addr;
 	new_entry.len = size;
-	array_push(&_mem_registry, (uint8_t*)&new_entry);
+	array_push(&_mem_registry, (uint8_t *)&new_entry);
 	mutex_unlock(&_mem_mut);
 	return addr;
 }
 
-void _registered_free(void* addr)
+void _registered_free(void *addr)
 {
 	mutex_lock(&_mem_mut);
 	for (int i = 0; i < _mem_registry.length; i++)
 	{
 		mem_entry *entry = array_at(&_mem_registry, i);
-		if (entry->ptr == addr) {
+		if (entry->ptr == addr)
+		{
 			array_remove_at(&_mem_registry, i);
 			free(addr);
 			mutex_unlock(&_mem_mut);
@@ -71,11 +75,13 @@ void _registered_print_leaks()
 {
 	mutex_lock(&_mem_mut);
 	printf("Leaks:\n");
+	u64 totalLeaked = 0;
 	for (s32 i = 0; i < _mem_registry.length; i++)
 	{
-		mem_entry* entry = array_at(&_mem_registry, i);
-		printf("#%d: %I64d\n", i+1, entry->len);
+		mem_entry *entry = array_at(&_mem_registry, i);
+		totalLeaked += entry->len;
 	}
+	printf("%I64d\n", totalLeaked);
 	mutex_unlock(&_mem_mut);
 }
 

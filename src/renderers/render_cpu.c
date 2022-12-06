@@ -866,7 +866,9 @@ render_driver render_cpu_driver =
 	cpu_calculate_text_width,
 	cpu_calculate_text_width_upto,
 	cpu_calculate_text_width_from_upto,
-
+	
+	NULL,
+	NULL,
 	cpu_render_rectangle,
 	cpu_render_line,
 	cpu_render_rectangle_outline,

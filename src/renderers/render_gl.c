@@ -47,6 +47,29 @@ static vec2f gl_rotateUV(vec2f uv, float rotation)
 	return result;
 }
 
+static void gl_render_tri(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, color tint)
+{
+    IMP_glBindTexture(GL_TEXTURE_2D, 0);
+    IMP_glBegin(GL_TRIANGLES);
+    IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+    IMP_glVertex3i(x1, y1, gl_render_depth);
+    IMP_glVertex3i(x2, y2, gl_render_depth);
+    IMP_glVertex3i(x3, y3, gl_render_depth);
+    IMP_glEnd();
+}
+
+static void gl_render_quad(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color tint)
+{
+    IMP_glBindTexture(GL_TEXTURE_2D, 0);
+    IMP_glBegin(GL_QUADS);
+    IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+    IMP_glVertex3i(x1, y1, gl_render_depth);
+    IMP_glVertex3i(x2, y2, gl_render_depth);
+    IMP_glVertex3i(x3, y3, gl_render_depth);
+    IMP_glVertex3i(x4, y4, gl_render_depth);
+    IMP_glEnd();
+}
+
 static void gl_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
     IMP_glBindTexture(GL_TEXTURE_2D, 0);
@@ -947,6 +970,8 @@ render_driver render_gl_driver =
 	gl_calculate_text_width_upto,
 	gl_calculate_text_width_from_upto,
 
+	gl_render_tri,
+	gl_render_quad,
 	gl_render_rectangle,
 	gl_render_line,
 	gl_render_rectangle_outline,

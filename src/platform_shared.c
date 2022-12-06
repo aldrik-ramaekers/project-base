@@ -312,7 +312,7 @@ void platform_handle_events()
 		platform_window_make_current(w); // This should be called whether we are drawing or not.
 		_platform_handle_events_for_window(w);
 
-		if (w->do_draw || redraw_all) {
+		if (w->ui == 0 || w->do_draw || redraw_all) {
 			w->do_draw = false;
 			
 			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
@@ -348,7 +348,7 @@ void platform_handle_events()
 				float diff_ms = diff / 1000000000.0f;
 				update_delta = diff_ms;
 			}
-
+			
 		    platform_window_swap_buffers(w);
         }
 
