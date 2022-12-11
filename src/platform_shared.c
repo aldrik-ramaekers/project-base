@@ -301,6 +301,8 @@ void platform_handle_events()
 
 	if (assets_do_post_process())
 		redraw_all = true;
+
+	u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
 	
 	for (s32 i = 0; i < window_registry.length; i++) {
 		platform_window* w = *(platform_window**)array_at(&window_registry, i);
@@ -314,8 +316,6 @@ void platform_handle_events()
 
 		if (w->ui == 0 || w->do_draw || redraw_all) {
 			w->do_draw = false;
-			
-			u64 update_start = platform_get_time(TIME_FULL, TIME_NS);
 
 			platform_set_cursor(w, CURSOR_DEFAULT);
 			renderer->render_clear(w, rgb(255,255,255));
@@ -340,14 +340,6 @@ void platform_handle_events()
 			}
 
             if (w->update_func) w->update_func(w);	
-
-			// Update delta.
-			{
-				u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
-				u64 diff = current_stamp - update_start;
-				float diff_ms = diff / 1000000000.0f;
-				update_delta = diff_ms;
-			}
 			
 		    platform_window_swap_buffers(w);
         }
@@ -366,8 +358,16 @@ void platform_handle_events()
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;
 		float diff_us = diff / 1000.0f;
-		s64 toSleepUS = ((1000000/30.0f)-diff_us);
+		s64 toSleepUS = ((1000000/120.0f)-diff_us);
 		if (toSleepUS < 0) toSleepUS = 0;
 		thread_sleep(toSleepUS);
+	}
+
+	// Update delta.
+	{
+		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
+		u64 diff = current_stamp - update_start;
+		float diff_ms = diff / 1000000000.0f;
+		update_delta = diff_ms;
 	}
 }

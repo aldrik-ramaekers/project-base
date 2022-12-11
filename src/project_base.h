@@ -40,6 +40,7 @@
 
 #ifdef _WIN32
 #define OS_WIN
+#include <winsock2.h>
 #endif
 #ifdef __linux__
 #define OS_LINUX
@@ -105,17 +106,20 @@
 #include "string_utils.h"
 #include "settings_config.h"
 #include "localization.h"
+#include "networking.h"
 
 #ifdef OS_LINUX
 #include "linux/lib_loader.c"
 #include "linux/thread.c"
 #include "linux/platform.c"
+#include "linux/networking.c"
 #endif
 
 #ifdef OS_WIN
 #include "windows/lib_loader.c"
 #include "windows/thread.c"
 #include "windows/platform.c"
+#include "windows/networking.c"
 #endif
 
 #include "platform_shared.c"
