@@ -12,7 +12,7 @@
 static void* server_start_receiving_data(void *arg) {
 	on_connect_args* args = (on_connect_args*)arg;
 
-	u8* complete_buffer = mem_alloc(5000);
+	u8* complete_buffer = mem_alloc(50000);
 	memset(complete_buffer, 0, 5000);
 	u32 complete_buffer_cursor = 0;
 
@@ -30,7 +30,7 @@ static void* server_start_receiving_data(void *arg) {
 			if (complete_buffer_cursor >= message_length) {
 				if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, (network_client){args->ClientSocket, true});
 				complete_buffer_cursor = 0;
-				log_info("Received server message");
+				//log_info("Received server message");
 			}
         }
         else if (iResult == 0) {
@@ -52,10 +52,6 @@ static void* server_start_receiving_data(void *arg) {
 static void* server_listen_for_clients_thread(void* args) {
 	network_server* server = (network_server*)args;
 
-	// TODO move this to global array
-	SOCKET connections[500];
-	int cursor = 0;
-
 	while (server->is_open) {
 		SOCKET ClientSocket = accept(server->ListenSocket, NULL, NULL);
 		if (ClientSocket == INVALID_SOCKET) {
@@ -65,7 +61,8 @@ static void* server_listen_for_clients_thread(void* args) {
 			log_info("New client connected");
 		
 			if (server->is_open) {
-				connections[cursor++] = ClientSocket;
+				network_client client = (network_client){ClientSocket, true, 0};
+				array_push(&server->clients, (u8*)&client);
 
 				on_connect_args* args = mem_alloc(sizeof(on_connect_args));
 				args->server = server;
@@ -76,9 +73,11 @@ static void* server_listen_for_clients_thread(void* args) {
 			}
 		}
 	}
-	for (int i = 0; i < cursor; i++) {
-		closesocket(connections[i]);
+	for (int i = 0; i < server->clients.length; i++) {
+		network_client* client = (network_client*)array_at(&server->clients, i);
+		closesocket(client->ConnectSocket);
 	}
+	array_destroy(&server->clients);
 	log_info("Server stopped");
 	return 0;
 }
@@ -92,6 +91,9 @@ network_server* networking_create_server() {
 	network_server *server = mem_alloc(sizeof(network_server));
 	server->is_open = false;
 	server->on_message = 0;
+	server->clients = array_create(sizeof(network_client));
+	array_reserve(&server->clients, 50);
+
 	WSADATA wsaData;
 
     SOCKET ListenSocket = INVALID_SOCKET;
@@ -154,7 +156,7 @@ network_server* networking_create_server() {
 	return server;
 }
 
-// Insert length if message into front of data buffer.
+// Insert length of message into front of data buffer.
 network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
 	network_message message;
 	message.length = length+4;
@@ -177,7 +179,7 @@ void network_client_send(network_client* client, network_message message) {
 static void* network_client_receive_thread(void* args) {
 	network_client* client = (network_client*)args;
 
-	u8* complete_buffer = mem_alloc(5000);
+	u8* complete_buffer = mem_alloc(50000);
 	memset(complete_buffer, 0, 5000);
 	u32 complete_buffer_cursor = 0;
 
@@ -195,7 +197,7 @@ static void* network_client_receive_thread(void* args) {
 				if (complete_buffer_cursor >= message_length) {
 					if (client->on_message) client->on_message(complete_buffer, complete_buffer_cursor);
 					complete_buffer_cursor = 0;
-					log_info("Received client message");
+					//log_info("Received client message");
 				}
 			}		
 			else if ( iResult == 0 ) {

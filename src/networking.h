@@ -18,6 +18,7 @@ typedef struct t_network_server {
 	SOCKET ListenSocket;
 	bool is_open;
 	void (*on_message)(u8* data, u32 length, network_client client);
+	array clients;
 } network_server;
 
 typedef struct t_on_connect_args {
