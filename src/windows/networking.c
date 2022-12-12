@@ -12,7 +12,11 @@
 static void* server_start_receiving_data(void *arg) {
 	on_connect_args* args = (on_connect_args*)arg;
 
-	int iSendResult;
+	u8* complete_buffer = mem_alloc(5000);
+	memset(complete_buffer, 0, 5000);
+	u32 complete_buffer_cursor = 0;
+
+	//int iSendResult;
     char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 	int iResult;
@@ -20,14 +24,14 @@ static void* server_start_receiving_data(void *arg) {
     do {
         iResult = recv(args->ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
-            printf("Server Bytes received: %d\n", iResult);
-
-            iSendResult = send(args->ClientSocket, recvbuf, iResult, 0);
-            if (iSendResult == SOCKET_ERROR) {
-                log_info("send failed with error");
-                goto cleanup;
-            }
-            printf("Server Bytes sent: %d\n", iSendResult);
+			if (complete_buffer_cursor+iResult < 5000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
+			complete_buffer_cursor += iResult;
+			u32 message_length = ((u32*)complete_buffer)[0];
+			if (complete_buffer_cursor >= message_length) {
+				if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, (network_client){args->ClientSocket, true});
+				complete_buffer_cursor = 0;
+				log_info("Received server message");
+			}
         }
         else if (iResult == 0) {
             log_info("Connection closing");
@@ -36,22 +40,22 @@ static void* server_start_receiving_data(void *arg) {
             log_info("recv failed with error");
             goto cleanup;
         }
-    } while (iResult > 0);
-
-    // shutdown the connection since we're done
-    iResult = shutdown(args->ClientSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        log_info("shutdown failed with error");
-    }
+    } while (args->server->is_open);
 
 	cleanup:
-    closesocket(args->ClientSocket);
 	mem_free(args);
+	mem_free(complete_buffer);
+	log_info("Server stopped listening to client");
 	return 0;
 }
 
 static void* server_listen_for_clients_thread(void* args) {
 	network_server* server = (network_server*)args;
+
+	// TODO move this to global array
+	SOCKET connections[500];
+	int cursor = 0;
+
 	while (server->is_open) {
 		SOCKET ClientSocket = accept(server->ListenSocket, NULL, NULL);
 		if (ClientSocket == INVALID_SOCKET) {
@@ -59,29 +63,35 @@ static void* server_listen_for_clients_thread(void* args) {
 		}
 		else {
 			log_info("New client connected");
+		
+			if (server->is_open) {
+				connections[cursor++] = ClientSocket;
+
+				on_connect_args* args = mem_alloc(sizeof(on_connect_args));
+				args->server = server;
+				args->ClientSocket = ClientSocket;
+
+				thread t = thread_start(server_start_receiving_data, (void*)args);
+				thread_detach(&t);
+			}
 		}
-
-		on_connect_args* args = mem_alloc(sizeof(on_connect_args));
-		args->server = server;
-		args->ClientSocket = ClientSocket;
-
-		thread t = thread_start(server_start_receiving_data, (void*)args);
-		thread_detach(&t);
 	}
-	closesocket(server->ListenSocket);
-	mem_free(server);
+	for (int i = 0; i < cursor; i++) {
+		closesocket(connections[i]);
+	}
 	log_info("Server stopped");
 	return 0;
 }
 
 void networking_destroy_server(network_server *server) {
 	server->is_open = false;
-	WSACleanup();
+	closesocket(server->ListenSocket);
 }
 
 network_server* networking_create_server() {
 	network_server *server = mem_alloc(sizeof(network_server));
 	server->is_open = false;
+	server->on_message = 0;
 	WSADATA wsaData;
 
     SOCKET ListenSocket = INVALID_SOCKET;
@@ -106,7 +116,6 @@ network_server* networking_create_server() {
     iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if ( iResult != 0 ) {
         log_info("getaddrinfo failed with error");
-        WSACleanup();
         return server;
     }
 
@@ -115,7 +124,6 @@ network_server* networking_create_server() {
     if (ListenSocket == INVALID_SOCKET) {
         log_info("socket failed with error");
         freeaddrinfo(result);
-        WSACleanup();
         return server;
     }
 
@@ -125,7 +133,6 @@ network_server* networking_create_server() {
         log_info("bind failed with error");
         freeaddrinfo(result);
         closesocket(ListenSocket);
-        WSACleanup();
         return server;
     }
 
@@ -135,7 +142,6 @@ network_server* networking_create_server() {
     if (iResult == SOCKET_ERROR) {
         log_info("listen failed with error");
         closesocket(ListenSocket);
-        WSACleanup();
         return server;
     }
 
@@ -148,22 +154,33 @@ network_server* networking_create_server() {
 	return server;
 }
 
-void network_client_send(network_client* client, char* data) {
-	if (!client->is_connected) return;
+// Insert length if message into front of data buffer.
+network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
+	network_message message;
+	message.length = length+4;
+	memmove(data+4, data, length);
+	u32* datat = (u32*)data;
+	datat[0] = message.length;
+	message.data = data;
+	return message;
+}
 
-	int iResult = send(client->ConnectSocket, data, (int)strlen(data), 0);
+void network_client_send(network_client* client, network_message message) {
+	if (!client->is_connected) return;
+	int iResult = send(client->ConnectSocket, (char*)message.data, message.length, 0);
     if (iResult == SOCKET_ERROR) {
         log_info("send failed with error");
-		client->is_connected = false;
-        closesocket(client->ConnectSocket);
         return;
     }
-
-    printf("Client Bytes Sent: %d\n", iResult);
 }
 
 static void* network_client_receive_thread(void* args) {
 	network_client* client = (network_client*)args;
+
+	u8* complete_buffer = mem_alloc(5000);
+	memset(complete_buffer, 0, 5000);
+	u32 complete_buffer_cursor = 0;
+
 	char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 	int iResult;
@@ -171,30 +188,38 @@ static void* network_client_receive_thread(void* args) {
 	while (client->is_connected) {
 		do {
 			iResult = recv(client->ConnectSocket, recvbuf, recvbuflen, 0);
-			if ( iResult > 0 )
-				printf("Client Bytes received: %d\n", iResult);
+			if (iResult > 0) {
+				if (complete_buffer_cursor+iResult < 5000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
+				complete_buffer_cursor += iResult;
+				u32 message_length = ((u32*)complete_buffer)[0];
+				if (complete_buffer_cursor >= message_length) {
+					if (client->on_message) client->on_message(complete_buffer, complete_buffer_cursor);
+					complete_buffer_cursor = 0;
+					log_info("Received client message");
+				}
+			}		
 			else if ( iResult == 0 ) {
 				log_info("Connection closed");
 			}
 			else {
 				log_info("recv failed with error");
+				printf("Error: %d\n", WSAGetLastError());
 			}
 
-		} while( iResult > 0 );
+		} while(client->is_connected);
 	}
-	iResult = shutdown(client->ConnectSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        log_info("shutdown failed with error");
-    }
-	closesocket(client->ConnectSocket);
+
 	mem_free(client);
+	mem_free(complete_buffer);
 	log_info("Client stopped");
 	return 0;
 }
 
 network_client* network_connect_to_server(char* ip, char* port) {
-	network_client* client = mem_alloc(sizeof(client));
+	network_client* client = mem_alloc(sizeof(network_client));
 	client->is_connected = false;
+	client->on_message = 0;
+	client->ConnectSocket = INVALID_SOCKET;
 
 	WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
@@ -259,5 +284,8 @@ network_client* network_connect_to_server(char* ip, char* port) {
 }
 
 void network_client_close(network_client* client) {
-	client->is_connected = false;
+	if (client->is_connected) {
+		client->is_connected = false;
+		closesocket(client->ConnectSocket);
+	}
 }

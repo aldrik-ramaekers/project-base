@@ -8,25 +8,33 @@
 #define INCLUDE_NETWORKING
 
 #ifdef OS_WIN
+typedef struct t_network_client {
+	SOCKET ConnectSocket;
+	bool is_connected;
+	void (*on_message)(u8* data, u32 length);
+} network_client;
+
 typedef struct t_network_server {
 	SOCKET ListenSocket;
 	bool is_open;
+	void (*on_message)(u8* data, u32 length, network_client client);
 } network_server;
 
 typedef struct t_on_connect_args {
 	network_server* server;
 	SOCKET ClientSocket;
 } on_connect_args;
-
-typedef struct t_network_client {
-	SOCKET ConnectSocket;
-	bool is_connected;
-} network_client;
 #endif
+
+typedef struct t_network_message {
+	u32 length;
+	u8* data;
+} network_message;
 
 network_server* networking_create_server();
 network_client* network_connect_to_server(char* ip, char* port);
-void network_client_send(network_client* client, char* data);
+void network_client_send(network_client* client, network_message message);
 void network_client_close(network_client* client);
+network_message network_create_message(u8* data, u32 length, u32 buffer_size);
 
 #endif
