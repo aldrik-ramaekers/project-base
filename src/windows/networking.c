@@ -13,7 +13,7 @@ static void* server_start_receiving_data(void *arg) {
 	on_connect_args* args = (on_connect_args*)arg;
 
 	u8* complete_buffer = mem_alloc(50000);
-	memset(complete_buffer, 0, 5000);
+	memset(complete_buffer, 0, 50000);
 	u32 complete_buffer_cursor = 0;
 
 	//int iSendResult;
@@ -24,14 +24,27 @@ static void* server_start_receiving_data(void *arg) {
     do {
         iResult = recv(args->ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
-			if (complete_buffer_cursor+iResult < 5000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
+			if (complete_buffer_cursor+iResult < 50000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
 			complete_buffer_cursor += iResult;
-			u32 message_length = ((u32*)complete_buffer)[0];
-			if (complete_buffer_cursor >= message_length) {
-				if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, (network_client){args->ClientSocket, true});
-				complete_buffer_cursor = 0;
-				//log_info("Received server message");
-			}
+			
+			u32 overflow = 0;
+			do
+			{
+				u32 message_length = ((u32*)complete_buffer)[0];
+				if (complete_buffer_cursor >= message_length) {
+					overflow = complete_buffer_cursor - message_length;
+					if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, (network_client){args->ClientSocket, true});
+
+					if (overflow > 0) {
+						memcpy(complete_buffer, complete_buffer+message_length, overflow);
+					}
+					complete_buffer_cursor = overflow;
+					//log_info("Received server message");
+				}
+				else {
+					break;
+				}	
+			} while (overflow > 0);		
         }
         else if (iResult == 0) {
             log_info("Connection closing");
@@ -180,7 +193,7 @@ static void* network_client_receive_thread(void* args) {
 	network_client* client = (network_client*)args;
 
 	u8* complete_buffer = mem_alloc(50000);
-	memset(complete_buffer, 0, 5000);
+	memset(complete_buffer, 0, 50000);
 	u32 complete_buffer_cursor = 0;
 
 	char recvbuf[DEFAULT_BUFLEN];
@@ -191,14 +204,27 @@ static void* network_client_receive_thread(void* args) {
 		do {
 			iResult = recv(client->ConnectSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
-				if (complete_buffer_cursor+iResult < 5000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
+				if (complete_buffer_cursor+iResult < 50000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
 				complete_buffer_cursor += iResult;
-				u32 message_length = ((u32*)complete_buffer)[0];
-				if (complete_buffer_cursor >= message_length) {
-					if (client->on_message) client->on_message(complete_buffer, complete_buffer_cursor);
-					complete_buffer_cursor = 0;
-					//log_info("Received client message");
-				}
+
+				u32 overflow = 0;
+				do
+				{
+					u32 message_length = ((u32*)complete_buffer)[0];
+					if (complete_buffer_cursor >= message_length) {
+						overflow = complete_buffer_cursor - message_length;
+						if (client->on_message) client->on_message(complete_buffer, message_length);
+
+						if (overflow > 0) {
+							memcpy(complete_buffer, complete_buffer+message_length, overflow);
+						}
+						complete_buffer_cursor = overflow;
+						//log_info("Received server message");
+					}
+					else {
+						break;
+					}	
+				} while (overflow > 0);		
 			}		
 			else if ( iResult == 0 ) {
 				log_info("Connection closed");
