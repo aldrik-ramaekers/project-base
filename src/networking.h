@@ -19,11 +19,12 @@ typedef struct t_network_server {
 	bool is_open;
 	void (*on_message)(u8* data, u32 length, network_client client);
 	array clients;
+	void (*on_client_disconnect)(network_client client);
 } network_server;
 
 typedef struct t_on_connect_args {
 	network_server* server;
-	SOCKET ClientSocket;
+	network_client client;
 } on_connect_args;
 #endif
 

@@ -9,6 +9,17 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
+static void server_disconnect_client(network_server* server, network_client c) {
+	for (int i = 0; i < server->clients.length; i++) {
+		network_client* client = (network_client*)array_at(&server->clients, i);
+		if (client->ConnectSocket == c.ConnectSocket) {
+			closesocket(client->ConnectSocket);
+			array_remove_at(&server->clients, i);
+			return;
+		}
+	}
+}
+
 static void* server_start_receiving_data(void *arg) {
 	on_connect_args* args = (on_connect_args*)arg;
 
@@ -22,7 +33,7 @@ static void* server_start_receiving_data(void *arg) {
 	int iResult;
 
     do {
-        iResult = recv(args->ClientSocket, recvbuf, recvbuflen, 0);
+        iResult = recv(args->client.ConnectSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
 			if (complete_buffer_cursor+iResult < 50000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
 			complete_buffer_cursor += iResult;
@@ -33,7 +44,7 @@ static void* server_start_receiving_data(void *arg) {
 				u32 message_length = ((u32*)complete_buffer)[0];
 				if (complete_buffer_cursor >= message_length) {
 					overflow = complete_buffer_cursor - message_length;
-					if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, (network_client){args->ClientSocket, true});
+					if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, args->client);
 
 					if (overflow > 0) {
 						memcpy(complete_buffer, complete_buffer+message_length, overflow);
@@ -56,6 +67,8 @@ static void* server_start_receiving_data(void *arg) {
     } while (args->server->is_open);
 
 	cleanup:
+	server_disconnect_client(args->server, args->client);
+
 	mem_free(args);
 	mem_free(complete_buffer);
 	log_info("Server stopped listening to client");
@@ -79,7 +92,7 @@ static void* server_listen_for_clients_thread(void* args) {
 
 				on_connect_args* args = mem_alloc(sizeof(on_connect_args));
 				args->server = server;
-				args->ClientSocket = ClientSocket;
+				args->client = client;
 
 				thread t = thread_start(server_start_receiving_data, (void*)args);
 				thread_detach(&t);
