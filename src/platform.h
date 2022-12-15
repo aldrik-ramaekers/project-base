@@ -233,6 +233,7 @@ bool 	platform_delete_file(char *path);
 s32		platform_get_titlebar_height();
 void 	platform_toggle_fullscreen(platform_window* window, bool fullscreen);
 application_theme platform_get_application_theme();
+u32		platform_get_processid();
 
 //	:/Info	Check if the window is still open. Should be used in the main loop.
 //	:/Ret	true when open, false when closed.

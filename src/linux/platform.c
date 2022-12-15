@@ -1722,32 +1722,7 @@ void platform_set_icon(platform_window *window, image *img)
 								 (unsigned char *)data, nelements);
 }
 
-#if 0
-uint write_cb(char *in, uint size, uint nmemb, char *buffer)
-{
-	string_appendn(buffer, in, MAX_INPUT_LENGTH);
-	return size * nmemb;
-}
-
-bool platform_send_http_request(char *url, char *params, char *response_buffer)
-{
-	string_copyn(response_buffer, "", MAX_INPUT_LENGTH);
-	
-	char fullurl[200];
-	sprintf(fullurl, "https://%s/%s", url, params);
-	curl_easy_setopt(curl, CURLOPT_URL,fullurl);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_buffer);
-	CURLcode res = curl_easy_perform(curl);
-	if (res != CURLE_OK) return false;
-	
-	return true;
-}
-
+#if 1
 bool platform_get_mac_address(char *buffer, s32 buf_size)
 {
 	struct ifaddrs *ifaddr=NULL;
