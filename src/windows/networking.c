@@ -2,10 +2,6 @@
 #include "../thread.h"
 #include "../logging.h"
 
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
@@ -15,6 +11,7 @@ static void server_disconnect_client(network_server* server, network_client c) {
 		if (client->ConnectSocket == c.ConnectSocket) {
 			closesocket(client->ConnectSocket);
 			array_remove_at(&server->clients, i);
+			if (server->on_client_disconnect) server->on_client_disconnect(c);
 			return;
 		}
 	}
@@ -41,10 +38,11 @@ static void* server_start_receiving_data(void *arg) {
 			u32 overflow = 0;
 			do
 			{
-				u32 message_length = ((u32*)complete_buffer)[0];
+				u32 message_length; memcpy(&message_length, complete_buffer, sizeof(message_length));
+				u64 timestamp; memcpy(&timestamp, complete_buffer+sizeof(message_length), sizeof(timestamp));
 				if (complete_buffer_cursor >= message_length) {
 					overflow = complete_buffer_cursor - message_length;
-					if (args->server->on_message) args->server->on_message(complete_buffer, complete_buffer_cursor, args->client);
+					if (args->server->on_message) args->server->on_message(complete_buffer+12, complete_buffer_cursor-12, timestamp, args->client);
 
 					if (overflow > 0) {
 						memcpy(complete_buffer, complete_buffer+message_length, overflow);
@@ -75,6 +73,36 @@ static void* server_start_receiving_data(void *arg) {
 	return 0;
 }
 
+extern PCSTR
+WSAAPI
+inet_ntop(
+    _In_                                INT             Family,
+    _In_                                const VOID *    pAddr,
+    _Out_writes_(StringBufSize)         PSTR            pStringBuf,
+    _In_                                size_t          StringBufSize
+    );
+
+static void get_ip_from_socket(SOCKET socket, char * buf, int buflen) {
+	struct sockaddr addr;
+	int addr_size = sizeof(addr);
+	getpeername(socket, &addr, &addr_size);
+
+	switch(addr.sa_family) {
+		case AF_INET: {
+			struct sockaddr_in *addr_in = (struct sockaddr_in *)&addr;
+			inet_ntop(AF_INET, &(addr_in->sin_addr), buf, buflen);
+			break;
+		}
+		case AF_INET6: {
+			struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)&addr;
+			inet_ntop(AF_INET6, &(addr_in6->sin6_addr), buf, buflen);
+			break;
+		}
+	default:
+		break;
+	}
+}
+
 static void* server_listen_for_clients_thread(void* args) {
 	network_server* server = (network_server*)args;
 
@@ -84,19 +112,20 @@ static void* server_listen_for_clients_thread(void* args) {
 			log_info("accept failed with error");
 		}
 		else {
-			log_info("New client connected");
+			char ip[INET6_ADDRSTRLEN];
+			get_ip_from_socket(ClientSocket, ip, INET6_ADDRSTRLEN);
+			log_infox("New client connected: %s", ip);
 		
-			if (server->is_open) {
-				network_client client = (network_client){ClientSocket, true, 0};
-				array_push(&server->clients, (u8*)&client);
+			network_client client = (network_client){ClientSocket, true, 0};
+			strncpy(client.ip, ip, INET6_ADDRSTRLEN);
+			array_push(&server->clients, (u8*)&client);
 
-				on_connect_args* args = mem_alloc(sizeof(on_connect_args));
-				args->server = server;
-				args->client = client;
+			on_connect_args* args = mem_alloc(sizeof(on_connect_args));
+			args->server = server;
+			args->client = client;
 
-				thread t = thread_start(server_start_receiving_data, (void*)args);
-				thread_detach(&t);
-			}
+			thread t = thread_start(server_start_receiving_data, (void*)args);
+			thread_detach(&t);
 		}
 	}
 	for (int i = 0; i < server->clients.length; i++) {
@@ -185,10 +214,14 @@ network_server* networking_create_server() {
 // Insert length of message into front of data buffer.
 network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
 	network_message message;
-	message.length = length+4;
-	memmove(data+4, data, length);
-	u32* datat = (u32*)data;
-	datat[0] = message.length;
+	int extra_space = sizeof(message.length) + sizeof(message.timestamp);
+	message.length = length+extra_space;
+	message.timestamp = platform_get_time(TIME_MS, TIME_PROCESS);
+
+	memmove(data+extra_space, data, length);
+	memmove(data+4, &message.timestamp, sizeof(message.timestamp));
+	memmove(data, &message.length, sizeof(message.length));
+
 	message.data = data;
 	return message;
 }
@@ -226,7 +259,7 @@ static void* network_client_receive_thread(void* args) {
 					u32 message_length = ((u32*)complete_buffer)[0];
 					if (complete_buffer_cursor >= message_length) {
 						overflow = complete_buffer_cursor - message_length;
-						if (client->on_message) client->on_message(complete_buffer, message_length);
+						if (client->on_message) client->on_message(complete_buffer+12, message_length-12);
 
 						if (overflow > 0) {
 							memcpy(complete_buffer, complete_buffer+message_length, overflow);

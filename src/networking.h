@@ -7,17 +7,22 @@
 #ifndef INCLUDE_NETWORKING
 #define INCLUDE_NETWORKING
 
+#include <ws2tcpip.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #ifdef OS_WIN
 typedef struct t_network_client {
 	SOCKET ConnectSocket;
 	bool is_connected;
 	void (*on_message)(u8* data, u32 length);
+	char ip[INET6_ADDRSTRLEN];
 } network_client;
 
 typedef struct t_network_server {
 	SOCKET ListenSocket;
 	bool is_open;
-	void (*on_message)(u8* data, u32 length, network_client client);
+	void (*on_message)(u8* data, u32 length, u64 timestamp, network_client client);
 	array clients;
 	void (*on_client_disconnect)(network_client client);
 } network_server;
@@ -30,6 +35,7 @@ typedef struct t_on_connect_args {
 
 typedef struct t_network_message {
 	u32 length;
+	u64 timestamp;
 	u8* data;
 } network_message;
 
