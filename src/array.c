@@ -22,6 +22,30 @@ bool array_exists(array *array)
 	return array->entry_size;
 }
 
+int array_push_at(array *array, u8 *data, u32 index)
+{
+	log_assert(array, "Array cannot be null");
+	log_assert(data, "Data to insert cannot be null");
+	log_assert(array->reserve_jump >= 1, "Array reserve_jump cannot be less than 1. Array is invalid.");
+	
+	mutex_lock(&array->mutex);
+	log_assert(index >= 0 && index < array->length, "Index is out of bounds");
+	//array->length++;
+	
+	if (array->reserved_length < array->length)
+	{
+		array->reserved_length += array->reserve_jump;
+		array->data = mem_realloc(array->data, (array->reserved_length*array->entry_size));
+	}
+	
+	//memcpy(data + ((index+1) * array->entry_size), data + (index * array->entry_size), array->entry_size*(array->length-index));
+	memcpy(array->data + (index * array->entry_size), data, array->entry_size);
+	
+	s32 result = array->length -1;
+	mutex_unlock(&array->mutex);
+	return result;
+}
+
 int array_push(array *array, u8 *data)
 {
 	log_assert(array, "Array cannot be null");
@@ -208,6 +232,7 @@ array array_copy(array *arr)
 	new_array.length = arr->length;
 	new_array.reserved_length = arr->reserved_length;
 	new_array.entry_size = arr->entry_size;
+	new_array.reserve_jump = arr->reserve_jump;
 	new_array.data = mem_alloc(new_array.entry_size*new_array.reserved_length);
 	new_array.mutex = mutex_create();
 	
@@ -219,5 +244,7 @@ array array_copy(array *arr)
 
 void array_clear(array *arr)
 {
+	mutex_lock(&arr->mutex);
 	arr->length = 0;
+	mutex_unlock(&arr->mutex);
 }

@@ -216,7 +216,7 @@ network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
 	network_message message;
 	int extra_space = sizeof(message.length) + sizeof(message.timestamp);
 	message.length = length+extra_space;
-	message.timestamp = platform_get_time(TIME_MS, TIME_PROCESS);
+	message.timestamp = platform_get_time(TIME_MS, TIME_FULL);
 
 	memmove(data+extra_space, data, length);
 	memmove(data+4, &message.timestamp, sizeof(message.timestamp));

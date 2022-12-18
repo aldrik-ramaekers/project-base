@@ -68,4 +68,6 @@ array 	array_copy(array *arr);
 //	:/Info	Clear tha array. Amount of reserve spots remain.
 void 	array_clear(array *arr);
 
+int 	array_push_at(array *array, u8 *data, u32 index);
+
 #endif
