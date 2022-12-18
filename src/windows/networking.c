@@ -216,7 +216,7 @@ network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
 	network_message message;
 	int extra_space = sizeof(message.length) + sizeof(message.timestamp);
 	message.length = length+extra_space;
-	message.timestamp = platform_get_time(TIME_MS, TIME_FULL);
+	message.timestamp = platform_get_time(TIME_FULL, TIME_MILI_S);
 
 	memmove(data+extra_space, data, length);
 	memmove(data+4, &message.timestamp, sizeof(message.timestamp));
@@ -230,7 +230,7 @@ void network_client_send(network_client* client, network_message message) {
 	if (!client->is_connected) return;
 	int iResult = send(client->ConnectSocket, (char*)message.data, message.length, 0);
     if (iResult == SOCKET_ERROR) {
-        log_info("send failed with error");
+        log_infox("send failed with error %d", WSAGetLastError());
         return;
     }
 }
