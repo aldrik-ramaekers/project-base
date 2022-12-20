@@ -82,6 +82,78 @@ static void gl_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
     IMP_glEnd();
 }
 
+static void gl_render_image_quad(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4)
+{
+    log_assert(image, "Image cannot be null");
+
+    if (image->loaded)
+    {
+        IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
+        IMP_glEnable(GL_TEXTURE_2D);
+        IMP_glBegin(GL_QUADS);
+        IMP_glColor4f(1., 1., 1., 1.);
+
+        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
+        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
+        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
+        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+
+        IMP_glPushMatrix();
+        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
+
+        IMP_glTexCoord2f(topleft.x, topleft.y);
+        IMP_glVertex3i(x1, y1, gl_render_depth);
+        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
+        IMP_glVertex3i(x2, y2, gl_render_depth);
+        IMP_glTexCoord2f(bottomright.x, bottomright.y);
+        IMP_glVertex3i(x3, y3, gl_render_depth);
+        IMP_glTexCoord2f(topright.x, topright.y);
+        IMP_glVertex3i(x4, y4, gl_render_depth);
+
+        IMP_glPopMatrix();
+
+        IMP_glEnd();
+        IMP_glBindTexture(GL_TEXTURE_2D, 0);
+        IMP_glDisable(GL_TEXTURE_2D);
+    }
+}
+
+static void gl_render_image_quad_tint(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color tint)
+{
+    log_assert(image, "Image cannot be null");
+
+    if (image->loaded)
+    {
+        IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
+        IMP_glEnable(GL_TEXTURE_2D);
+        IMP_glBegin(GL_QUADS);
+        IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
+
+        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
+        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
+        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
+        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+
+        IMP_glPushMatrix();
+        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
+
+        IMP_glTexCoord2f(topleft.x, topleft.y);
+        IMP_glVertex3i(x1, y1, gl_render_depth);
+        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
+        IMP_glVertex3i(x2, y2, gl_render_depth);
+        IMP_glTexCoord2f(bottomright.x, bottomright.y);
+        IMP_glVertex3i(x3, y3, gl_render_depth);
+        IMP_glTexCoord2f(topright.x, topright.y);
+        IMP_glVertex3i(x4, y4, gl_render_depth);
+
+        IMP_glPopMatrix();
+
+        IMP_glEnd();
+        IMP_glBindTexture(GL_TEXTURE_2D, 0);
+        IMP_glDisable(GL_TEXTURE_2D);
+    }
+}
+
 static void gl_render_image(image *image, s32 x, s32 y, s32 width, s32 height)
 {
     log_assert(image, "Image cannot be null");
@@ -958,6 +1030,8 @@ render_driver render_gl_driver =
 
 	gl_render_image,
 	gl_render_image_tint,
+	gl_render_image_quad,
+	gl_render_image_quad_tint,
     
 	gl_render_text,
 	gl_render_text_ellipsed,

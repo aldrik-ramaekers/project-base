@@ -354,6 +354,7 @@ void platform_handle_events()
 		}
 	}
 
+#if 0
 	{
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;
@@ -362,6 +363,7 @@ void platform_handle_events()
 		if (toSleepUS < 0) toSleepUS = 0;
 		thread_sleep(toSleepUS);
 	}
+#endif
 
 	// Update delta.
 	{
