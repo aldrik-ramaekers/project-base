@@ -857,6 +857,7 @@ render_driver render_cpu_driver =
 	cpu_render_image_tint,
 	NULL,
 	NULL,
+	NULL,
     
 	cpu_render_text,
 	cpu_render_text_ellipsed,
