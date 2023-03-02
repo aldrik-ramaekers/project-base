@@ -46,7 +46,7 @@ int array_push_at(array *array, u8 *data, u32 index)
 	return result;
 }
 
-int array_push(array *array, u8 *data)
+int _array_push(const char* caller, array *array, u8 *data)
 {
 	log_assert(array, "Array cannot be null");
 	log_assert(data, "Data to insert cannot be null");
@@ -57,7 +57,7 @@ int array_push(array *array, u8 *data)
 	
 	if (!array->data)
 	{
-		array->data = mem_alloc(array->entry_size * array->reserve_jump);
+		array->data = mem_alloc_p(caller, array->entry_size * array->reserve_jump);
 		array->reserved_length = array->reserve_jump;
 	}
 	
@@ -113,7 +113,7 @@ int array_push_size(array *array, u8 *data, s32 entry_size)
 	return result;
 }
 
-void array_reserve(array *array, u32 reserve_count)
+void _array_reserve(const char* caller, array *array, u32 reserve_count)
 {
 	log_assert(array, "Array cannot be null");
 	
@@ -131,7 +131,7 @@ void array_reserve(array *array, u32 reserve_count)
 		}
 		else
 		{
-			array->data = mem_alloc(array->reserved_length*array->entry_size);
+			array->data = mem_alloc_p(caller, array->reserved_length*array->entry_size);
 		}
 	}
 	mutex_unlock(&array->mutex);

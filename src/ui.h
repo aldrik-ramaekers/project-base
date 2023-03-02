@@ -251,7 +251,7 @@ typedef struct t_qui_widget
 
 qui_style active_ui_style;
 
-qui_widget* qui_setup();
+qui_widget* qui_setup(u64 blocksize);
 qui_widget* qui_create_button(qui_widget* qui, char* text);
 qui_widget* qui_create_toolbar(qui_widget* qui);
 qui_widget* qui_create_toolbar_item(qui_widget* toolbar, char* text);
@@ -274,5 +274,6 @@ void qui_fixed_container_set_border(qui_widget* el, qui_border border, u8 border
 void qui_set_theme(qui_widget* qui, application_theme theme, bool respect_platform_theme);
 void qui_render(platform_window* window, qui_widget* qui);
 void qui_update(platform_window* window, qui_widget* qui);
+void qui_destroy(qui_widget* qui);
 
 #endif

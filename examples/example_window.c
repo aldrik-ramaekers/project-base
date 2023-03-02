@@ -36,7 +36,7 @@ void theme_dropdown_change_callback(qui_widget* qui, char* text)
 }
 
 qui_widget* create_ui() {
-	qui_widget* ui = qui_setup();
+	qui_widget* ui = qui_setup(500000); // 500kb
 
 	qui_widget* layout = qui_create_vertical_layout(ui);
 	{

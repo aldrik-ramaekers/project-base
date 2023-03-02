@@ -2,7 +2,7 @@
 #define __load_fnc_or_exit(_ptr, _var) IMP_##_ptr = (DEF_##_ptr)GetProcAddress(_var, #_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __load_fnc_wgl_or_exit(_ptr) IMP_##_ptr = (DEF_##_ptr)IMP_wglGetProcAddress(#_ptr); if ((uintptr_t)NULL == (uintptr_t)IMP_##_ptr) { printf("Failed to load function %s\n", #_ptr); exit(0); }
 #define __load_fnc_wgl(_ptr) IMP_##_ptr = (DEF_##_ptr)IMP_wglGetProcAddress(#_ptr);
-#define __def_proc(_return, _name, _params) typedef _return (_stdcall *DEF_##_name)_params; DEF_##_name IMP_##_name;
+#define __def_proc(_return, _name, _params) typedef _return (*DEF_##_name)_params; DEF_##_name IMP_##_name;
 
 //typedef HGLRC (*DEF_wglCreateContext)(HDC); 
 //DEF_wglCreateContext IMP_wglCreateContext;

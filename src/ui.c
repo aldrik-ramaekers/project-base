@@ -151,7 +151,32 @@ u8* _qui_allocate(qui_widget* wg, u32 size)
 	return result;
 }
 
-qui_widget* qui_setup()
+static void _qui_destroy_widget(qui_widget* widget)
+{
+	for (s32 i = 0; i < widget->children.length; i++) {
+		qui_widget* w = *(qui_widget**)array_at(&widget->children, i);
+		_qui_destroy_widget(w);
+	}
+
+	for (s32 i = 0; i < widget->special_children.length; i++) {
+		qui_widget* w = *(qui_widget**)array_at(&widget->special_children, i);
+		_qui_destroy_widget(w);
+	}
+
+	array_destroy(&widget->children);
+	array_destroy(&widget->special_children);
+}
+
+void qui_destroy(qui_widget* qui)
+{
+	qui_state* state = (qui_state*)qui->data;
+	_qui_destroy_widget(qui);
+	mem_free(state->memory_buffer);
+	mem_free(state);
+	mem_free(qui);
+}
+
+qui_widget* qui_setup(u64 blocksize)
 {
 	qui_widget* wg = mem_alloc(sizeof(qui_widget));
 	wg->children = array_create(sizeof(qui_widget*));
@@ -163,8 +188,8 @@ qui_widget* qui_setup()
 	state->window = 0;
 	state->dragging_widget = 0;
 
-	state->memory_buffer = mem_alloc(5000000); // 5MB
-	state->memory_buffer_size = 5000000;
+	state->memory_buffer = mem_alloc(blocksize);
+	state->memory_buffer_size = blocksize;
 	state->memory_cursor = 0;
 
 	state->respect_platform_theme = true;

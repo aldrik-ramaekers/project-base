@@ -205,30 +205,24 @@ s32 platform_filter_matches(array *filters, char *string, char **matched_filter)
 
 void _platform_destroy_shared()
 {
+	for (s32 i = 0; i < window_registry.length; i++) {
+		platform_window* w = *(platform_window**)array_at(&window_registry, i);
+
+		w->is_open = false;
+		if (w->close_func) w->close_func(w);
+		platform_destroy_window(w);
+	}
+
 	_settings_destroy();
 	localization_destroy();
 	assets_destroy();
+
+	array_destroy(&window_registry);
 }
 
 void _platform_init_shared(int argc, char **argv, char* config_path)
 {
 	_lib_loader_init();
-
-	/*
-	// SDL2 audio.
-	{
-		if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-			log_info("Audio setup failed.");
-		}
-		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) < 0) {
-			log_info("Failed to open audio mixer.");
-		}
-		if (Mix_AllocateChannels(NUM_AUDIO_CHANNELS) < 0) {
-			log_info("Failed to allocate audio channels.");
-		}
-		log_info("Done setting up audio.");
-	}
-	*/
 
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
@@ -252,7 +246,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 	localization_init();
 
 	_settings_init(config_path);
-	set_render_driver(DRIVER_GL); // Default to GL
+	set_render_driver(DRIVER_CPU); // Default to CPU
 }
 
 u64 __last_stamp = 0;
@@ -346,14 +340,15 @@ void platform_handle_events()
 		    platform_window_swap_buffers(w);
         }
 
+		if (w->is_open == false) {
+			if (w->close_func) w->close_func(w);
+			_platform_unregister_window(w);
+			platform_destroy_window(w);
+		}
+
 		w->keyboard = _global_keyboard;
 		w->mouse = _global_mouse;
 		w->camera = _global_camera;
-
-		if (!w->is_open) {
-			if (w->close_func) w->close_func(w);
-			platform_destroy_window(w);
-		}
 	}
 
 #if 1
@@ -361,7 +356,7 @@ void platform_handle_events()
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;
 		float diff_us = diff / 1000.0f;
-		s64 toSleepUS = ((1000000/120.0f)-diff_us);
+		s64 toSleepUS = ((1000000/30.0f)-diff_us);
 		if (toSleepUS < 0) toSleepUS = 0;
 		thread_sleep(toSleepUS);
 	}

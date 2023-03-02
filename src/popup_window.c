@@ -1,6 +1,6 @@
 
 qui_widget* popup_window_create_ui(popup_window_option options, popup_window_type type, char* text) {
-	qui_widget* popup_ui = qui_setup();
+	qui_widget* popup_ui = qui_setup(3000);
 
 	qui_widget* layout = qui_create_vertical_layout(popup_ui);
 	{

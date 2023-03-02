@@ -18,7 +18,7 @@ void assets_create()
 
 	array_reserve(&asset_collection.images, ASSET_IMAGE_COUNT);
 	array_reserve(&asset_collection.fonts, ASSET_FONT_COUNT);
-	array_reserve(&asset_collection.sounds, ASSET_SOUND_COUNT);
+	//array_reserve(&asset_collection.sounds, ASSET_SOUND_COUNT);
 
 	asset_collection.queue.queue = array_create(sizeof(asset_task));
 	asset_collection.post_process_queue = array_create(sizeof(asset_task));
@@ -282,16 +282,22 @@ void *_assets_queue_worker()
 			{
 				bool result = assets_queue_worker_load_image(buf.image);
 				buf.valid = result;
+
+				if (buf.image->path_hash != UNDEFINED_PATH_HASH) mem_free(buf.image->start_addr);
 			}
 			else if (buf.type == ASSET_BITMAP)
 			{
 				bool result = assets_queue_worker_load_bitmap(buf.image);
 				buf.valid = result;
+
+				if (buf.image->path_hash != UNDEFINED_PATH_HASH) mem_free(buf.image->start_addr);
 			}
 			else if (buf.type == ASSET_TTF)
 			{
 				bool result = assets_queue_worker_load_font(buf.font);
 				buf.valid = result;
+
+				if (buf.font->path_hash != UNDEFINED_PATH_HASH) mem_free(buf.font->start_addr);
 			}
 
 			mutex_lock(&asset_mutex);

@@ -333,7 +333,7 @@ void platform_show_message(platform_window *window, char *message, char *title)
 static void _allocate_backbuffer(platform_window *window)
 {
 	if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
-	
+
 	BITMAPINFO info;
 	info.bmiHeader.biSize = sizeof(BITMAPINFO);
 	info.bmiHeader.biWidth = window->width;
@@ -353,6 +353,9 @@ static void _allocate_backbuffer(platform_window *window)
 LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	LRESULT result = 0;
+
+	if (!current_window_to_handle->is_open)
+		return LSMProc(window, message, wparam, lparam, current_window_to_handle);
 	
 	if (message == WM_SIZE)
 	{
@@ -1097,6 +1100,14 @@ void platform_destroy_window(platform_window *window)
 			IMP_wglMakeCurrent(NULL, NULL);
 			IMP_wglDeleteContext(window->gl_context);
 		}
+
+		#ifdef MODE_DEBUG
+		if (window->ui) {
+			log_infox("UI size of window %s: %d bytes", window->title, ((qui_state*)window->ui->data)->memory_cursor);
+		}
+		#endif
+		
+		if (window->ui) qui_destroy(window->ui);
 		if (window->backbuffer.buffer) { mem_free(window->backbuffer.buffer); window->backbuffer.buffer = 0; }
 		
 		ReleaseDC(window->window_handle, window->hdc);
@@ -1108,6 +1119,7 @@ void platform_destroy_window(platform_window *window)
 		window->gl_context = 0;
 		window->window_handle = 0;
 		keyboard_input_destroy(&window->keyboard);
+		mem_free(window);
 	}
 }
 

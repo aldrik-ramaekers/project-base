@@ -17,10 +17,10 @@ robocopy "examples\data" "build\data" /E
 cd build
 rc /fo icon.res ../icon.rc
 cl /Z7 /DMODE_DEBUG /std:c11 /nologo /c ..\src\entry.c /Feprojectbase-debug.lib
-lib /OUT:projectbase-debug.lib icon.res ..\libs\SDL2.lib ..\libs\SDL2_mixer.lib user32.lib gdi32.lib winmm.lib shlwapi.lib opengl32.lib kernel32.lib glu32.lib comdlg32.lib dbghelp.lib advapi32.lib shell32.lib
+lib /OUT:projectbase-debug.lib icon.res user32.lib gdi32.lib winmm.lib shlwapi.lib opengl32.lib kernel32.lib glu32.lib comdlg32.lib dbghelp.lib advapi32.lib shell32.lib
 
 cl /Z7 /DMODE_DEBUG /std:c11 ..\examples\example_window.c /Feexample_window.exe projectbase-debug.lib icon.res
 cd ..
 
-REM call build\example_window.exe
-call devenv build\example_window.exe
+call build\example_window.exe
+REM call devenv build\example_window.exe
