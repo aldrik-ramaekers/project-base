@@ -14,7 +14,7 @@ void assets_create()
 	asset_collection.load_threads_busy = 0;
 	asset_collection.images = array_create(sizeof(image));
 	asset_collection.fonts = array_create(sizeof(font));
-	asset_collection.sounds = array_create(sizeof(sound));
+	//asset_collection.sounds = array_create(sizeof(sound));
 
 	array_reserve(&asset_collection.images, ASSET_IMAGE_COUNT);
 	array_reserve(&asset_collection.fonts, ASSET_FONT_COUNT);
@@ -75,7 +75,7 @@ bool assets_do_post_process()
 
 		if (task->type == ASSET_WAV || task->type == ASSET_MUSIC)
 		{
-			task->sound->loaded = true;
+			//task->sound->loaded = true;
 
 #if 0
 			if (task->sound->is_music) {
@@ -299,14 +299,14 @@ void *_assets_queue_worker()
 			// SDL mixer cant handle multiple threads.
 			if (buf.type == ASSET_WAV)
 			{
-				buf.sound->chunk = Mix_LoadWAV_RW((SDL_RWops *)buf.sound->start_addr, 1);
-				buf.valid = (buf.sound->chunk != 0);
+				//buf.sound->chunk = Mix_LoadWAV_RW((SDL_RWops *)buf.sound->start_addr, 1);
+				//buf.valid = (buf.sound->chunk != 0);
 			}
 			else if (buf.type == ASSET_MUSIC)
 			{
-				buf.sound->music = Mix_LoadMUS((char *)buf.sound->start_addr);
+				//buf.sound->music = Mix_LoadMUS((char *)buf.sound->start_addr);
 				// printf("loaded!: %p %s\n", buf.sound->music, (char*)buf.sound->start_addr);
-				buf.valid = (buf.sound->music != 0);
+				//buf.valid = (buf.sound->music != 0);
 			}
 
 			log_assert(global_asset_collection.post_process_queue.reserved_length >
@@ -340,6 +340,7 @@ image *assets_find_image_ref(u8 *start_addr, s32 hash)
 	return 0;
 }
 
+/*
 static sound *find_sound_ref(s32 hash)
 {
 	for (int i = 0; i < global_asset_collection.sounds.length; i++)
@@ -354,6 +355,7 @@ static sound *find_sound_ref(s32 hash)
 	}
 	return 0;
 }
+*/
 
 static font *find_font_ref(u8 *start_addr, s32 hash, s16 size)
 {
@@ -402,6 +404,7 @@ static font empty_font()
 	return new_font;
 }
 
+/*
 static sound empty_sound()
 {
 	sound new_sound;
@@ -412,6 +415,7 @@ static sound empty_sound()
 	new_sound.path_hash = UNDEFINED_PATH_HASH;
 	return new_sound;
 }
+*/
 
 static asset_task add_font_to_queue(font font)
 {
@@ -449,6 +453,7 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 	return task;
 }
 
+/*
 static asset_task add_sound_to_queue(sound sound)
 {
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
@@ -466,10 +471,12 @@ static asset_task add_sound_to_queue(sound sound)
 
 	return task;
 }
+*/
 
 ////////////////////////////////////////////////////
 // Loading
 ////////////////////////////////////////////////////
+/*
 sound *assets_load_music_from_file(char *path)
 {
 	u32 hash = assets_hash_path(path);
@@ -485,6 +492,7 @@ sound *assets_load_music_from_file(char *path)
 	return add_sound_to_queue(new_sound).sound;
 }
 
+
 sound *assets_load_wav_from_file(char *path)
 {
 	u32 hash = assets_hash_path(path);
@@ -498,6 +506,7 @@ sound *assets_load_wav_from_file(char *path)
 
 	return add_sound_to_queue(new_sound).sound;
 }
+*/
 
 font *assets_load_font_from_file(char *path, s16 size)
 {

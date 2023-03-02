@@ -181,8 +181,8 @@ qui_widget* qui_setup()
 	_qui_apply_theme(state, theme);
 	
 	// Start thread that checks for theme change on system.
-	thread theme_thread = thread_start(_ui_thread_poll_platform_theme, (void*)state);
-	thread_detach(&theme_thread);
+	//thread theme_thread = thread_start(_ui_thread_poll_platform_theme, (void*)state);
+	//thread_detach(&theme_thread);
 
 	return wg;
 }

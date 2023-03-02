@@ -137,7 +137,12 @@ qui_widget* create_ui() {
 										qui_create_table_row_entry(row, "Entry 1");
 										qui_create_table_row_entry(row, "Entry 2 Long");
 										qui_create_table_row_entry(row, "Entry 3 Very long");
-										qui_create_table_row_entry(row, "Entry 4 Very Very Long");
+
+										qui_widget* btn_row = qui_create_table_row_entry(row, "");
+										{
+											qui_create_button(btn_row, "Edit");
+											qui_create_button_with_icon(btn_row, "data/play.png");
+										}
 									}
 								}
 							}

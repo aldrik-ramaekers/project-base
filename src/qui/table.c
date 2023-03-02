@@ -4,7 +4,7 @@ qui_widget* qui_create_table_row_entry(qui_widget* qui, char* text) {
 	qui_widget* layout = qui_create_horizontal_layout(wg);
 	qui_widget* label = qui_create_label(layout, text, false);
 	label->margin_x = 5;
-	return label;
+	return layout;
 }
 
 //color table_row_color = rgba(0,0,0,100); // TODO move this to style struct

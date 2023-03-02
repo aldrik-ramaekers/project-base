@@ -80,8 +80,7 @@ typedef struct t_image {
 #define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)
 #define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
 #define CAN_ADD_NEW_SOUND() (global_asset_collection.sounds.reserved_length > global_asset_collection.sounds.length)
-
-#include "external/SDL2/SDL_mixer.h"
+/*
 typedef struct t_sound
 {
 	union {
@@ -93,7 +92,7 @@ typedef struct t_sound
 	bool loaded;
 	s16 references;
 	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
-} sound;
+} sound;*/
 
 typedef struct t_glyph
 {
@@ -137,7 +136,7 @@ typedef struct t_asset_task
 	union {
 		image *image;
 		font *font;
-		sound *sound;
+		//sound *sound;
 	};
 } asset_task;
 
@@ -196,7 +195,7 @@ font* 	assets_load_font_from_file(char* path, s16 size);
 //	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
 
-sound* 	assets_load_wav_from_file(char* path);
+//sound* 	assets_load_wav_from_file(char* path);
 
 u32 	assets_hash_path(char* str);
 image* 	assets_find_image_ref(u8 *start_addr, s32 hash);

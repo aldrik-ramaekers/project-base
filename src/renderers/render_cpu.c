@@ -152,7 +152,7 @@ static render_target _get_actual_rect(s32 x, s32 y, s32 width, s32 height)
 
 static void cpu_render_reset_scissor()
 {
-    current_scissor = (vec4){0, 0, drawing_window->width + 1, drawing_window->height + 1};
+    current_scissor = (vec4){0, 0, drawing_window->width, drawing_window->height};
 }
 
 static void cpu_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
@@ -754,7 +754,7 @@ static void cpu_render_rectangle_outline(s32 x, s32 y, s32 width, s32 height, u1
 
 static void cpu_render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, s32 h)
 {
-    current_scissor = (vec4){x, y, w + 1, h + 1};
+    current_scissor = (vec4){x, y, w, h};
 }
 
 static vec4 cpu_render_get_scissor(platform_window *window)

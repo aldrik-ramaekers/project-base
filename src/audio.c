@@ -1,4 +1,5 @@
 
+/*
 void audio_play_sound(sound* s,  s8 channel)
 {
 	if (!s->loaded) return;
@@ -27,3 +28,5 @@ bool audio_music_is_playing()
 {
 	return Mix_PlayingMusic();
 }
+
+*/

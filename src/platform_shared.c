@@ -214,6 +214,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 {
 	_lib_loader_init();
 
+	/*
 	// SDL2 audio.
 	{
 		if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -227,6 +228,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 		}
 		log_info("Done setting up audio.");
 	}
+	*/
 
 	// get fullpath of the directory the exe is residing in
 	binary_path = platform_get_full_path(argv[0]);
@@ -354,7 +356,7 @@ void platform_handle_events()
 		}
 	}
 
-#if 0
+#if 1
 	{
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;

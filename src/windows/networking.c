@@ -73,15 +73,6 @@ static void* server_start_receiving_data(void *arg) {
 	return 0;
 }
 
-extern PCSTR
-WSAAPI
-inet_ntop(
-    _In_                                INT             Family,
-    _In_                                const VOID *    pAddr,
-    _Out_writes_(StringBufSize)         PSTR            pStringBuf,
-    _In_                                size_t          StringBufSize
-    );
-
 static void get_ip_from_socket(SOCKET socket, char * buf, int buflen) {
 	struct sockaddr addr;
 	int addr_size = sizeof(addr);

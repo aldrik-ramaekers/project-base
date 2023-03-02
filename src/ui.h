@@ -44,7 +44,7 @@ The idea behind this gui library is as following:
 #define SCROLL_SPEED_PX (15)
 #define SCROLLBAR_W (15)
 
-#define TABLE_ROW_H (25)
+#define TABLE_ROW_H (30)
 
 typedef struct t_qui_style
 {

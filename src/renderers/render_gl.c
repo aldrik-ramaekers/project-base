@@ -842,7 +842,7 @@ static void gl_render_set_scissor(platform_window *window, s32 x, s32 y, s32 w, 
 {
     IMP_glEnable(GL_SCISSOR_TEST);
 	if (window) IMP_glScissor(x, window->height - h - y, w, h);
-	else IMP_glScissor(x - 1, y - 1 + h, w + 1, h + 1);
+	else IMP_glScissor(x, y + h, w, h);
 }
 
 static vec4 gl_render_get_scissor()

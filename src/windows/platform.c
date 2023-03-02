@@ -61,8 +61,6 @@ struct t_platform_window
 // This file uses the platform_window struct.
 #include "../external/LooplessSizeMove.c"
 
-extern BOOL GetPhysicallyInstalledSystemMemory(PULONGLONG TotalMemoryInKilobytes);
-
 LARGE_INTEGER perf_frequency;
 static HINSTANCE instance;
 platform_window *current_window_to_handle;
