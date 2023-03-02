@@ -9,7 +9,7 @@ static void server_disconnect_client(network_server* server, network_client c) {
 	for (int i = 0; i < server->clients.length; i++) {
 		network_client* client = (network_client*)array_at(&server->clients, i);
 		if (client->ConnectSocket == c.ConnectSocket) {
-			closesocket(client->ConnectSocket);
+			IMP_closesocket(client->ConnectSocket);
 			array_remove_at(&server->clients, i);
 			if (server->on_client_disconnect) server->on_client_disconnect(c);
 			return;
@@ -30,7 +30,7 @@ static void* server_start_receiving_data(void *arg) {
 	int iResult;
 
     do {
-        iResult = recv(args->client.ConnectSocket, recvbuf, recvbuflen, 0);
+        iResult = IMP_recv(args->client.ConnectSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
 			if (complete_buffer_cursor+iResult < 50000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
 			complete_buffer_cursor += iResult;
@@ -76,17 +76,17 @@ static void* server_start_receiving_data(void *arg) {
 static void get_ip_from_socket(SOCKET socket, char * buf, int buflen) {
 	struct sockaddr addr;
 	int addr_size = sizeof(addr);
-	getpeername(socket, &addr, &addr_size);
+	IMP_getpeername(socket, &addr, &addr_size);
 
 	switch(addr.sa_family) {
 		case AF_INET: {
 			struct sockaddr_in *addr_in = (struct sockaddr_in *)&addr;
-			inet_ntop(AF_INET, &(addr_in->sin_addr), buf, buflen);
+			IMP_inet_ntop(AF_INET, &(addr_in->sin_addr), buf, buflen);
 			break;
 		}
 		case AF_INET6: {
 			struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)&addr;
-			inet_ntop(AF_INET6, &(addr_in6->sin6_addr), buf, buflen);
+			IMP_inet_ntop(AF_INET6, &(addr_in6->sin6_addr), buf, buflen);
 			break;
 		}
 	default:
@@ -98,7 +98,7 @@ static void* server_listen_for_clients_thread(void* args) {
 	network_server* server = (network_server*)args;
 
 	while (server->is_open) {
-		SOCKET ClientSocket = accept(server->ListenSocket, NULL, NULL);
+		SOCKET ClientSocket = IMP_accept(server->ListenSocket, NULL, NULL);
 		if (ClientSocket == INVALID_SOCKET) {
 			log_info("accept failed with error");
 		}
@@ -121,7 +121,7 @@ static void* server_listen_for_clients_thread(void* args) {
 	}
 	for (int i = 0; i < server->clients.length; i++) {
 		network_client* client = (network_client*)array_at(&server->clients, i);
-		closesocket(client->ConnectSocket);
+		IMP_closesocket(client->ConnectSocket);
 	}
 	array_destroy(&server->clients);
 	log_info("Server stopped");
@@ -130,7 +130,7 @@ static void* server_listen_for_clients_thread(void* args) {
 
 void networking_destroy_server(network_server *server) {
 	server->is_open = false;
-	closesocket(server->ListenSocket);
+	IMP_closesocket(server->ListenSocket);
 }
 
 network_server* networking_create_server() {
@@ -148,7 +148,7 @@ network_server* networking_create_server() {
     int iResult;
 
     // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    iResult = IMP_WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         log_info("WSAStartup failed with error");
         return server;
@@ -161,35 +161,35 @@ network_server* networking_create_server() {
     hints.ai_flags = AI_PASSIVE;
 
     // Resolve the server address and port
-    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+    iResult = IMP_getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if ( iResult != 0 ) {
         log_info("getaddrinfo failed with error");
         return server;
     }
 
     // Create a SOCKET for the server to listen for client connections.
-    ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    ListenSocket = IMP_socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (ListenSocket == INVALID_SOCKET) {
         log_info("socket failed with error");
-        freeaddrinfo(result);
+        IMP_freeaddrinfo(result);
         return server;
     }
 
     // Setup the TCP listening socket
-    iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+    iResult = IMP_bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
     if (iResult == SOCKET_ERROR) {
         log_info("bind failed with error");
-        freeaddrinfo(result);
-        closesocket(ListenSocket);
+        IMP_freeaddrinfo(result);
+        IMP_closesocket(ListenSocket);
         return server;
     }
 
-    freeaddrinfo(result);
+    IMP_freeaddrinfo(result);
 
-    iResult = listen(ListenSocket, SOMAXCONN);
+    iResult = IMP_listen(ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
         log_info("listen failed with error");
-        closesocket(ListenSocket);
+        IMP_closesocket(ListenSocket);
         return server;
     }
 
@@ -219,9 +219,9 @@ network_message network_create_message(u8* data, u32 length, u32 buffer_size) {
 
 void network_client_send(network_client* client, network_message message) {
 	if (!client->is_connected) return;
-	int iResult = send(client->ConnectSocket, (char*)message.data, message.length, 0);
+	int iResult = IMP_send(client->ConnectSocket, (char*)message.data, message.length, 0);
     if (iResult == SOCKET_ERROR) {
-        log_infox("send failed with error %d", WSAGetLastError());
+        log_infox("send failed with error %d", IMP_WSAGetLastError());
         return;
     }
 }
@@ -239,7 +239,7 @@ static void* network_client_receive_thread(void* args) {
 
 	while (client->is_connected) {
 		do {
-			iResult = recv(client->ConnectSocket, recvbuf, recvbuflen, 0);
+			iResult = IMP_recv(client->ConnectSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
 				if (complete_buffer_cursor+iResult < 50000) memcpy(complete_buffer+complete_buffer_cursor, recvbuf, iResult);
 				complete_buffer_cursor += iResult;
@@ -268,7 +268,7 @@ static void* network_client_receive_thread(void* args) {
 			}
 			else {
 				log_info("recv failed with error");
-				printf("Error: %d\n", WSAGetLastError());
+				printf("Error: %d\n", IMP_WSAGetLastError());
 			}
 
 		} while(client->is_connected);
@@ -294,7 +294,7 @@ network_client* network_connect_to_server(char* ip, char* port) {
     int iResult;
     
     // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    iResult = IMP_WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         log_info("WSAStartup failed with error");
         return client;
@@ -306,7 +306,7 @@ network_client* network_connect_to_server(char* ip, char* port) {
     hints.ai_protocol = IPPROTO_TCP;
 
     // Resolve the server address and port
-    iResult = getaddrinfo(ip, port, &hints, &result);
+    iResult = IMP_getaddrinfo(ip, port, &hints, &result);
     if ( iResult != 0 ) {
         log_info("getaddrinfo failed with error");
         return client;
@@ -316,7 +316,7 @@ network_client* network_connect_to_server(char* ip, char* port) {
     for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {
 
         // Create a SOCKET for connecting to server
-        ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, 
+        ConnectSocket = IMP_socket(ptr->ai_family, ptr->ai_socktype, 
             ptr->ai_protocol);
         if (ConnectSocket == INVALID_SOCKET) {
             log_info("socket failed with error");
@@ -324,16 +324,16 @@ network_client* network_connect_to_server(char* ip, char* port) {
         }
 
         // Connect to server.
-        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+        iResult = IMP_connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
         if (iResult == SOCKET_ERROR) {
-            closesocket(ConnectSocket);
+            IMP_closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
             continue;
         }
         break;
     }
 
-    freeaddrinfo(result);
+    IMP_freeaddrinfo(result);
 
     if (ConnectSocket == INVALID_SOCKET) {
         log_info("Unable to connect to server");
@@ -351,6 +351,6 @@ network_client* network_connect_to_server(char* ip, char* port) {
 void network_client_close(network_client* client) {
 	if (client->is_connected) {
 		client->is_connected = false;
-		closesocket(client->ConnectSocket);
+		IMP_closesocket(client->ConnectSocket);
 	}
 }

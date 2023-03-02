@@ -7,7 +7,7 @@
 #ifndef INCLUDE_MEMORY
 #define INCLUDE_MEMORY
 
-#if 0
+#ifndef MODE_DEBUG
 #define mem_alloc(size) malloc(size);
 #define mem_alloc_p(__caller, __size) malloc(__size)
 #define mem_free(p) free(p)

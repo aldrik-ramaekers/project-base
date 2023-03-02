@@ -77,12 +77,39 @@ __def_proc( bool, SwapBuffers, (HDC))
 
 __def_proc(bool, PlaySoundA, (LPCSTR, HMODULE, DWORD))
 
+__def_proc(int, listen, (SOCKET s,int backlog))
+__def_proc(LPCSTR, inet_ntop, (INT Family, LPCVOID pAddr, LPSTR pStringBuf, size_t StringBufSize))
+__def_proc(int, send, (SOCKET s,const char *buf,int len,int flags))
+__def_proc(SOCKET, accept, (SOCKET s,struct sockaddr *addr,int *addrlen))
+__def_proc(int, bind, (SOCKET s,const struct sockaddr *name,int namelen))
+__def_proc(int, closesocket, (SOCKET s))
+__def_proc(int, connect, (SOCKET s,const struct sockaddr *name,int namelen))
+__def_proc(int, ioctlsocket, (SOCKET s,__LONG32 cmd,u_long *argp))
+__def_proc(int, getpeername, (SOCKET s,struct sockaddr *name,int *namelen))
+__def_proc(int, getsockname, (SOCKET s,struct sockaddr *name,int *namelen))
+__def_proc(int, getsockopt, (SOCKET s,int level,int optname,char *optval,int *optlen))
+__def_proc(int, recv, (SOCKET s,char *buf,int len,int flags))
+__def_proc(int, recvfrom, (SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen))
+__def_proc(int, send, (SOCKET s,const char *buf,int len,int flags))
+__def_proc(int, sendto, (SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen))
+__def_proc(int, setsockopt, (SOCKET s,int level,int optname,const char *optval,int optlen))
+__def_proc(int, shutdown, (SOCKET s,int how))
+__def_proc(SOCKET, socket, (int af,int type,int protocol))
+__def_proc(int, WSAStartup, (WORD wVersionRequested,LPWSADATA lpWSAData))
+__def_proc(int, WSACleanup, (void))
+__def_proc(void, WSASetLastError, (int iError))
+__def_proc(int, WSAGetLastError, (void))
+__def_proc(int, getaddrinfo, (const char *nodename,const char *servname,const struct addrinfo *hints,struct addrinfo **res))
+__def_proc(void, freeaddrinfo, (LPADDRINFO pAddrInfo))
+
+
 void _lib_loader_init()
 {
     HMODULE libOpengl32 = 0;
     HMODULE libComdlg32 = 0;
     HMODULE libGdi32 = 0;
 	HMODULE libWinmm = 0;
+    HMODULE libWs2_32 = 0;
 
     __load_lib_or_exit(libOpengl32, "opengl32");
     __load_fnc_or_exit(wglCreateContext, libOpengl32);
@@ -148,4 +175,30 @@ void _lib_loader_init()
 
 	__load_lib_or_exit(libWinmm, "Winmm");
 	__load_fnc_or_exit(PlaySoundA, libWinmm);
+
+    __load_lib_or_exit(libWs2_32, "Ws2_32");
+    __load_fnc_or_exit(listen, libWs2_32);
+    __load_fnc_or_exit(inet_ntop, libWs2_32);
+    __load_fnc_or_exit(send, libWs2_32);
+    __load_fnc_or_exit(accept, libWs2_32);
+    __load_fnc_or_exit(bind, libWs2_32);
+    __load_fnc_or_exit(closesocket, libWs2_32);
+    __load_fnc_or_exit(connect, libWs2_32);
+    __load_fnc_or_exit(ioctlsocket, libWs2_32);
+    __load_fnc_or_exit(getpeername, libWs2_32);
+    __load_fnc_or_exit(getsockname, libWs2_32);
+    __load_fnc_or_exit(getsockopt, libWs2_32);
+    __load_fnc_or_exit(recv, libWs2_32);
+    __load_fnc_or_exit(recvfrom, libWs2_32);
+    __load_fnc_or_exit(send, libWs2_32);
+    __load_fnc_or_exit(sendto, libWs2_32);
+    __load_fnc_or_exit(setsockopt, libWs2_32);
+    __load_fnc_or_exit(shutdown, libWs2_32);
+    __load_fnc_or_exit(socket, libWs2_32);
+    __load_fnc_or_exit(WSAStartup, libWs2_32);
+    __load_fnc_or_exit(WSACleanup, libWs2_32);
+    __load_fnc_or_exit(WSASetLastError, libWs2_32);
+    __load_fnc_or_exit(WSAGetLastError, libWs2_32);
+    __load_fnc_or_exit(getaddrinfo, libWs2_32);
+    __load_fnc_or_exit(freeaddrinfo, libWs2_32);
 }
