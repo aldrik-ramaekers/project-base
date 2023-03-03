@@ -239,7 +239,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 
 
 	// Load builtin assets
-	assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 16);
+	assets_load_font(noto_regular_ttf, noto_regular_ttf+noto_regular_ttf_len, 16);
 	assets_load_bitmap(close_bmp, close_bmp+close_bmp_len);
 	assets_load_bitmap(info_bmp, info_bmp+info_bmp_len);
 	

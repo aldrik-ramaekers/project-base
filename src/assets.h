@@ -7,7 +7,7 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
-#include "resources/noto.h"
+#include "resources/noto-regular.h"
 #include "resources/info_png.h"
 #include "resources/close_png.h"
 
@@ -21,10 +21,6 @@
 
 #ifndef NUM_AUDIO_CHANNELS
 #define NUM_AUDIO_CHANNELS 4
-#endif
-
-#ifndef ASSET_SOUND_COUNT
-#define ASSET_SOUND_COUNT 1
 #endif
 
 #ifndef ASSET_QUEUE_COUNT
@@ -70,20 +66,6 @@ typedef struct t_image {
 
 #define CAN_ADD_NEW_IMAGE() (global_asset_collection.images.reserved_length > global_asset_collection.images.length)
 #define CAN_ADD_NEW_FONT() (global_asset_collection.fonts.reserved_length > global_asset_collection.fonts.length)
-#define CAN_ADD_NEW_SOUND() (global_asset_collection.sounds.reserved_length > global_asset_collection.sounds.length)
-/*
-typedef struct t_sound
-{
-	union {
-		Mix_Chunk* chunk;
-		Mix_Music* music;
-	};
-	bool is_music;
-	u8 *start_addr; // When loading music, this contains the address of the path.
-	bool loaded;
-	s16 references;
-	u32 path_hash; // only defined when image is loaded from path, else UNDEFINED_PATH_HASH.
-} sound;*/
 
 typedef struct t_glyph
 {
@@ -116,10 +98,7 @@ typedef struct t_font
 	float32 scale;
 	stbtt_fontinfo info;
 	u32 path_hash; // only defined when font is loaded from path, else UNDEFINED_PATH_HASH.
-	
 	array glyph_pages;
-	
-	glyph glyphs[TOTAL_GLYPHS];
 } font;
 
 typedef enum t_asset_task_type
@@ -127,8 +106,6 @@ typedef enum t_asset_task_type
 	ASSET_PNG,
 	ASSET_BITMAP,
 	ASSET_TTF,
-	ASSET_WAV,
-	ASSET_MUSIC,
 } asset_task_type;
 
 typedef struct t_asset_task
@@ -138,7 +115,6 @@ typedef struct t_asset_task
 	union {
 		image *image;
 		font *font;
-		//sound *sound;
 	};
 } asset_task;
 
@@ -149,7 +125,6 @@ typedef struct t_asset_queue {
 typedef struct t_assets {
 	array images;
 	array fonts;
-	array sounds;
 	asset_queue queue;
 	array post_process_queue;
 	bool valid;
@@ -161,46 +136,18 @@ char*	binary_path;
 mutex 	asset_mutex;
 assets 	global_asset_collection;
 
-glyph assets_get_glyph(font* font, utf8_int32_t codepoint);
-
-//	:/Info	Create the asset system.
+glyph 	assets_get_glyph(font* font, utf8_int32_t codepoint);
 void 	assets_create();
-
-//	:/Info	Destroy the asset system. All assets will be invalidated.
 void 	assets_destroy();
-
-//	:/Info	Handle post-processing on the loaded assets. Should be called on the main thread.
-//	:/Ret	Returns true when an asset was post-processed.
 bool 	assets_do_post_process();
-
-//	:/Info	Load a png image.
-//	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_image(u8 *start_addr, u8 *end_addr);
-
-//	:/Info	Invalidate the given image.
 void 	assets_destroy_image(image *image);
-
-//	:/Info	Load a bitmap image.
-//	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_bitmap(u8 *start_addr, u8 *end_addr);
-
-//	:/Info	Load a bitmap image.
-//	:/Ret	Pointer to the loading/loaded image.
 image*	assets_load_bitmap_from_file(char* path);
-
-//	:/Info	Invalidate the given image.
 void 	assets_destroy_bitmap(image *image);
-
-//	:/Info	Load a ttf font.
-//	:/Ret	Pointer to the loading/loaded font.
 font*	assets_load_font(u8 *start_addr, u8 *end_addr, s16 size);
 font* 	assets_load_font_from_file(char* path, s16 size);
-
-//	:/Info	Invalidate the given font.
 void 	assets_destroy_font(font *font);
-
-//sound* 	assets_load_wav_from_file(char* path);
-
 u32 	assets_hash_path(char* str);
 image* 	assets_find_image_ref(u8 *start_addr, s32 hash);
 

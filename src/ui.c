@@ -194,7 +194,7 @@ qui_widget* qui_setup(u64 blocksize)
 
 	state->respect_platform_theme = true;
 	state->theme = -1;
-	state->font_default = assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 16);
+	state->font_default = assets_load_font(noto_regular_ttf, noto_regular_ttf+noto_regular_ttf_len, 16);
 
 	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
@@ -204,10 +204,6 @@ qui_widget* qui_setup(u64 blocksize)
 	// Set default theme to system theme.
 	application_theme theme = platform_get_application_theme();
 	_qui_apply_theme(state, theme);
-	
-	// Start thread that checks for theme change on system.
-	//thread theme_thread = thread_start(_ui_thread_poll_platform_theme, (void*)state);
-	//thread_detach(&theme_thread);
 
 	return wg;
 }

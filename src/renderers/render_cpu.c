@@ -230,6 +230,22 @@ static void cpu_render_image_tint(image *image, s32 x, s32 y, s32 width, s32 hei
     }
 }
 
+static void cpu_render_glyph(font* font, s32 px, s32 py, glyph g, color tint)
+{
+    if (!font->loaded)
+        return;
+
+    render_target rec = _get_actual_rect(px, py, g.width, g.height);
+
+    for (s32 y = rec.y; y < rec.h; y++)
+    {
+        for (s32 x = rec.x; x < rec.w; x++)
+        {
+            _copy_glyph_pixel(x, y, &g, rec, tint);
+        }
+    }
+}
+
 static s32 cpu_render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *text, color tint)
 {
     if (!font->loaded)
@@ -246,37 +262,22 @@ static s32 cpu_render_text_ellipsed(font *font, s32 x, s32 y, s32 maxw, char *te
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
         count++;
-        if (ch == 9)
-            ch = 32;
+       
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
 
-        glyph g = font->glyphs[ch];
+        glyph g = assets_get_glyph(font, ch);
 
         s32 y_ = y + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
 
-        render_target rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
-
-        for (s32 y = rec.y; y < rec.h; y++)
-        {
-            for (s32 x = rec.x; x < rec.w; x++)
-            {
-                _copy_glyph_pixel(x, y, &g, rec, tint);
-            }
-        }
+        cpu_render_glyph(font, x_to_render, y_, g, tint);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
         x_ += (g.advance);
 
-        if (!in_ellipse && (x_ - x) > maxw - (font->glyphs['.'].width * 3) && count < len - 3)
+        if (!in_ellipse && (x_ - x) > maxw - (assets_get_glyph(font, '.').width * 3) && count < len - 3)
         {
             in_ellipse = true;
             text = ellipse;
@@ -298,31 +299,15 @@ static s32 cpu_render_text_with_selection(font *font, s32 x, s32 y, char *text, 
     s32 selection_end_x = x_;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
 
-        glyph g = font->glyphs[ch];
+        glyph g = assets_get_glyph(font, ch);
 
         s32 y_ = y + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
 
-        render_target rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
-
-        for (s32 y = rec.y; y < rec.h; y++)
-        {
-            for (s32 x = rec.x; x < rec.w; x++)
-            {
-                _copy_glyph_pixel(x, y, &g, rec, tint);
-            }
-        }
+        cpu_render_glyph(font, x_to_render, y_, g, tint);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -347,6 +332,7 @@ static s32 cpu_render_text_with_selection(font *font, s32 x, s32 y, char *text, 
     return x_ - x;
 }
 
+
 static s32 cpu_render_text_with_cursor(font *font, s32 x, s32 y, char *text, color tint, s32 cursor_pos)
 {
     if (!font->loaded)
@@ -369,20 +355,12 @@ static s32 cpu_render_text_with_cursor(font *font, s32 x, s32 y, char *text, col
         if (ch == '\n')
             ch = 0xB6;
 
-        glyph g = font->glyphs[ch];
+        glyph g = assets_get_glyph(font, ch);
 
         s32 y_ = y + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
 
-        render_target rec = _get_actual_rect(x_to_render, y_, g.width, g.height);
-
-        for (s32 y = rec.y; y < rec.h; y++)
-        {
-            for (s32 x = rec.x; x < rec.w; x++)
-            {
-                _copy_glyph_pixel(x, y, &g, rec, tint);
-            }
-        }
+        cpu_render_glyph(font, x_to_render, y_, g, tint);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -402,19 +380,6 @@ static s32 cpu_render_text_with_cursor(font *font, s32 x, s32 y, char *text, col
     return x_ - x;
 }
 
-static void cpu_render_glyph(font* font, s32 px, s32 py, glyph g, color tint)
-{
-    render_target rec = _get_actual_rect(px, py, g.width, g.height);
-
-    for (s32 y = rec.y; y < rec.h; y++)
-    {
-        for (s32 x = rec.x; x < rec.w; x++)
-        {
-            _copy_glyph_pixel(x, y, &g, rec, tint);
-        }
-    }
-}
-
 static s32 cpu_render_text(font *font, s32 x, s32 y, char *text, color tint)
 {
     if (!font->loaded)
@@ -424,19 +389,8 @@ static s32 cpu_render_text(font *font, s32 x, s32 y, char *text, color tint)
     utf8_int32_t ch;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        //if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        //{
-        //    ch = 0x3f;
-        //}
-        if (ch == 10)
-            ch = 0xB6;
-        if (ch == 13)
-            continue;
-
         glyph g = assets_get_glyph(font, ch);
 
         s32 y_ = y + font->px_h + g.yoff;
@@ -463,15 +417,9 @@ static s32 cpu_render_text_cutoff(font *font, s32 x, s32 y, char *text, color ti
     utf8_int32_t ch;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        //if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        //{
-        //    ch = 0x3f;
-        //}
-
+       
         if (ch == '\n')
         {
             x_ = x;
@@ -490,10 +438,7 @@ static s32 cpu_render_text_cutoff(font *font, s32 x, s32 y, char *text, color ti
             is_new_line = false;
         }
 
-        //glyph g = font->glyphs[ch];
-
         glyph g = assets_get_glyph(font, ch);
-        //g = g2;
 
         s32 y__ = y_ + font->px_h + g.yoff;
         s32 x_to_render = x_ + (g.lsb);
@@ -506,15 +451,7 @@ static s32 cpu_render_text_cutoff(font *font, s32 x, s32 y, char *text, color ti
             x_to_render = x_;
         }
 
-        render_target rec = _get_actual_rect(x_to_render, y__, g.width, g.height);
-
-        for (s32 y = rec.y; y < rec.h; y++)
-        {
-            for (s32 x = rec.x; x < rec.w; x++)
-            {
-                _copy_glyph_pixel(x, y, &g, rec, tint);
-            }
-        }
+        cpu_render_glyph(font, x_to_render, y__, g, tint);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -541,19 +478,12 @@ static s32 cpu_calculate_cursor_position(font *font, char *text, s32 click_x)
     utf8_int32_t ch;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
 
-        glyph g = font->glyphs[ch];
-        s32 width_next = font->glyphs[ch_next].width;
+        glyph g = assets_get_glyph(font, ch);
+        glyph gn = assets_get_glyph(font, ch_next);
+        s32 width_next = gn.width;
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -582,18 +512,10 @@ static s32 cpu_calculate_text_width_from_upto(font *font, char *text, s32 from, 
         if (index == i)
             return x;
 
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
-
-        glyph g = font->glyphs[ch];
+       
+        glyph g = assets_get_glyph(font, ch);
 
         if (i >= from)
         {
@@ -621,18 +543,10 @@ static s32 cpu_calculate_text_width_upto(font *font, char *text, s32 index)
         if (index == i)
             return x;
 
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
-
-        glyph g = font->glyphs[ch];
+    
+        glyph g = assets_get_glyph(font, ch);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);
@@ -653,18 +567,10 @@ static s32 cpu_calculate_text_width(font *font, char *text)
     utf8_int32_t ch;
     while ((text = utf8codepoint(text, &ch)) && ch)
     {
-        if (ch == 9)
-            ch = 32;
         utf8_int32_t ch_next;
         utf8codepoint(text, &ch_next);
-        if (ch < TEXT_CHARSET_START || ch > TEXT_CHARSET_END)
-        {
-            ch = 0x3f;
-        }
-        if (ch == '\n')
-            ch = 0xB6;
-
-        glyph g = font->glyphs[ch];
+       
+        glyph g = assets_get_glyph(font, ch);
 
         /* add kerning */
         //kern = stbtt_GetCodepointKernAdvance(&font->info, ch, ch_next);

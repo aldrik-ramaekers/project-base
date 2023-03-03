@@ -250,7 +250,7 @@ int main(int argc, char **argv)
     platform_window *window = platform_open_window_gui("Hello!", 700, 700, 9999, 9999, 500, 500, create_ui());
 
 	//platform_window *window = platform_open_window("test", 1400, 900, 1400, 900, 1400, 900, update_func,0,0);
-	//def_font = assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 20);
+	//def_font = assets_load_font(noto_regular_ttf, noto_regular_ttf+noto_regular_ttf_len, 20);
 
 	//popup_window_show("Test Popup Message", "You are a stinky poopy.", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_INFO);
 	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);

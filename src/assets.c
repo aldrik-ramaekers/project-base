@@ -14,11 +14,9 @@ void assets_create()
 	asset_collection.load_threads_busy = 0;
 	asset_collection.images = array_create(sizeof(image));
 	asset_collection.fonts = array_create(sizeof(font));
-	//asset_collection.sounds = array_create(sizeof(sound));
 
 	array_reserve(&asset_collection.images, ASSET_IMAGE_COUNT);
 	array_reserve(&asset_collection.fonts, ASSET_FONT_COUNT);
-	//array_reserve(&asset_collection.sounds, ASSET_SOUND_COUNT);
 
 	asset_collection.queue.queue = array_create(sizeof(asset_task));
 	asset_collection.post_process_queue = array_create(sizeof(asset_task));
@@ -69,20 +67,20 @@ bool assets_do_post_process()
 	bool result = false;
 
 	mutex_lock(&asset_mutex);
+
+	// New work added to queue, restart loading thread.
+	if (global_asset_collection.queue.queue.length != 0 && global_asset_collection.done_loading_assets)
+	{
+		global_asset_collection.done_loading_assets = false;
+		thread asset_queue_worker_thread = thread_start(_assets_queue_worker, NULL);
+		thread_detach(&asset_queue_worker_thread);
+		log_info("Restarted asset loading thread");
+	}
+
 	for (int i = 0; i < global_asset_collection.post_process_queue.length; i++)
 	{
 		asset_task *task = array_at(&global_asset_collection.post_process_queue, i);
 
-		if (task->type == ASSET_WAV || task->type == ASSET_MUSIC)
-		{
-			//task->sound->loaded = true;
-
-#if 0
-			if (task->sound->is_music) {
-				mem_free(task->sound->start_addr);
-			}
-#endif
-		}
 		if (task->type == ASSET_PNG || task->type == ASSET_BITMAP)
 		{
 			if (task->image->data && task->valid)
@@ -125,22 +123,6 @@ bool assets_do_post_process()
 				{
 					task->font->loaded = true;
 					goto done;
-				}
-
-				for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
-				{
-					glyph *g = &task->font->glyphs[i];
-
-					IMP_glGenTextures(1, &g->textureID);
-					IMP_glBindTexture(GL_TEXTURE_2D, g->textureID);
-
-					IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-					IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-					IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					IMP_glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-					IMP_glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, g->width, g->height,
-									 0, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap);
 				}
 
 				task->font->loaded = true;
@@ -233,6 +215,20 @@ static glyph_page* font_has_glyph_loaded(font* font, utf8_int32_t first_codepoin
 	return 0;
 }
 
+static void gen_gl_tex_for_glyph(glyph* g)
+{
+	IMP_glGenTextures(1, &g->textureID);
+	IMP_glBindTexture(GL_TEXTURE_2D, g->textureID);
+
+	IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	IMP_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	IMP_glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	IMP_glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, g->width, g->height,
+						0, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap);
+}
+
 static glyph_page* load_glyph_page(font* font, utf8_int32_t first_codepoint)
 {
 	glyph_page page;
@@ -253,6 +249,16 @@ static glyph_page* load_glyph_page(font* font, utf8_int32_t first_codepoint)
 		new_glyph.lsb *= font->scale;
 		page.glyphs[i - first_codepoint] = new_glyph;
 	}
+
+	if (current_render_driver() == DRIVER_GL)
+	{
+		for (int i = 0; i < GLYPHS_PER_PAGE; i++)
+		{
+			glyph *g = &page.glyphs[i];
+			gen_gl_tex_for_glyph(g);
+		}	
+	}
+
 	page.loaded = true;
 
 	int index = array_push(&font->glyph_pages, (u8*)&page);
@@ -282,34 +288,9 @@ bool assets_queue_worker_load_font(font *font)
 	float scale = stbtt_ScaleForPixelHeight(&info, font->size);
 	font->info = info;
 	font->scale = scale;
+	font->px_h = font->size/2;
 
-	load_glyph_page(font, 0);
-
-	/////////////////////////////////
-	for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
-	{
-		s32 w = 0, h = 0, xoff = 0, yoff = 0;
-
-		glyph new_glyph;
-		new_glyph.bitmap = stbtt_GetCodepointBitmap(&info, 0, scale, i, &w, &h, &xoff, &yoff);
-		new_glyph.width = w;
-		new_glyph.height = h;
-		new_glyph.xoff = xoff;
-		new_glyph.yoff = yoff;
-
-		stbtt_GetCodepointHMetrics(&info, i, &new_glyph.advance, &new_glyph.lsb);
-		new_glyph.advance *= scale;
-		new_glyph.lsb *= scale;
-
-		if (i == 'M')
-			font->px_h = font->size/2;
-
-		font->glyphs[i - TEXT_CHARSET_START] = new_glyph;
-	}
-	////////////////////
-
-
-
+	//load_glyph_page(font, 0);
 	return true;
 }
 
@@ -359,19 +340,6 @@ void *_assets_queue_worker()
 
 			mutex_lock(&asset_mutex);
 
-			// SDL mixer cant handle multiple threads.
-			if (buf.type == ASSET_WAV)
-			{
-				//buf.sound->chunk = Mix_LoadWAV_RW((SDL_RWops *)buf.sound->start_addr, 1);
-				//buf.valid = (buf.sound->chunk != 0);
-			}
-			else if (buf.type == ASSET_MUSIC)
-			{
-				//buf.sound->music = Mix_LoadMUS((char *)buf.sound->start_addr);
-				// printf("loaded!: %p %s\n", buf.sound->music, (char*)buf.sound->start_addr);
-				//buf.valid = (buf.sound->music != 0);
-			}
-
 			log_assert(global_asset_collection.post_process_queue.reserved_length >
 						   global_asset_collection.post_process_queue.length,
 					   "Attempted to process more assets than specified with constant ASSET_QUEUE_COUNT");
@@ -382,6 +350,8 @@ void *_assets_queue_worker()
 			mutex_unlock(&asset_mutex);
 		}
 	}
+
+	log_info("Asset loading thread halted");
 
 	thread_exit();
 
@@ -402,23 +372,6 @@ image *assets_find_image_ref(u8 *start_addr, s32 hash)
 	}
 	return 0;
 }
-
-/*
-static sound *find_sound_ref(s32 hash)
-{
-	for (int i = 0; i < global_asset_collection.sounds.length; i++)
-	{
-		sound *sound_at = array_at(&global_asset_collection.sounds, i);
-
-		if (hash == sound_at->path_hash && sound_at->references > 0)
-		{
-			sound_at->references++;
-			return sound_at;
-		}
-	}
-	return 0;
-}
-*/
 
 static font *find_font_ref(u8 *start_addr, s32 hash, s16 size)
 {
@@ -468,19 +421,6 @@ static font empty_font()
 	return new_font;
 }
 
-/*
-static sound empty_sound()
-{
-	sound new_sound;
-	new_sound.chunk = 0;
-	new_sound.is_music = false;
-	new_sound.loaded = false;
-	new_sound.references = 1;
-	new_sound.path_hash = UNDEFINED_PATH_HASH;
-	return new_sound;
-}
-*/
-
 static asset_task add_font_to_queue(font font)
 {
 	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
@@ -517,60 +457,9 @@ static asset_task add_image_to_queue(image img, bool is_bitmap)
 	return task;
 }
 
-/*
-static asset_task add_sound_to_queue(sound sound)
-{
-	// NOTE(Aldrik): we should never realloc the image array because pointers will be invalidated.
-	log_assert(CAN_ADD_NEW_SOUND(), "Attempted to process more sounds than specified with constant ASSET_SOUND_COUNT");
-
-	int index = array_push(&global_asset_collection.sounds, (uint8_t *)&sound);
-
-	asset_task task;
-	task.type = sound.is_music ? ASSET_MUSIC : ASSET_WAV;
-	task.sound = array_at(&global_asset_collection.sounds, index);
-
-	mutex_lock(&asset_mutex);
-	array_push(&global_asset_collection.queue.queue, (uint8_t *)&task);
-	mutex_unlock(&asset_mutex);
-
-	return task;
-}
-*/
-
 ////////////////////////////////////////////////////
 // Loading
 ////////////////////////////////////////////////////
-/*
-sound *assets_load_music_from_file(char *path)
-{
-	u32 hash = assets_hash_path(path);
-	sound *ref = find_sound_ref(hash);
-	if (ref)
-		return ref;
-
-	sound new_sound = empty_sound();
-	new_sound.path_hash = hash;
-	new_sound.start_addr = (u8 *)path;
-	new_sound.is_music = true;
-
-	return add_sound_to_queue(new_sound).sound;
-}
-
-
-sound *assets_load_wav_from_file(char *path)
-{
-	u32 hash = assets_hash_path(path);
-	sound *ref = find_sound_ref(hash);
-	if (ref)
-		return ref;
-
-	sound new_sound = empty_sound();
-	new_sound.path_hash = hash;
-	new_sound.start_addr = (u8 *)SDL_RWFromFile(path, "rb");
-
-	return add_sound_to_queue(new_sound).sound;
-}
-*/
 
 font *assets_load_font_from_file(char *path, s16 size)
 {
@@ -697,6 +586,7 @@ void assets_destroy_font(font *font_to_destroy)
 {
 	if (font_to_destroy->references == 1)
 	{
+		/*
 		for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 		{
 			glyph g = font_to_destroy->glyphs[i];
@@ -707,6 +597,7 @@ void assets_destroy_font(font *font_to_destroy)
 				IMP_glDeleteTextures(1, &g.textureID);
 			}
 		}
+		*/
 
 		font_to_destroy->references = 0;
 	}
@@ -769,20 +660,29 @@ void _assets_switch_render_method()
 
 		if (current_render_driver() == DRIVER_GL)
 		{
-			asset_task task;
-			task.type = ASSET_TTF;
-			task.font = font_at;
-			task.valid = true;
+			for (int i = 0; i < font_at->glyph_pages.length; i++)
+			{
+				glyph_page* page = array_at(&font_at->glyph_pages, i);
 
-			array_push(&global_asset_collection.post_process_queue, (uint8_t *)&task);
+				for (int ii = 0; ii < GLYPHS_PER_PAGE; ii++)
+				{
+					glyph *g = &page->glyphs[ii];
+					gen_gl_tex_for_glyph(g);
+				}		
+			}
 		}
 		else
 		{
-			for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
+			for (int i = 0; i < font_at->glyph_pages.length; i++)
 			{
-				glyph g = font_at->glyphs[i];
-				IMP_glBindTexture(GL_TEXTURE_2D, 0);
-				IMP_glDeleteTextures(1, &g.textureID);
+				glyph_page* page = array_at(&font_at->glyph_pages, i);
+
+				for (int ii = 0; ii < GLYPHS_PER_PAGE; ii++)
+				{
+					glyph g = page->glyphs[ii];
+					IMP_glBindTexture(GL_TEXTURE_2D, 0);
+					IMP_glDeleteTextures(1, &g.textureID);
+				}		
 			}
 		}
 	}
