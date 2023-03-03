@@ -239,7 +239,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 
 
 	// Load builtin assets
-	assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
+	assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 16);
 	assets_load_bitmap(close_bmp, close_bmp+close_bmp_len);
 	assets_load_bitmap(info_bmp, info_bmp+info_bmp_len);
 	
@@ -314,7 +314,6 @@ void platform_handle_events()
 			w->do_draw = false;
 
 			platform_set_cursor(w, CURSOR_DEFAULT);
-			renderer->render_clear(w, rgb(255,255,255));
 			_camera_apply_transformations(w, &_global_camera);
 			renderer->render_reset_scissor();
 
@@ -336,8 +335,7 @@ void platform_handle_events()
 			}
 
             if (w->update_func) w->update_func(w);	
-			
-		    platform_window_swap_buffers(w);
+			platform_window_swap_buffers(w); 
         }
 
 		if (w->is_open == false) {

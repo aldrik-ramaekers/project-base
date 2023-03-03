@@ -1070,6 +1070,7 @@ render_driver render_gl_driver =
 	gl_render_image_quad_tint,
 	gl_render_image_quad_partial,
     
+    NULL,
 	gl_render_text,
 	gl_render_text_ellipsed,
 	gl_render_text_cutoff,

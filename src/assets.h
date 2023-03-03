@@ -7,18 +7,9 @@
 #ifndef INCLUDE_ASSETS
 #define INCLUDE_ASSETS
 
-#include "resources/mono.h"
+#include "resources/noto.h"
 #include "resources/info_png.h"
 #include "resources/close_png.h"
-
-//	:/Title	Assets
-//	:/Text	The asset system is responsible for loading images, fonts and sound
-//			into memory and the active render device. The asset system is multi-threaded.
-//			The amount of threads dedicated to loading assets can be specified with ASSET_WORKER_COUNT,
-//			defaulting to 2 threads. All assets that will be used in your application need to be queued
-//			into the asset system before starting the main loop. The asset system will automatically shut
-//			down when all assets have been loaded.
-
 
 #ifndef ASSET_IMAGE_COUNT
 #define ASSET_IMAGE_COUNT 10
@@ -106,6 +97,14 @@ typedef struct t_glyph
 	u32 textureID;
 } glyph;
 
+#define GLYPHS_PER_PAGE 255
+typedef struct t_glyph_page
+{
+	utf8_int32_t first_codepoint;
+	glyph glyphs[GLYPHS_PER_PAGE];
+	bool loaded;
+} glyph_page;
+
 typedef struct t_font
 {
 	u8 *start_addr;
@@ -116,8 +115,11 @@ typedef struct t_font
 	s32 px_h;
 	float32 scale;
 	stbtt_fontinfo info;
-	glyph glyphs[TOTAL_GLYPHS];
 	u32 path_hash; // only defined when font is loaded from path, else UNDEFINED_PATH_HASH.
+	
+	array glyph_pages;
+	
+	glyph glyphs[TOTAL_GLYPHS];
 } font;
 
 typedef enum t_asset_task_type
@@ -158,6 +160,8 @@ typedef struct t_assets {
 char*	binary_path;
 mutex 	asset_mutex;
 assets 	global_asset_collection;
+
+glyph assets_get_glyph(font* font, utf8_int32_t codepoint);
 
 //	:/Info	Create the asset system.
 void 	assets_create();

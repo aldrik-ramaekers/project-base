@@ -134,7 +134,7 @@ qui_widget* create_ui() {
 								for (s32 i = 0; i < 50; i++) {
 									qui_widget* row = qui_create_table_row(table);
 									{
-										qui_create_table_row_entry(row, "Entry 1");
+										qui_create_table_row_entry(row, "2H₂ + O₂ ⇌ 2H₂O, R = 4.7 kΩ, ⌀ 200 mm");
 										qui_create_table_row_entry(row, "Entry 2 Long");
 										qui_create_table_row_entry(row, "Entry 3 Very long");
 
@@ -224,11 +224,33 @@ qui_widget* create_ui() {
 	return ui;
 }
 
+font* def_font;
+void update_func(platform_window* window)
+{
+	if (!def_font->loaded) return;
+	renderer->render_clear(window, rgb(0,0,0));
+
+	int columns = 60;
+
+	for (int i = 8322; i < 9000; i++)
+	{
+		int idx = i - 8322;
+		int y = idx / columns;
+		int x = idx % columns;
+
+		glyph g = assets_get_glyph(def_font, i);
+		renderer->render_glyph(def_font, x * 25, y * 25, g, rgb(255,255,255));
+	}
+}
+
 int main(int argc, char **argv)
 {    
     platform_init(argc, argv, CONFIG_DIRECTORY);
 
-    platform_window *window = platform_open_window_gui("Hello!", 700, 700, 1200, 900, 500, 500, create_ui());
+    platform_window *window = platform_open_window_gui("Hello!", 700, 700, 9999, 9999, 500, 500, create_ui());
+
+	//platform_window *window = platform_open_window("test", 1400, 900, 1400, 900, 1400, 900, update_func,0,0);
+	//def_font = assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 20);
 
 	//popup_window_show("Test Popup Message", "You are a stinky poopy.", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_INFO);
 	//popup_window_show("Booba", "test123", POPUP_BTN_OK|POPUP_BTN_CANCEL, POPUP_TYPE_WARNING);

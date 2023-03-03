@@ -218,6 +218,58 @@ bool assets_queue_worker_load_image(image *image)
 	return image->data != 0;
 }
 
+static glyph_page* font_has_glyph_loaded(font* font, utf8_int32_t first_codepoint)
+{
+	utf8_int32_t page_to_find = (first_codepoint / GLYPHS_PER_PAGE) * GLYPHS_PER_PAGE;
+	for (int i = 0; i < font->glyph_pages.length; i++)
+	{
+		glyph_page* page = array_at(&font->glyph_pages, i);
+		if (page->first_codepoint == page_to_find)
+		{
+			return page;
+		}
+	}
+
+	return 0;
+}
+
+static glyph_page* load_glyph_page(font* font, utf8_int32_t first_codepoint)
+{
+	glyph_page page;
+	page.first_codepoint = first_codepoint;
+	for (utf8_int32_t i = first_codepoint; i < first_codepoint + GLYPHS_PER_PAGE; i++)
+	{
+		s32 w = 0, h = 0, xoff = 0, yoff = 0;
+
+		glyph new_glyph;
+		new_glyph.bitmap = stbtt_GetCodepointBitmap(&font->info, 0, font->scale, i, &w, &h, &xoff, &yoff);
+		new_glyph.width = w;
+		new_glyph.height = h;
+		new_glyph.xoff = xoff;
+		new_glyph.yoff = yoff;
+
+		stbtt_GetCodepointHMetrics(&font->info, i, &new_glyph.advance, &new_glyph.lsb);
+		new_glyph.advance *= font->scale;
+		new_glyph.lsb *= font->scale;
+		page.glyphs[i - first_codepoint] = new_glyph;
+	}
+	page.loaded = true;
+
+	int index = array_push(&font->glyph_pages, (u8*)&page);
+	return (glyph_page*)array_at(&font->glyph_pages, index);
+}
+
+glyph assets_get_glyph(font* font, utf8_int32_t codepoint)
+{
+	glyph_page* page = font_has_glyph_loaded(font, codepoint);
+	if (!page) {
+		page = load_glyph_page(font, (codepoint / GLYPHS_PER_PAGE) * GLYPHS_PER_PAGE);
+	}
+
+	int offset_from_pagestart = codepoint % GLYPHS_PER_PAGE;
+	return page->glyphs[offset_from_pagestart];
+}
+
 bool assets_queue_worker_load_font(font *font)
 {
 	unsigned char *ttf_buffer = (unsigned char *)font->start_addr;
@@ -228,7 +280,12 @@ bool assets_queue_worker_load_font(font *font)
 		return false;
 	}
 	float scale = stbtt_ScaleForPixelHeight(&info, font->size);
+	font->info = info;
+	font->scale = scale;
 
+	load_glyph_page(font, 0);
+
+	/////////////////////////////////
 	for (s32 i = TEXT_CHARSET_START; i < TEXT_CHARSET_END; i++)
 	{
 		s32 w = 0, h = 0, xoff = 0, yoff = 0;
@@ -245,13 +302,13 @@ bool assets_queue_worker_load_font(font *font)
 		new_glyph.lsb *= scale;
 
 		if (i == 'M')
-			font->px_h = -yoff;
+			font->px_h = font->size/2;
 
 		font->glyphs[i - TEXT_CHARSET_START] = new_glyph;
 	}
+	////////////////////
 
-	font->info = info;
-	font->scale = scale;
+
 
 	return true;
 }
@@ -407,6 +464,7 @@ static font empty_font()
 	new_font.end_addr = 0;
 	new_font.references = 1;
 	new_font.path_hash = UNDEFINED_PATH_HASH;
+	new_font.glyph_pages = array_create(sizeof(glyph_page));
 	return new_font;
 }
 

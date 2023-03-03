@@ -18,7 +18,6 @@ void _qui_update_button(qui_state* main_state, qui_widget* el) {
 			if (is_left_down()) data->state = DOWN;
 		}
 		else {
-			#if 1
 			if (is_left_clicked()) {
 				if (data->released) {
 					if (data->is_toggle && data->state == DOWN) {
@@ -37,7 +36,6 @@ void _qui_update_button(qui_state* main_state, qui_widget* el) {
 					data->state = HOVERED;
 				}
 			}
-			#endif
 		}
 
 		if (is_left_clicked()) {

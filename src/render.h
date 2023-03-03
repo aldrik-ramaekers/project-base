@@ -50,6 +50,7 @@ typedef struct t_render_driver
 	void	(*render_image_quad)(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4);
 	void	(*render_image_quad_tint)(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color tint);
 	void 	(*render_image_quad_partial)(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, vec2f tl, vec2f tr, vec2f bl, vec2f br);
+	void 	(*render_glyph)(font* font, s32 px, s32 py, glyph g, color tint);
 	s32 	(*render_text)(font *font, s32 x, s32 y, char *text, color tint);
 	s32 	(*render_text_ellipsed)(font *font, s32 x, s32 y, s32 maxw, char *text, color tint);
 	s32 	(*render_text_cutoff)(font *font, s32 x, s32 y, char *text, color tint, u16 cutoff_width);
@@ -77,6 +78,7 @@ typedef struct t_render_driver
 
 // Current driver
 render_driver* renderer = 0;
+platform_window* drawing_window = 0;
 
 render_driver_id current_render_driver();
 void set_render_driver(render_driver_id driver);

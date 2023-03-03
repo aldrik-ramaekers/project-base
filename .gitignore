@@ -1,5 +1,4 @@
 examples/*.exe
 build/
-.vscode/
 .vs/
 src/.vs/

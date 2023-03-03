@@ -1591,6 +1591,8 @@ void platform_window_make_current(platform_window *window)
 {
 	if (current_render_driver() == DRIVER_GL)
 		IMP_wglMakeCurrent(window->hdc, window->gl_context);
+
+	drawing_window = window;
 }
 
 void platform_init(int argc, char **argv, char* config_path)

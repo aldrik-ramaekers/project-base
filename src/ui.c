@@ -194,7 +194,7 @@ qui_widget* qui_setup(u64 blocksize)
 
 	state->respect_platform_theme = true;
 	state->theme = -1;
-	state->font_default = assets_load_font(mono_ttf, mono_ttf+mono_ttf_len, 16);
+	state->font_default = assets_load_font(noto_ttf, noto_ttf+noto_ttf_len, 16);
 
 	wg->data = (u8*)state;
 	wg->type = WIDGET_MAIN;
