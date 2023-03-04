@@ -20,9 +20,6 @@
 #ifndef INCLUDE_PROJECT_BASE
 #define INCLUDE_PROJECT_BASE
 
-#define SDL_MAIN_HANDLED
-#include "external/SDL2/SDL.h"
-
 #define PROJECT_BASE_NAME "Project-base"
 #define PROJECT_BASE_VERSION "2.0.0"
 
@@ -108,6 +105,8 @@
 #include "localization.h"
 #include "networking.h"
 
+//#ifdef LIBPROJECTBASE_IMPLEMENTATION
+
 #ifdef OS_LINUX
 #include "linux/lib_loader.c"
 #include "linux/thread.c"
@@ -140,4 +139,5 @@
 #include "memory_bucket.c"
 #include "external/cJSON.c"
 
+//#endif
 #endif
