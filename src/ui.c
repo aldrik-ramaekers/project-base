@@ -8,6 +8,7 @@ bool _qui_mouse_interacts_peak(qui_state* state, vec4 area);
 void _qui_fill_parent(qui_widget* el);
 bool _qui_can_take_scroll(qui_state* state, qui_widget* el);
 u8* _qui_allocate(qui_widget* wg, u32 size);
+void _qui_render_scissor_pop(qui_state* state);
 
 #include "qui/button.c"
 #include "qui/toolbar.c"
@@ -31,6 +32,7 @@ u8* _qui_allocate(qui_widget* wg, u32 size);
 #include "qui/size_container.c"
 #include "qui/flex_container.c"
 #include "qui/image_panel.c"
+#include "qui/textbox.c"
 
 //////// General setup
 void _qui_set_darkmode()
@@ -57,6 +59,8 @@ void _qui_set_darkmode()
 
 	active_ui_style.widget_resize_bar_background = active_ui_style.widget_background_static;
 	active_ui_style.widget_panel_background = rgb(35, 35, 35);
+
+	active_ui_style.widget_textbox_background = rgb(85, 85, 85);
 
 	active_ui_style.widget_interactive_image_tint = rgb(255,255,255);
 }
@@ -85,6 +89,8 @@ void _qui_set_lightmode()
 
 	active_ui_style.widget_resize_bar_background = rgb(215, 215, 215);
 	active_ui_style.widget_panel_background = rgb(255,255,255);
+
+	active_ui_style.widget_textbox_background = rgb(255,255,255);
 
 	active_ui_style.widget_interactive_image_tint = rgb(0,0,0);
 }
@@ -158,9 +164,12 @@ static void _qui_destroy_widget(qui_widget* widget)
 		_qui_destroy_widget(w);
 	}
 
-	for (s32 i = 0; i < widget->special_children.length; i++) {
-		qui_widget* w = *(qui_widget**)array_at(&widget->special_children, i);
-		_qui_destroy_widget(w);
+	if (widget->type != WIDGET_MAIN)
+	{
+		for (s32 i = 0; i < widget->special_children.length; i++) {
+			qui_widget* w = *(qui_widget**)array_at(&widget->special_children, i);
+			_qui_destroy_widget(w);
+		}
 	}
 
 	array_destroy(&widget->children);
@@ -267,6 +276,11 @@ vec4 get_vec4_within_current_vec4(vec4 current, vec4 area) {
 	return (vec4){x,y,w-x,h-y};
 }
 
+void _qui_render_scissor_pop(qui_state* state)
+{
+	state->scissor_index--;
+}
+
 void _qui_render_set_scissor(qui_state* state, qui_widget* el, bool is_special) {
 	s32 border_left = 0;
 	s32 border_top = 0;
@@ -329,6 +343,8 @@ void _qui_render_widget(qui_state* state, qui_widget* el, bool draw_special) {
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_render_size_container(state, el);
 	if (el->type == WIDGET_FLEX_CONTAINER) _qui_render_flex_container(state, el);
 	if (el->type == WIDGET_HORIZONTAL_LAYOUT) _qui_render_horizontal_layout(state, el);
+	if (el->type == WIDGET_TEXTBOX) _qui_render_textbox(state, el);
+
 	state->scissor_index++;
 	for (s32 i = 0; i < el->children.length; i++) {
 		qui_widget* w = *(qui_widget**)array_at(&el->children, i);
@@ -379,6 +395,7 @@ void _qui_update_widget(qui_state* state, qui_widget* el, bool update_special) {
 	if (el->type == WIDGET_SCROLL_BUTTON) _qui_update_scroll_button(state, el);
 	if (el->type == WIDGET_SCROLL_BAR) _qui_update_scroll_bar(state, el);
 	if (el->type == WIDGET_IMAGE_PANEL) _qui_update_image_panel(state, el);
+	if (el->type == WIDGET_TEXTBOX) _qui_update_textbox(state, el);
 
 	if (el->type == WIDGET_SIZE_CONTAINER) _qui_update_size_container(state, el);
 	//if (el->type == WIDGET_FIXED_CONTAINER) _qui_update_fixed_container(el);

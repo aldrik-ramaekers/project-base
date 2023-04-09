@@ -1050,6 +1050,9 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	_platform_register_window(window);
 	ShowWindow(window->window_handle, SW_RESTORE);
 	SetForegroundWindow(window->window_handle);
+
+	platform_window_set_size(window, window->width, window->height);
+	
 	return window;
 }
 

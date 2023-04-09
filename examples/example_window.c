@@ -93,7 +93,9 @@ qui_widget* create_ui() {
 				qui_create_dropdown_option(renderer_dropdown, "OpenGL");
 			}
 
+			qui_create_textbox(itembar);
 			qui_create_button(itembar, "Run");
+
 		}
 
 		qui_widget* central_container = qui_create_flex_container_s(layout, 1, 150);
@@ -247,7 +249,7 @@ int main(int argc, char **argv)
 {    
     platform_init(argc, argv, CONFIG_DIRECTORY);
 
-    platform_window *window = platform_open_window_gui("Hello!", 700, 700, 9999, 9999, 500, 500, create_ui());
+    platform_window *window = platform_open_window_gui("Hello!", 900, 700, 9999, 9999, 500, 500, create_ui());
 
 	//platform_window *window = platform_open_window("test", 1400, 900, 1400, 900, 1400, 900, update_func,0,0);
 	//def_font = assets_load_font(noto_regular_ttf, noto_regular_ttf+noto_regular_ttf_len, 20);

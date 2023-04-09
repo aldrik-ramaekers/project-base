@@ -22,5 +22,5 @@ lib /OUT:projectbase-debug.lib icon.res user32.lib gdi32.lib winmm.lib shlwapi.l
 cl /Z7 /DMODE_DEBUG /std:c11 ..\examples\example_window.c /Feexample_window.exe projectbase-debug.lib icon.res
 cd ..
 
-call build\example_window.exe
-REM call devenv build\example_window.exe
+REM call build\example_window.exe
+ call devenv build\example_window.exe

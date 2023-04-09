@@ -349,7 +349,7 @@ void platform_handle_events()
 		w->camera = _global_camera;
 	}
 
-#if 1
+#if 0
 	{
 		u64 current_stamp = platform_get_time(TIME_FULL, TIME_NS);
 		u64 diff = current_stamp - __last_stamp;

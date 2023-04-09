@@ -71,6 +71,8 @@ typedef struct t_qui_style
 	color widget_border_inner_highlighted;
 	color widget_border_inner_hovered;
 
+	color widget_textbox_background;
+
 	color widget_interactive_image_tint;
 } qui_style;
 
@@ -92,6 +94,7 @@ typedef enum t_qui_widget_type
 	WIDGET_SCROLL_BUTTON,
 	WIDGET_SCROLL_BAR,
 	WIDGET_IMAGE_PANEL,
+	WIDGET_TEXTBOX,
 
 	// Layout elements.
 	WIDGET_VERTICAL_LAYOUT,
@@ -187,6 +190,13 @@ typedef struct t_qui_label
 	bool is_horizontal;
 } qui_label;
 
+#define TEXTBOX_BUFFER_SIZE 255
+typedef struct t_qui_textbox
+{
+	qui_widget_state state;
+	char buffer[TEXTBOX_BUFFER_SIZE];
+} qui_textbox;
+
 typedef struct t_qui_dropdown
 {
 	qui_widget_state state;
@@ -265,6 +275,7 @@ qui_widget* qui_create_horizontal_layout(qui_widget* qui);
 qui_widget* qui_create_dropdown(qui_widget* qui, void (*change_callback)(qui_widget* qui, char* text));
 qui_widget* qui_create_itembar_with_border(qui_widget* qui, qui_border border);
 qui_widget* qui_create_itembar(qui_widget* qui);
+qui_widget* qui_create_textbox(qui_widget* qui);
 qui_widget* qui_create_label(qui_widget* qui, char* text, bool allow_wrap);
 
 void qui_set_size_container_bounds(qui_widget* el, u32 min, u32 max);

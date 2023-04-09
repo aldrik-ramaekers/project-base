@@ -80,7 +80,6 @@
 #include "thread.h"
 #include "array.h"
 #include "memory.h"
-#include "external/cJSON.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -137,7 +136,6 @@
 #include "settings_config.c"
 #include "localization.c"
 #include "memory_bucket.c"
-#include "external/cJSON.c"
 
 //#endif
 #endif
