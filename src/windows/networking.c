@@ -2,6 +2,8 @@
 #include "../thread.h"
 #include "../logging.h"
 
+#include <errno.h>
+
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
@@ -42,7 +44,7 @@ static void* server_start_receiving_data(void *arg) {
 				u64 timestamp; memcpy(&timestamp, complete_buffer+sizeof(message_length), sizeof(timestamp));
 				if (complete_buffer_cursor >= message_length) {
 					overflow = complete_buffer_cursor - message_length;
-					if (args->server->on_message) args->server->on_message(complete_buffer+12, complete_buffer_cursor-12, timestamp, args->client);
+					if (args->server->on_message) args->server->on_message(complete_buffer+NETWORK_PACKET_OVERHEAD, complete_buffer_cursor-NETWORK_PACKET_OVERHEAD, timestamp, args->client);
 
 					if (overflow > 0) {
 						memcpy(complete_buffer, complete_buffer+message_length, overflow);
@@ -59,7 +61,7 @@ static void* server_start_receiving_data(void *arg) {
             log_info("Connection closing");
 		}
         else  {
-            log_info("recv failed with error");
+            log_infox("recv failed with error %s %d", strerror(errno), errno);
             goto cleanup;
         }
     } while (args->server->is_open);
@@ -250,7 +252,7 @@ static void* network_client_receive_thread(void* args) {
 					u32 message_length = ((u32*)complete_buffer)[0];
 					if (complete_buffer_cursor >= message_length) {
 						overflow = complete_buffer_cursor - message_length;
-						if (client->on_message) client->on_message(complete_buffer+12, message_length-12);
+						if (client->on_message) client->on_message(complete_buffer+NETWORK_PACKET_OVERHEAD, message_length-NETWORK_PACKET_OVERHEAD);
 
 						if (overflow > 0) {
 							memcpy(complete_buffer, complete_buffer+message_length, overflow);

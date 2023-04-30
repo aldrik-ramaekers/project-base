@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define NETWORK_PACKET_OVERHEAD (12)
+
 #ifdef OS_WIN
 typedef struct t_network_client {
 	SOCKET ConnectSocket;

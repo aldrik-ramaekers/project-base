@@ -246,7 +246,7 @@ void _platform_init_shared(int argc, char **argv, char* config_path)
 	localization_init();
 
 	_settings_init(config_path);
-	set_render_driver(DRIVER_CPU); // Default to CPU
+	set_render_driver(DRIVER_GL); // Default to CPU
 }
 
 u64 __last_stamp = 0;

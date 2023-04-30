@@ -55,8 +55,8 @@ void _qui_render_textbox(qui_state* main_state, qui_widget* el) {
 
 	int texty = el->y + (el->height/2) - (main_state->font_default->px_h/2);
 	int textx = el->x + el->margin_x;
-	int logical_width = el->width - (el->margin_x*2);
-	int textw = renderer->calculate_text_width(main_state->font_default, data->buffer);
+	//int logical_width = el->width - (el->margin_x*2);
+	//int textw = renderer->calculate_text_width(main_state->font_default, data->buffer);
 
 	//_qui_render_set_scissor(main_state, el, false);
 

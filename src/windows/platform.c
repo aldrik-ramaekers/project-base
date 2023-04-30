@@ -1702,8 +1702,8 @@ u64 platform_get_time(time_type time_type, time_precision precision)
 
 s32 platform_get_memory_size()
 {
-	u64 result;
-	GetPhysicallyInstalledSystemMemory(&result);
+	u64 result = 0;
+	//GetPhysicallyInstalledSystemMemory(&result);
 	return result;
 }
 
