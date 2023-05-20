@@ -70,6 +70,21 @@ static void gl_render_quad(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x
     IMP_glEnd();
 }
 
+static void gl_render_quad_gradient(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color c1, color c2, color c3, color c4)
+{
+    IMP_glBindTexture(GL_TEXTURE_2D, 0);
+    IMP_glBegin(GL_QUADS);
+    IMP_glColor4f(c1.r / 255.0f, c1.g / 255.0f, c1.b / 255.0f, c1.a / 255.0f);
+    IMP_glVertex3i(x1, y1, gl_render_depth);
+	IMP_glColor4f(c2.r / 255.0f, c2.g / 255.0f, c2.b / 255.0f, c2.a / 255.0f);
+    IMP_glVertex3i(x2, y2, gl_render_depth);
+	IMP_glColor4f(c3.r / 255.0f, c3.g / 255.0f, c3.b / 255.0f, c3.a / 255.0f);
+    IMP_glVertex3i(x3, y3, gl_render_depth);
+	IMP_glColor4f(c4.r / 255.0f, c4.g / 255.0f, c4.b / 255.0f, c4.a / 255.0f);
+    IMP_glVertex3i(x4, y4, gl_render_depth);
+    IMP_glEnd();
+}
+
 static void gl_render_rectangle(s32 x, s32 y, s32 width, s32 height, color tint)
 {
     IMP_glBindTexture(GL_TEXTURE_2D, 0);
@@ -970,6 +985,7 @@ render_driver render_gl_driver =
 
 	gl_render_tri,
 	gl_render_quad,
+	gl_render_quad_gradient,
 	gl_render_rectangle,
 	gl_render_line,
 	gl_render_rectangle_outline,

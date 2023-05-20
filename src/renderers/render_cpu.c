@@ -785,6 +785,7 @@ render_driver render_cpu_driver =
 	
 	NULL,
 	NULL,
+	NULL,
 	cpu_render_rectangle,
 	cpu_render_line,
 	cpu_render_rectangle_outline,

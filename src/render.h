@@ -62,6 +62,7 @@ typedef struct t_render_driver
 	s32 	(*calculate_text_width_from_upto)(font *font, char *text, s32 from, s32 index);
  	void 	(*render_tri)(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, color tint);
 	void 	(*render_quad)(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color tint);
+	void 	(*render_quad_gradient)(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 x4, s32 y4, color c1, color c2, color c3, color c4);
 	void 	(*render_rectangle)(s32 x, s32 y, s32 width, s32 height, color tint);
 	void 	(*render_line)(s32 x1, s32 y1, s32 x2, s32 y2, float thickness, color tint);
 	void 	(*render_rectangle_outline)(s32 x, s32 y, s32 width, s32 height, u16 outline_w, color tint);
