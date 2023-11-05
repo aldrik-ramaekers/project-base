@@ -770,6 +770,7 @@ render_driver render_cpu_driver =
 	NULL,
 	NULL,
 	NULL,
+	NULL,
     
     cpu_render_glyph,
 	cpu_render_text,
