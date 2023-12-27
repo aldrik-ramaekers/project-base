@@ -29,24 +29,6 @@ static void gl_set_gl_render_depth(s32 depth)
     gl_render_depth = depth;
 }
 
-static vec2f gl_rotateUV(vec2f uv, float rotation)
-{
-	uv = (vec2f){uv.x - 0.5f, uv.y - 0.5f};
-    float m2x2[4] = { cos(rotation), sin(rotation), -sin(rotation), cos(rotation) };
-
-	vec2f result = {0,0};
-#if 0
-	result.x = m2x2[0] * uv.x + m2x2[1] * uv.y;
-	result.y = m2x2[2] * uv.x + m2x2[3] * uv.y;
-#else
-	result.x = m2x2[0] * uv.x + m2x2[2] * uv.y;
-	result.y = m2x2[1] * uv.x + m2x2[3] * uv.y;
-#endif
-	
-    result = (vec2f){result.x + 0.5f, result.y + 0.5f};
-	return result;
-}
-
 static void gl_render_tri(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, color tint)
 {
     IMP_glBindTexture(GL_TEXTURE_2D, 0);
@@ -105,25 +87,28 @@ static void gl_render_image_quad_partial_tint(image *image, s32 x1, s32 y1, s32 
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
 
-        vec2f topleft = gl_rotateUV(tl, global_rotation);
-        vec2f bottomleft = gl_rotateUV(bl, global_rotation);
-        vec2f bottomright = gl_rotateUV(br, global_rotation);
-        vec2f topright = gl_rotateUV(tr, global_rotation);
-
         IMP_glPushMatrix();
-        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
 
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x1, y1, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x2, y2, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x3, y3, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x4, y4, gl_render_depth);
+        int width = x4 - x1;
+		int height = y3 - y4;
+		float origx = x1 + (width / 2.0f);
+		float origy = y1 + (height / 2.0f);
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
+		
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
@@ -141,29 +126,31 @@ static void gl_render_image_quad_partial(image *image, s32 x1, s32 y1, s32 x2, s
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(1., 1., 1., 1.);
 
-        vec2f topleft = gl_rotateUV(tl, global_rotation);
-        vec2f bottomleft = gl_rotateUV(bl, global_rotation);
-        vec2f bottomright = gl_rotateUV(br, global_rotation);
-        vec2f topright = gl_rotateUV(tr, global_rotation);
-
         IMP_glPushMatrix();
-        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
 
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x1, y1, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x2, y2, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x3, y3, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x4, y4, gl_render_depth);
+		int width = x4 - x1;
+		int height = y3 - y4;
+		float origx = x1 + (width / 2.0f);
+		float origy = y1 + (height / 2.0f);
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
+		
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
-        IMP_glEnd();
         IMP_glBindTexture(GL_TEXTURE_2D, 0);
         IMP_glDisable(GL_TEXTURE_2D);
     }
@@ -177,29 +164,36 @@ static void gl_render_image_quad(image *image, s32 x1, s32 y1, s32 x2, s32 y2, s
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(1., 1., 1., 1.);
 
-        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
-        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
-        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
-        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+		vec2f tl = (vec2f){0, 0};
+        vec2f bl = (vec2f){0, 1};
+        vec2f br = (vec2f){1, 1};
+        vec2f tr = (vec2f){1, 0};
 
         IMP_glPushMatrix();
-        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
 
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x1, y1, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x2, y2, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x3, y3, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x4, y4, gl_render_depth);
+		int width = x4 - x1;
+		int height = y3 - y4;
+		float origx = x1 + (width / 2.0f);
+		float origy = y1 + (height / 2.0f);
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
+		
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
-        IMP_glEnd();
         IMP_glBindTexture(GL_TEXTURE_2D, 0);
         IMP_glDisable(GL_TEXTURE_2D);
     }
@@ -213,29 +207,36 @@ static void gl_render_image_quad_tint(image *image, s32 x1, s32 y1, s32 x2, s32 
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
 
-        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
-        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
-        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
-        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+        vec2f tl = (vec2f){0, 0};
+        vec2f bl = (vec2f){0, 1};
+        vec2f br = (vec2f){1, 1};
+        vec2f tr = (vec2f){1, 0};
 
         IMP_glPushMatrix();
-        IMP_glTranslatef(x1 + ((x2-x1) / 2), y1 + ((y2-y1) / 2), 0);
 
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x1, y1, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x2, y2, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x3, y3, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x4, y4, gl_render_depth);
+		int width = x4 - x1;
+		int height = y3 - y4;
+		float origx = x1 + (width / 2.0f);
+		float origy = y1 + (height / 2.0f);
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
+		
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
-        IMP_glEnd();
         IMP_glBindTexture(GL_TEXTURE_2D, 0);
         IMP_glDisable(GL_TEXTURE_2D);
     }
@@ -249,29 +250,34 @@ static void gl_render_image(image *image, s32 x, s32 y, s32 width, s32 height)
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(1., 1., 1., 1.);
 
-        vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
-        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
-        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
-        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+        float origx = x + (width / 2.0f);
+		float origy = y + (height / 2.0f);
 
-        IMP_glPushMatrix();
-        IMP_glTranslatef(x + (width / 2), y + (height / 2), 0);
+		vec2f tl = (vec2f){0, 0};
+        vec2f bl = (vec2f){0, 1};
+        vec2f br = (vec2f){1, 1};
+        vec2f tr = (vec2f){1, 0};
 
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x, y, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x, y + height, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x + width, y + height, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x + width, y, gl_render_depth);
+		IMP_glPushMatrix();
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
+		
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
-        IMP_glEnd();
         IMP_glBindTexture(GL_TEXTURE_2D, 0);
         IMP_glDisable(GL_TEXTURE_2D);
     }
@@ -285,29 +291,34 @@ static void gl_render_image_tint(image *image, s32 x, s32 y, s32 width, s32 heig
     {
         IMP_glBindTexture(GL_TEXTURE_2D, image->textureID);
         IMP_glEnable(GL_TEXTURE_2D);
-        IMP_glBegin(GL_QUADS);
         IMP_glColor4f(tint.r / 255.0f, tint.g / 255.0f, tint.b / 255.0f, tint.a / 255.0f);
 
-		vec2f topleft = gl_rotateUV((vec2f){0, 0}, global_rotation);
-        vec2f bottomleft = gl_rotateUV((vec2f){0, 1}, global_rotation);
-        vec2f bottomright = gl_rotateUV((vec2f){1, 1}, global_rotation);
-        vec2f topright = gl_rotateUV((vec2f){1, 0}, global_rotation);
+		float origx = x + (width / 2.0f);
+		float origy = y + (height / 2.0f);
+
+		vec2f tl = (vec2f){0, 0};
+        vec2f bl = (vec2f){0, 1};
+        vec2f br = (vec2f){1, 1};
+        vec2f tr = (vec2f){1, 0};
 
 		IMP_glPushMatrix();
-        IMP_glTranslatef(x + (width / 2), y + (height / 2), 0);
+
+        IMP_glTranslatef(origx, origy, 0.0f);
+		IMP_glRotatef(global_rotation*(180/M_PI), 0.0f, 0.0f, 1.0f);
 		
-        IMP_glTexCoord2f(topleft.x, topleft.y);
-        IMP_glVertex3i(x, y, gl_render_depth);
-        IMP_glTexCoord2f(bottomleft.x, bottomleft.y);
-        IMP_glVertex3i(x, y + height, gl_render_depth);
-        IMP_glTexCoord2f(bottomright.x, bottomright.y);
-        IMP_glVertex3i(x + width, y + height, gl_render_depth);
-        IMP_glTexCoord2f(topright.x, topright.y);
-        IMP_glVertex3i(x + width, y, gl_render_depth);
+        IMP_glBegin(GL_QUADS);
+		IMP_glTexCoord2f(tl.x, tl.y);
+        IMP_glVertex3i(-width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(tr.x, tr.y);
+        IMP_glVertex3i(width/2, -height/2, gl_render_depth);
+        IMP_glTexCoord2f(br.x, br.y);
+        IMP_glVertex3i(width/2, height/2, gl_render_depth);
+        IMP_glTexCoord2f(bl.x, bl.y);
+        IMP_glVertex3i(-width/2, height/2, gl_render_depth);
+        IMP_glEnd();
 
         IMP_glPopMatrix();
 
-        IMP_glEnd();
         IMP_glBindTexture(GL_TEXTURE_2D, 0);
         IMP_glDisable(GL_TEXTURE_2D);
     }

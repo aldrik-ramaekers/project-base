@@ -59,6 +59,7 @@ __def_proc( void, glFinish, (void))
 __def_proc( void, glLineWidth, (GLfloat))
 __def_proc( void, glPushMatrix, ())
 __def_proc( void, glPopMatrix, ())
+__def_proc( void, glTranslatef, (GLfloat, GLfloat, GLfloat));
 
 __def_proc( bool, GetSaveFileNameA, (LPOPENFILENAMEA))
 __def_proc( bool, GetOpenFileNameA, (LPOPENFILENAMEA))
