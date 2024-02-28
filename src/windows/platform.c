@@ -1672,6 +1672,12 @@ void platform_set_icon(platform_window *window, image *img)
 
 u64 platform_get_time(time_type time_type, time_precision precision)
 {
+	//FILETIME time;
+	//GetSystemTimePreciseAsFileTime(&time);
+	//ULARGE_INTEGER lv_Large;
+	//lv_Large.LowPart  = time.dwLowDateTime;
+  	//lv_Large.HighPart = time.dwHighDateTime;
+
 	LARGE_INTEGER counter;
 	QueryPerformanceCounter(&counter);
 	
