@@ -974,11 +974,11 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	ATOM success = RegisterClass(&window->window_class);
 	if (!success) return 0;
 
-	int style = WS_SYSMENU|WS_CAPTION|WS_MAXIMIZEBOX;
+	int style = WS_SYSMENU|WS_CAPTION|WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU;
 	int ex_style = 0;
 		
-	if (min_w != max_w && min_h != max_h)
-		style |= WS_SIZEBOX;
+	//if (min_w != max_w && min_h != max_h)
+	//	style |= WS_SIZEBOX;
 		
 	if (flags & FLAGS_BORDERLESS)
 	{
