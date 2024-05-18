@@ -18,6 +18,7 @@ typedef struct t_network_client {
 	SOCKET ConnectSocket;
 	bool is_connected;
 	void (*on_message)(u8* data, u32 length);
+	void (*on_disconnect)();
 	char ip[INET6_ADDRSTRLEN];
 } network_client;
 

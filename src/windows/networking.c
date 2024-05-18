@@ -271,6 +271,8 @@ static void* network_client_receive_thread(void* args) {
 			else {
 				log_info("recv failed with error");
 				printf("Error: %d\n", IMP_WSAGetLastError());
+				client->is_connected = false;
+				if (client->on_disconnect) client->on_disconnect();
 			}
 
 		} while(client->is_connected);
