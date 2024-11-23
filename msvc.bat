@@ -2,15 +2,15 @@
 
 set __VSCMD_ARG_no_logo=""
 
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 REM C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include
 
 DEL /S /Q build >nul
 mkdir build >nul 2>nul
 
-mkdir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\projectbase\" >nul 2>nul
-robocopy "src" "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\projectbase" /E
+mkdir "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\include\projectbase\" >nul 2>nul
+robocopy "src" "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\include\projectbase" /E
 
 robocopy "examples\data" "build\data" /E
 
@@ -22,5 +22,5 @@ lib /OUT:projectbase-debug.lib icon.res user32.lib gdi32.lib winmm.lib shlwapi.l
 cl /Z7 /DMODE_DEBUG /std:c11 ..\examples\example_window.c /Feexample_window.exe projectbase-debug.lib icon.res
 cd ..
 
-REM call build\example_window.exe
- call devenv build\example_window.exe
+call build\example_window.exe
+REM call devenv build\example_window.exe
