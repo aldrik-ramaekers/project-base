@@ -559,18 +559,6 @@ LRESULT CALLBACK main_window_callback(HWND window, UINT message, WPARAM wparam, 
 
 		current_window_to_handle->do_draw = true;
 	}
-	else if (message == WM_GETMINMAXINFO)
-	{
-		MINMAXINFO *info = (MINMAXINFO*)lparam;
-		
-		info->ptMinTrackSize.x = current_window_to_handle->min_width;
-		info->ptMinTrackSize.y = current_window_to_handle->min_height;
-		
-		if (current_window_to_handle->max_width)
-			info->ptMaxTrackSize.x = current_window_to_handle->max_width;
-		if (current_window_to_handle->max_height)
-			info->ptMaxTrackSize.y = current_window_to_handle->max_height;
-	}
 	else if (message == WM_DESTROY)
 	{
 		current_window_to_handle->is_open = false;
@@ -658,7 +646,7 @@ void platform_toggle_fullscreen(platform_window* window, bool fullscreen)
 	}
 	else {
 		SetWindowLongPtr(window->window_handle, GWL_EXSTYLE, WS_EX_LEFT);
-		SetWindowLongPtr(window->window_handle, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+		SetWindowLongPtr(window->window_handle, GWL_STYLE,  WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX | WS_VISIBLE);
 		ChangeDisplaySettings(NULL, CDS_RESET);
 		SetWindowPos(window->window_handle, HWND_NOTOPMOST, 0, 0, window->pre_fullscreen_width, window->pre_fullscreen_height+platform_get_titlebar_height(), SWP_SHOWWINDOW);
 		ShowWindow(window->window_handle, SW_RESTORE);
@@ -974,32 +962,11 @@ platform_window* platform_open_window_ex(char *name, u16 width, u16 height, u16 
 	ATOM success = RegisterClass(&window->window_class);
 	if (!success) return 0;
 
-	int style = WS_SYSMENU|WS_CAPTION|WS_MAXIMIZEBOX;
+	int style = WS_SYSMENU|WS_CAPTION|WS_MINIMIZEBOX;
 	int ex_style = 0;
 		
-	if (min_w != max_w && min_h != max_h)
-		style |= WS_SIZEBOX;
-		
-	if (flags & FLAGS_BORDERLESS)
-	{
-		style = WS_VISIBLE|WS_POPUP;
-	}
-	if (flags & FLAGS_MINIMIZE)
-	{
-		style |= WS_MINIMIZEBOX;
-	}
-	if (flags & FLAGS_TOPMOST)
-	{
-		ex_style = WS_EX_TOPMOST;
-	}
-	if (flags & FLAGS_NO_TASKBAR)
-	{
-		ex_style |= WS_EX_TOOLWINDOW;
-	}
-	if (flags & FLAGS_POPUP)
-	{
-		ex_style |= WS_EX_TOPMOST;
-	}
+	//if (min_w != max_w && min_h != max_h)
+	//	style |= WS_SIZEBOX;
 	
 	window->style = style;
 	window->ex_style = ex_style;

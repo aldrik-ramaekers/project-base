@@ -208,7 +208,7 @@ void settings_set_number(char *name, s64 value)
 	if (setting)
 	{
 		char num_buf[20];
-		snprintf(num_buf, 20, "%"PRId64"", value);
+		snprintf(num_buf, 20, "%10lld", (long long)value);
 		
 		s32 len = strlen(num_buf);
 		mem_free(setting->value);
@@ -226,7 +226,7 @@ void settings_set_number(char *name, s64 value)
 		
 		// value
 		char num_buf[20];
-		snprintf(num_buf, 20, "%"PRId64"", value);
+		snprintf(num_buf, 20, "%10lld", (long long)value);
 		
 		len = strlen(num_buf);
 		new_entry.value = mem_alloc(len+1);
